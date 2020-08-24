@@ -1,0 +1,12 @@
+keybinds:
+  bindings: {}
+resourcePack:
+  name: "Default Pack"
+  path: "resourcepacks/default"
+  description: "Pack shipped with MineGDX."
+  sizeMod: 1.0
+servers:
+  "hmm": "ok"
+  "local": "127.0.0.1"
+playerName: "felix"
+clientUUID: 1549027659761

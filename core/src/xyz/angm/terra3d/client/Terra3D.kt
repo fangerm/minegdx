@@ -1,31 +1,34 @@
 package xyz.angm.terra3d.client
 
-import com.badlogic.gdx.ApplicationAdapter
-import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.Game
+import com.badlogic.gdx.physics.bullet.Bullet
+import com.kotcrab.vis.ui.VisUI
+import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.client.graphics.screens.MenuScreen
+import xyz.angm.terra3d.client.networking.Client
+import xyz.angm.terra3d.client.networking.startLocalServer
+import xyz.angm.terra3d.common.world.WorldSaveManager
 
-class Terra3D : ApplicationAdapter() {
+/** The game itself. Only sets the screen, everything else is handled per-screen. */
+class Terra3D : Game() {
 
-    var batch: SpriteBatch? = null
-    var img: Texture? = null
-
+    /** Called when libGDX environment is ready. */
     override fun create() {
-        batch = SpriteBatch()
-        img = Texture("badlogic.jpg")
+        Bullet.init()
+        VisUI.load()
+        setScreen(MenuScreen(this))
     }
 
-    override fun render() {
-        Gdx.gl.glClearColor(1f, 0f, 0f, 1f)
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        batch!!.begin()
-        batch!!.draw(img, 0f, 0f)
-        batch!!.end()
+    /** Connects to a server and switches to the game screen.
+     * @param ip IP of the server to connect to. */
+    fun connectToServer(ip: String) {
+        screen = GameScreen(this, Client(ip))
     }
 
-    override fun dispose() {
-        batch!!.dispose()
-        img!!.dispose()
+    /** Creates a local server and switches to the game screen.
+     * @param world The world to initialize the server with. */
+    fun localServer(world: WorldSaveManager.Save) {
+        startLocalServer(world)
+        screen = GameScreen(this, Client())
     }
 }
