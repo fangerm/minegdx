@@ -19,4 +19,4 @@ import java.io.Serializable
  * - Type-safe (Only the metadata itself needs to be cast)
  * - Metadata class makes telling the block type easier
  */
-interface Metadata : Serializable
+interface IMetadata : Serializable

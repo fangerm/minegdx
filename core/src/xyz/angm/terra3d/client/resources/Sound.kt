@@ -27,4 +27,4 @@ private object DummySoundInterface : SoundInterface {
  * Defaults to dummy that does nothing, can only be set to proper interface once.
  * (The dummy is used instead of a 'lateinit' variable to prevent crashes in cases
  * where no sound is the intended behavior, like the server or during unit tests) */
-var sound: SoundInterface = DummySoundInterface
+var soundPlayer: SoundInterface = DummySoundInterface

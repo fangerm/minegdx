@@ -1,11 +1,11 @@
-- ident: stone
+stone:
   block:
     breakTime: 5.0
     prefTool: pickaxe
     minToolLevel: 1
     drop: cobblestone
 
-- ident: grass_block
+grass_block:
   texture: textures/blocks/grass_top.png
   block:
     breakTime: 3.5
@@ -13,24 +13,24 @@
     texSide: textures/blocks/grass_side.png
     texBottom: textures/blocks/dirt.png
 
-- ident: dirt
+dirt:
   block:
     breakTime: 2.5
     prefTool: SHOVEL
 
-- ident: cobblestone
+cobblestone:
   block:
     breakTime: 5.0
     prefTool: PICKAXE
     minToolLevel: 1
 
-- ident: planks_oak
+planks_oak:
   burnTime: 400
   block:
     breakTime: 3.5
     prefTool: AXE
 
-- ident: oak_wood
+oak_wood:
   burnTime: 600
   texture: textures/blocks/log_oak_top.png
   block:
@@ -38,27 +38,27 @@
     prefTool: AXE
     texSide: textures/blocks/log_oak.png
 
-- ident: leaves_oak
+leaves_oak:
   burnTime: 100
   block:
     breakTime: 3
     prefTool: SHEARS
     minToolLevel: 1
 
-- ident: snow
+snow:
   block:
     prefTool: SHOVEL
     minToolLevel: 1
 
-- ident: gravel
+gravel:
   block:
     prefTool: SHOVEL
 
-- ident: sand
+sand:
   block:
     prefTool: SHOVEL
 
-- ident: sandstone
+sandstone:
   texture: textures/blocks/sandstone_top.png
   block:
     breakTime: 5.0
@@ -67,13 +67,14 @@
     texSide: textures/blocks/sandstone_normal.png
     texBottom: textures/blocks/sandstone_bottom.png
 
-- ident: glass
+glass:
   block:
     drop: glass_shard
 
-- ident: glass_shard
+glass_shard:
+  texture: textures/blocks/glass_pane_top.png
 
-- ident: crafting_table
+crafting_table:
   texture: textures/blocks/crafting_table_top.png
   block:
     breakTime: 5.0
@@ -81,7 +82,7 @@
     texSide: textures/blocks/crafting_table_side.png
     texBottom: textures/blocks/planks_oak.png
 
-- ident: furnace
+furnace:
   texture: textures/blocks/furnace_top.png
   block:
     breakTime: 10
@@ -89,80 +90,92 @@
     minToolLevel: 1
     texSide: textures/blocks/furnace_side.png
 
-- ident: chest
+chest:
   texture: textures/blocks/log_oak_top.png
   block:
     breakTime: 10
     prefTool: AXE
 
-- ident: wood_pickaxe
+wood_pickaxe:
   tool:
     type: PICKAXE
     multiplier: 0.75
+    durability: 60
     level: 1
 
-- ident: stone_pickaxe
+stone_pickaxe:
   tool:
     type: PICKAXE
     multiplier: 0.6
+    durability: 250
     level: 2
 
-- ident: iron_pickaxe
+iron_pickaxe:
   tool:
     type: PICKAXE
     multiplier: 0.5
+    durability: 500
     level: 3
 
-- ident: diamond_pickaxe
+diamond_pickaxe:
   tool:
     type: PICKAXE
     multiplier: 0.3
+    durability: 1500
     level: 4
 
-- ident: wood_shovel
+wood_shovel:
   tool:
     type: SHOVEL
     multiplier: 0.75
+    durability: 60
     level: 1
 
-- ident: stone_shovel
+stone_shovel:
   tool:
     type: SHOVEL
     multiplier: 0.6
+    durability: 250
     level: 2
 
-- ident: iron_shovel
+iron_shovel:
   tool:
     type: SHOVEL
     multiplier: 0.5
+    durability: 500
     level: 3
 
-- ident: diamond_shovel
+diamond_shovel:
   tool:
     type: SHOVEL
     multiplier: 0.3
+    durability: 1500
     level: 4
 
-- ident: wood_axe
+wood_axe:
   tool:
     type: AXE
     multiplier: 0.75
+    durability: 60
     level: 1
 
-- ident: stone_axe
+stone_axe:
   tool:
     type: AXE
     multiplier: 0.6
+    durability: 250
     level: 2
 
-- ident: iron_axe
+iron_axe:
   tool:
     type: AXE
     multiplier: 0.5
+    durability: 500
     level: 3
 
-- ident: diamond_axe
+diamond_axe:
   tool:
     type: AXE
     multiplier: 0.3
+    durability: 1500
     level: 4

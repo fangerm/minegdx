@@ -9,7 +9,7 @@ import ktx.assets.file
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.items.Item.Properties
-import xyz.angm.terra3d.common.items.metadata.Metadata
+import xyz.angm.terra3d.common.items.metadata.IMetadata
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.yaml
 import java.util.*
@@ -27,7 +27,7 @@ typealias ItemType = Int
 data class Item(
     var type: ItemType = 1,
     var amount: Int = 1,
-    var metadata: Metadata? = null
+    var metadata: IMetadata? = null
 ) : java.io.Serializable {
 
     @Transient
@@ -67,17 +67,23 @@ data class Item(
      * @property block The block properties of this type, null if type is not a block
      * @property burnTime The amount of ticks an item burns for. Mainly used for determining fuel duration. */
     @Serializable
-    data class Properties(val ident: String) {
+    class Properties {
 
+        var ident = "" // Set during init
         var type: ItemType = 0
         val block: BlockProperties? = null
-        val name = getName(ident)
-        val texture = "textures/${if (isBlock) "blocks" else "items"}/${ident.toLowerCase()}.png"
+        var name = ""
+        var texture = ""
         val tool: ToolProperties? = null
         val stackSize = if (tool != null) 1 else 64
         val burnTime = 0
 
         val isBlock get() = (block != null)
+
+        private fun init() {
+            name = getName(ident)
+            if (texture == "") texture = "textures/${if (isBlock) "blocks" else "items"}/${ident.toLowerCase()}.png"
+        }
 
         companion object {
             private val items = OrderedMap<String, Properties>(200)
@@ -85,6 +91,8 @@ data class Item(
             init {
                 for (entry in yaml.decodeFromString(MapSerializer(String.serializer(), serializer()), file("items.yaml").readString())) {
                     entry.value.type = items.size + 1
+                    entry.value.ident = entry.key
+                    entry.value.init()
                     items.put(entry.key, entry.value)
                 }
             }
@@ -143,7 +151,10 @@ data class Item(
             val hitSound: String = "dig/stone1",
             val destroySound: String = "dig/stone1",
             val walkSound: String = "step/stone1"
-        )
+        ) {
+            /** Returns the actual time required to break a block, given the tool's properties. */
+            fun getBreakTime(tool: ToolProperties?) = breakTime * (if (tool != null && tool.type == prefTool) tool.multiplier else 1f)
+        }
 
         /** Tool-specific info of a type.
          * @property type The type of tool the item is. Default is none

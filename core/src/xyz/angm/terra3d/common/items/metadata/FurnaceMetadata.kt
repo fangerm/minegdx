@@ -8,7 +8,7 @@ import xyz.angm.terra3d.common.items.Item
  * @property fuel The fuel slot.
  * @property baking The slot that is being burnt.
  * @property result The result slot. */
-class FurnaceMetadata : Metadata {
+class FurnaceMetadata : IMetadata {
 
     var progress = 0
     var burnTime = 0

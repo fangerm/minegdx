@@ -13,6 +13,8 @@ import ktx.assets.file
 import ktx.assets.toLocalFile
 import org.zeroturnaround.zip.ZipUtil
 import xyz.angm.terra3d.client.graphics.Skin
+import xyz.angm.terra3d.client.world.ModelCache
+import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.yaml
 
 /** Object for retrieving resources. Uses a [ResourcePack] internally to obtain resources.
@@ -23,7 +25,8 @@ object ResourceManager {
     private val defaultPack = yaml.decodeFromString(ResourcePack.serializer(), file("resourcepacks/default/pack.yaml").readString())
 
     /** A cache for 3D models. **/
-    // val models = ModelCache(this)
+    val models = ModelCache(this)
+
     /** A list of all available resource packs. */
     val availablePacks = ArrayList<ResourcePack>()
 
@@ -33,7 +36,7 @@ object ResourceManager {
             if (field == value) return
             field = value
             assets.clear()
-            // models.clear()
+            models.clear()
             loadMenuAssets()
             loadGameAssets()
         }
@@ -89,11 +92,11 @@ object ResourceManager {
     }
 
     private fun loadGameAssets() {
-        /* for (item in Item.Properties.allItems) {
+        for (item in Item.Properties.allItems) {
             load<Texture>(item.texture)
             load<Texture>(item.block?.texSide ?: continue)
             load<Texture>(item.block.texBottom ?: continue)
-        }*/
+        }
         for (i in 0 until 10) load<Texture>("textures/blocks/destroy_stage_$i.png")
         load<Texture>("textures/gui/icons.png")
         load<Texture>("textures/gui/block_highlighted.png")

@@ -4,7 +4,7 @@ import com.badlogic.ashley.core.Component
 
 
 /*
- * This file contains all components with little to no state, used simply as a flag.
+ * This file contains all components with no state, used simply as a flag.
  */
 
 /** Flags an entity to NOT use the server-side physics engine, despite having position/vector/direction components.

@@ -45,7 +45,7 @@ class PlayerComponent : Component {
 
     companion object {
         /** The default player spawn location. */
-        internal val defaultSpawnLocation = Vector3(0f, 70f, 0f)
+        internal val defaultSpawnLocation = Vector3(10000f, 256f, 10000f)
 
         /** Create a new player entity. */
         fun create(engine: Engine, _name: String, uuid: Int) =

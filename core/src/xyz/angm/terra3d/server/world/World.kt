@@ -1,0 +1,120 @@
+package xyz.angm.terra3d.server.world
+
+import com.badlogic.ashley.core.Entity
+import com.badlogic.gdx.math.Vector3
+import ktx.ashley.get
+import xyz.angm.terra3d.common.CHUNK_SIZE
+import xyz.angm.terra3d.common.IntVector3
+import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
+import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
+import xyz.angm.terra3d.common.ecs.position
+import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.items.ItemType
+import xyz.angm.terra3d.common.networking.ChunksUpdate
+import xyz.angm.terra3d.common.world.Block
+import xyz.angm.terra3d.common.world.Chunk
+import xyz.angm.terra3d.server.Server
+import xyz.angm.terra3d.server.ecs.systems.BlockEntitySystem
+import xyz.angm.terra3d.server.world.generation.TerrainGenerator
+import java.util.concurrent.TimeUnit
+
+/** Server-side representation of a World containing all blocks.
+ * @param server The server this world is running under.
+ * @property seed The world seed used for generating the terrain. */
+class World(private val server: Server) {
+
+    val seed = server.save.seed
+    private val database = WorldDatabase(server)
+    private val generator = TerrainGenerator(this)
+    private val chunksWithQueuedChanges = com.badlogic.gdx.utils.Array<Chunk>(false, 8, Chunk::class.java)
+    private val blockEntitySystem = BlockEntitySystem(this)
+    private val tmpV = Vector3()
+    private val tmpIV = IntVector3()
+
+    init {
+        server.executor.scheduleAtFixedRate(database::flushChunks, 60, 60, TimeUnit.SECONDS)
+        database.generateChunks(IntVector3(1000, 0, 1000), generator)
+        server.engine.addSystem(blockEntitySystem)
+    }
+
+    /** Updates pre-generated chunks around the player.
+     * @param players A list of all players */
+    fun updateLoadedChunksByPlayers(players: Iterable<Entity>) = players.forEach { database.generateChunks(tmpIV.set(it[position]!!), generator) }
+
+    /** Adds the specified chunk to the world. */
+    internal fun addChunk(newChunk: Chunk) = database.addChunk(newChunk)
+
+    /** Returns an array of chunks.
+     * @param position The chunk's position, y axis is ignored.
+     * @return All chunks with matching x and z axis */
+    fun getChunkLine(position: IntVector3): Array<Chunk> {
+        tmpIV.set(position).norm(CHUNK_SIZE).y = 0
+        val chunksFromDB = database.getChunkLine(tmpIV)
+        return when {
+            (chunksFromDB.size == WORLD_HEIGHT_IN_CHUNKS) -> chunksFromDB // All chunks are in the DB, return that
+            chunksFromDB.isEmpty() -> generator.generateChunks(tmpIV) // No chunks are in the DB, return generator output
+            else -> generator.generateMissing(chunksFromDB, tmpIV) // Only some are in the DB, let the generator create the rest
+        }
+    }
+
+    /** Returns a block at the specified position, or null if there is none. */
+    fun getBlock(position: IntVector3): Block? {
+        val chunk = database.getChunk(position)
+        return chunk?.getBlock(tmpIV.set(position).minus(chunk.position))
+    }
+
+    /** @see getBlock */
+    fun getBlock(position: Vector3) = getBlock(tmpIV.set(position))
+
+    /** Sets the block. Will automatically sync to clients and dispatch any other work required.
+     * @param position The position to place it at
+     * @param block The block to place
+     * @return If the block was successfully placed / could be placed */
+    fun setBlock(position: IntVector3, block: Block): Boolean {
+        val oldBlock = database.setBlock(position, block)
+
+        if (block.type == 0) {
+            if (oldBlock == null || oldBlock.type == 0) return false
+            blockEntitySystem.removeBlockEntity(server.engine, oldBlock.position)
+            BlockEvents.getListener(oldBlock, Event.BLOCK_DESTROYED)?.invoke(this, oldBlock)
+
+            val item = Item(oldBlock)
+            item.type = Item.Properties.fromIdentifier(item.properties.block!!.drop ?: item.properties.ident).type
+            ItemComponent.create(server.engine, item, position.toV3(tmpV).add(0.5f, 0f, 0.5f))
+
+        } else if (oldBlock?.type != block.type) { // A new block got placed; the block was just updated if this is false
+            BlockEvents.getListener(block, Event.BLOCK_PLACED)?.invoke(this, block)
+            val blockEntity = BlockEvents.getBlockEntity(block)
+            if (blockEntity != null) blockEntitySystem.createBlockEntity(server.engine, blockEntity)
+        }
+
+        server.sendToAll(block)
+
+        return true
+    }
+
+    /** Queues a block to be set. Way faster than setBlock, but assumes block was null before and does not consider block entities.
+     * This is useful when a lot of simple blocks have to be set at once,
+     * since it prevents the network packet spam that batch setting blocks would cause
+     * since full chunks are sent anew on flush.
+     * A call to [flushBlockQueue] will set all blocks queued and sync state.
+     * Chunks with blocks changed by batching are not considered to be changed; they will not be spooled to DB.
+     * The main use of all this is world generation *after* initial chunk generation - this is the case
+     * when generating structures that cross chunk boundaries.
+     * @return If the block was successfully queued. No means the world at that location is not yet generated. */
+    fun queueBlock(position: IntVector3, type: ItemType): Boolean {
+        val chunk = database.setBlock(position, type) ?: return false
+        if (chunk !in chunksWithQueuedChanges) chunksWithQueuedChanges.add(chunk)
+        return true
+    }
+
+    /** @see queueBlock; flushes all blocks queued and syncs network and database. */
+    fun flushBlockQueue() {
+        if (chunksWithQueuedChanges.isEmpty) return
+        server.sendToAll(ChunksUpdate(chunksWithQueuedChanges.toArray()))
+        chunksWithQueuedChanges.clear()
+    }
+
+    /** Called on server close; saves to disk */
+    fun close() = database.flushChunks()
+}

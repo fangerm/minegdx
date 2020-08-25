@@ -59,7 +59,7 @@ class NettyServerSocket(server: Server) : ServerSocketInterface(server) {
     override fun closeConnection(connection: Connection) {
         connection as ChannelConnection
         connection.channel.close()
-        server.disconnect(connection)
+        server.onDisconnected(connection)
         connections.removeValue(connection, false)
         allChannels.remove(connection.channel)
     }
@@ -72,7 +72,7 @@ class NettyServerSocket(server: Server) : ServerSocketInterface(server) {
     private fun addNewChannel(ctx: ChannelHandlerContext): ChannelConnection {
         val connection = ChannelConnection(ctx.channel(), ++connectionIndex)
         connections.add(connection)
-        server.connect(connection)
+        server.onConnected(connection)
         allChannels.add(connection.channel)
         return connection
     }

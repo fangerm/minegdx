@@ -6,7 +6,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import com.badlogic.gdx.backends.lwjgl.LwjglGraphics
 import xyz.angm.terra3d.client.Terra3D
-import xyz.angm.terra3d.client.resources.sound
+import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.level
 import xyz.angm.terra3d.common.log
 import javax.swing.JOptionPane
@@ -26,7 +26,7 @@ fun main(arg: Array<String>) {
     setConfiguration()
     LwjglApplication(game, configuration)
     showWarnings()
-    sound = Sound
+    soundPlayer = Sound
 }
 
 /** Handle exceptions */

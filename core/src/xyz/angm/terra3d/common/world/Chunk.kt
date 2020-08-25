@@ -7,7 +7,7 @@ import org.nustaq.serialization.FSTObjectOutput
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.ItemType
-import xyz.angm.terra3d.common.items.metadata.Metadata
+import xyz.angm.terra3d.common.items.metadata.IMetadata
 import java.io.Serializable
 
 /** A chunk is a 3D array of blocks of size [CHUNK_SIZE]. It should only be used by the world itself, and not exposed to other classes.
@@ -16,7 +16,7 @@ import java.io.Serializable
  * @property blockMetadata Metadata for blocks. Blocks without metadata are not is this map. */
 open class Chunk private constructor(
     protected val blockTypes: Array<Array<IntArray>> = Array(CHUNK_SIZE) { Array(CHUNK_SIZE) { IntArray(CHUNK_SIZE) { 0 } } },
-    protected val blockMetadata: HashMap<IntVector3, Metadata> = HashMap(),
+    protected val blockMetadata: HashMap<IntVector3, IMetadata> = HashMap(),
     val position: IntVector3 = IntVector3()
 ) : Serializable {
 
@@ -43,16 +43,15 @@ open class Chunk private constructor(
      * @param position The position to place it at
      * @param block The block to place */
     fun setBlock(position: IntVector3, block: Block?) {
-        if (position.isInBounds(0, CHUNK_SIZE)) {
-            blockTypes[position.x][position.y][position.z] = block?.properties?.type ?: 0
-            if (block?.metadata != null) blockMetadata[position] = block.metadata!!
-        }
+        setBlock(position, block?.properties?.type ?: 0)
+        if (block?.metadata != null) blockMetadata[position] = block.metadata!!
     }
 
     /** Same as [setBlock], but constructs a new block from specified type. */
     fun setBlock(position: IntVector3, type: ItemType) {
         if (position.isInBounds(0, CHUNK_SIZE)) {
             blockTypes[position.x][position.y][position.z] = type
+            blockMetadata.remove(position)
         }
     }
 
@@ -70,7 +69,7 @@ open class Chunk private constructor(
         /** Creates the chunk, also reads it during instance creation */
         override fun instantiate(oClass: Class<*>, input: FSTObjectInput, cInfo: FSTClazzInfo, fInfo: FSTClazzInfo.FSTFieldInfo, strPos: Int): Any {
             return Chunk(
-                blockMetadata = input.readObject(HashMap::class.java) as HashMap<IntVector3, Metadata>,
+                blockMetadata = input.readObject(HashMap::class.java) as HashMap<IntVector3, IMetadata>,
                 blockTypes = readBlockTypes(input)
             )
         }

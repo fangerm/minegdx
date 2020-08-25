@@ -1,8 +1,15 @@
 package xyz.angm.terra3d.client.actions
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.utils.ObjectMap
+import ktx.ashley.get
 import ktx.collections.*
+import xyz.angm.terra3d.client.graphics.panels.game.ChatPanel
+import xyz.angm.terra3d.client.graphics.panels.game.PausePanel
+import xyz.angm.terra3d.client.graphics.panels.game.inventory.PlayerInventoryPanel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.velocity
 
 /** An action represents a function to be executed when the player presses a key.
  * @property type The internal name for an action, ex. 'walkLeft'
@@ -22,7 +29,6 @@ object PlayerActions {
     private val actions = ObjectMap<String, PlayerAction>()
 
     init {
-        /*
         addAction(PlayerAction("walkForward", "Walk Forward", { it.player[velocity]!!.x++ }, { it.player[velocity]!!.x-- }))
         addAction(PlayerAction("walkBackward", "Walk Backward", { it.player[velocity]!!.x-- }, { it.player[velocity]!!.x++ }))
         addAction(PlayerAction("walkRight", "Walk Right", { it.player[velocity]!!.z++ }, { it.player[velocity]!!.z-- }))
@@ -47,7 +53,7 @@ object PlayerActions {
                 it.player[playerM]!!.inventory.hotbarPosition = i - 1
                 it.gameplayPanel.updateHotbarSelector(it.player[playerM]!!.inventory.hotbarPosition)
             }))
-        }*/
+        }
     }
 
     /** Get an action. */

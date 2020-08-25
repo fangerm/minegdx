@@ -35,7 +35,7 @@ class LocalServerSocket private constructor(server: Server) : ServerSocketInterf
 
         /** Called when the other socket wants to disconnect. */
         fun disconnect() {
-            socket?.server?.disconnect(localConnection)
+            socket?.server?.onDisconnected(localConnection)
         }
     }
 }

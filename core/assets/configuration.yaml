@@ -1,5 +1,27 @@
 keybinds:
-  bindings: {}
+  bindings:
+    "Escape": "pauseMenu"
+    "Space": "jump"
+    "A": "walkLeft"
+    "D": "walkRight"
+    "E": "openInventory"
+    "L-Ctrl": "sprint"
+    "F11": "fullscreen"
+    "L-Shift": "sneak"
+    "F3": "debugMenu"
+    "Q": "dropItem"
+    "1": "hotbarSlot1"
+    "2": "hotbarSlot2"
+    "3": "hotbarSlot3"
+    "S": "walkBackward"
+    "4": "hotbarSlot4"
+    "5": "hotbarSlot5"
+    "6": "hotbarSlot6"
+    "7": "hotbarSlot7"
+    "W": "walkForward"
+    "Enter": "chat"
+    "8": "hotbarSlot8"
+    "9": "hotbarSlot9"
 resourcePack:
   name: "Default Pack"
   path: "resourcepacks/default"
@@ -9,4 +31,5 @@ servers:
   "hmm": "ok"
   "local": "127.0.0.1"
 playerName: "felix"
-clientUUID: 1549027659761
+clientUUID: 154902
+language: "English"

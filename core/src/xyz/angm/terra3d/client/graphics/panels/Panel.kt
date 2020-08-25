@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import ktx.actors.onKeyDown
 import ktx.scene2d.Scene2DSkin
 import xyz.angm.terra3d.client.graphics.screens.Screen
-import xyz.angm.terra3d.client.resources.sound
+import xyz.angm.terra3d.client.resources.soundPlayer
 
 /** A panel is overlaid onto a screen, and used for UI.
  * @param screen The screen currently active
@@ -31,7 +31,7 @@ abstract class Panel(screen: Screen) : Table(Scene2DSkin.defaultSkin) {
         addCaptureListener {
             // Play a sound when a button was clicked
             if ((it as? InputEvent)?.type == InputEvent.Type.touchDown && (it.target is Button || it.target is Label))
-                sound.playSound("random/wood_click")
+                soundPlayer.playSound("random/wood_click")
             false
         }
     }

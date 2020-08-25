@@ -5,10 +5,15 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector3
 import com.charleskorn.kaml.Yaml
 import org.nustaq.serialization.*
-import xyz.angm.terra3d.common.ecs.components.DirectionComponent
-import xyz.angm.terra3d.common.ecs.components.PositionComponent
-import xyz.angm.terra3d.common.ecs.components.SizeComponent
-import xyz.angm.terra3d.common.ecs.components.VelocityComponent
+import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
+import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
+import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
+import xyz.angm.terra3d.common.ecs.components.*
+import xyz.angm.terra3d.common.items.Inventory
+import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.networking.*
+import xyz.angm.terra3d.common.world.Block
+import xyz.angm.terra3d.common.world.Chunk
 import kotlin.reflect.KClass
 
 /** A simple YAML serializer used for configuration files and some game data. */
@@ -16,10 +21,22 @@ val yaml = Yaml()
 
 /** A FST serializer used for network communication and world storage. */
 val fst = createFST(
-    Component::class,
-    PositionComponent::class, VelocityComponent::class, DirectionComponent::class, SizeComponent::class,
+    // Packets
+    PlayerBlockInteractionPacket::class, ChunkRequest::class, JoinPacket::class,
+    ChunksUpdate::class, ChatMessagePacket::class,
 
-    Vector3::class
+    // Components
+    Component::class,
+    LocalPlayerComponent::class,
+    HealthComponent::class,
+    NetworkSyncComponent::class,
+    PositionComponent::class, VelocityComponent::class, DirectionComponent::class, SizeComponent::class,
+    NoPhysicsFlag::class, RemoveFlag::class,
+
+    // Various
+    IntVector3::class, Vector3::class,
+    Chunk::class, Block::class, Item::class,
+    Inventory::class
 )
 
 private fun createFST(vararg classes: KClass<out Any>): FSTConfiguration {
@@ -73,5 +90,11 @@ private class FSTEntitySerializer : FSTBasicObjectSerializer() {
     companion object {
         /** A set of components that do not get serialized. */
         val noSerialize = HashSet<KClass<out Any>>()
+
+        init {
+            noSerialize.add(LocalPlayerComponent::class)
+            noSerialize.add(ModelRenderComponent::class)
+            noSerialize.add(PlayerRenderComponent::class)
+        }
     }
 }
