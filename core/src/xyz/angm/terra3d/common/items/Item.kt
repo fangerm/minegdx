@@ -10,6 +10,7 @@ import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.items.Item.Properties
 import xyz.angm.terra3d.common.items.metadata.Metadata
+import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.yaml
 import java.util.*
 
@@ -39,9 +40,8 @@ data class Item(
 
     val properties get() = Properties.fromType(type)!!
 
-    /** Creates an item from the block.
+    /** Creates an item from the block. */
     constructor(block: Block) : this(block.type, 1, block.metadata)
-     */
 
     /** If the item stacks with the other item. */
     infix fun stacksWith(other: Item?) = other != null && type == other.type && metadata == other.metadata
