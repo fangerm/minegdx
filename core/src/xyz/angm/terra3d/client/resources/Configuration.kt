@@ -27,6 +27,7 @@ val configuration = {
  * @property clientUUID The UUID of this client, used to identify with servers.
  * @property servers A list of all servers known to the client.
  * @property resourcePack The resource pack in use
+ * @property language The language to use for [I18N].
  *
  * @property keybinds All keybinds. */
 @Serializable
@@ -39,6 +40,7 @@ class Configuration {
     val servers = HashMap<String, String>()
     var playerName = ""
     val clientUUID = 0L
+    val language = "English"
 
     /** Should be called after deserialization to allow the object to correct its state. */
     fun init() = keybinds.init()
