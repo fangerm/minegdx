@@ -37,7 +37,6 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
         stage.addActor(panelStack)
 
         ResourceManager.init()
-        panelStack.pushPanel(MainMenuPanel(this))
         panelStack.pushPanel(LoadingPanel(this))
         Gdx.input.inputProcessor = stage
 
@@ -71,9 +70,12 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
     /** @see [Terra3D.localServer] */
     fun localServer(save: WorldSaveManager.Save) = game.localServer(save)
 
-    /** Called when [ResourceManager] has finished loading. Will simply pop a panel
-     * to get rid of the loading screen and show the menu screen underneath. */
-    fun doneLoading() = popPanel()
+    /** Called when [ResourceManager] has finished loading. Will remove the loading screen
+     * and show the main menu. */
+    fun doneLoading() {
+        panelStack.popPanel(-1)
+        panelStack.pushPanel(MainMenuPanel(this))
+    }
 
     override fun pushPanel(panel: Panel) = panelStack.pushPanel(panel)
 

@@ -1,0 +1,11 @@
+PLAINS:
+  surfaceBlock: grass_block
+
+FOREST:
+  surfaceBlock: leaves_oak
+
+DESERT:
+  surfaceBlock: sand
+  surfaceLayers: 3
+  belowSurfaceBlock: sandstone
+  belowSurfaceLayers: 5

@@ -13,6 +13,8 @@ class LoadingPanel(private val screen: MenuScreen) : Panel(screen) {
     private val loadingPercentLabel = Label("0%", skin)
     private val loadingBar = ProgressBar(0f, 1f, 0.01f, false, skin)
 
+    private var done = false
+
     init {
         add(loadingLabel).colspan(2).row()
         add(loadingPercentLabel).pad(10f)
@@ -24,6 +26,10 @@ class LoadingPanel(private val screen: MenuScreen) : Panel(screen) {
         val progress = ResourceManager.continueLoading()
         loadingBar.value = progress
         loadingPercentLabel.setText(String.format("%02d", (progress * 100).toInt()) + "%")
-        if (progress == 1f) screen.doneLoading()
+
+        if (progress == 1f && !done) {
+            screen.doneLoading()
+            done = true
+        }
     }
 }

@@ -5,13 +5,11 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.utils.Array
 import com.badlogic.gdx.utils.Disposable
-import ktx.actors.alpha
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
 
 private const val TRANSITION_DURATION = 0.2f
-private val TRANSITION_IN = Interpolation.pow3In
-private val TRANSITION_OUT = Interpolation.pow3Out
+private val TRANSITION = Interpolation.pow3
 
 /** A stack of panels. Always displays the panel at the top of the stack,
  * while also using nice animations for transitioning between panels.
@@ -23,17 +21,16 @@ class PanelStack : Actor(), Disposable {
         get() = panels.size
 
     /** Pops the top panel off the stack. Will automatically display the next panel. */
-    fun popPanel(): Panel {
+    fun popPanel(direction: Int = 1): Panel {
         val panel = panels.pop()!!
-        panel.dispose()
-        panel.addAction(
-            Actions.sequence(
-                Actions.fadeOut(TRANSITION_DURATION, TRANSITION_OUT),
-                Actions.removeActor()
-            )
-        )
+        panel.addAction(Actions.sequence(
+            Actions.moveTo(WORLD_WIDTH * direction, 0f, TRANSITION_DURATION, TRANSITION),
+            Actions.visible(false),
+            Actions.removeActor(),
+            Actions.run { panel.dispose() }
+        ))
 
-        if (!panels.isEmpty) transitionIn(panels.peek())
+        if (!panels.isEmpty) transitionIn(panels.peek(), -1)
         return panel
     }
 
@@ -43,15 +40,16 @@ class PanelStack : Actor(), Disposable {
         panels.add(panel)
         panel.setSize(WORLD_WIDTH, WORLD_HEIGHT)
         stage.addActor(panel)
-        panel.alpha = 0f
         transitionIn(panel)
     }
 
-    private fun transitionIn(panel: Panel) {
+    private fun transitionIn(panel: Panel, direction: Int = 1) {
+        panel.x = WORLD_WIDTH * direction
         panel.addAction(
             Actions.sequence(
                 Actions.visible(true),
-                Actions.fadeIn(TRANSITION_DURATION, TRANSITION_IN)
+                Actions.moveTo(0f, 0f, TRANSITION_DURATION, TRANSITION),
+                Actions.visible(true)
             )
         )
     }
@@ -59,7 +57,7 @@ class PanelStack : Actor(), Disposable {
     private fun transitionOut(panel: Panel) {
         panel.addAction(
             Actions.sequence(
-                Actions.fadeOut(TRANSITION_DURATION, TRANSITION_OUT),
+                Actions.moveTo(-WORLD_WIDTH, 0f, TRANSITION_DURATION, TRANSITION),
                 Actions.visible(false)
             )
         )
