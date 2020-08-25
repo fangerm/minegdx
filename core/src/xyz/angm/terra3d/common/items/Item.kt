@@ -56,27 +56,25 @@ data class Item(
                 && amount == other.amount
 
     /** @return Type and amount, formatted */
-    override fun toString() = "${amount}x ${I18N["item-${properties.identifier}"]}"
+    override fun toString() = "${amount}x ${I18N["item-${properties.ident}"]}"
 
     /** Properties of an item type.
-     * @property identifier An internal identifier of the block used for getting locale names.
+     * @property ident An internal identifier of the block used for getting locale names.
      * @property type The item type ID.
      * @property name The displayed name of the type; defaults to type with capitalized formatting
      * @property stackSize How many of this item can be in 1 stack
      * @property texture The texture of this type of item
      * @property block The block properties of this type, null if type is not a block
-     * @property drop For blocks: the item dropped when the block is mined
      * @property burnTime The amount of ticks an item burns for. Mainly used for determining fuel duration. */
     @Serializable
-    data class Properties(val identifier: String) {
+    data class Properties(val ident: String) {
 
         var type: ItemType = 0
         val block: BlockProperties? = null
-        val name = getName(identifier)
-        val stackSize = 64
-        val drop = type
-        val texture = "textures/${if (isBlock) "blocks" else "items"}/${identifier.toLowerCase()}.png"
+        val name = getName(ident)
+        val texture = "textures/${if (isBlock) "blocks" else "items"}/${ident.toLowerCase()}.png"
         val tool: ToolProperties? = null
+        val stackSize = if (tool != null) 1 else 64
         val burnTime = 0
 
         val isBlock get() = (block != null)
@@ -122,7 +120,8 @@ data class Item(
          * @property breakTime The amount of time the block has to be mined for to be destroyed with bare hands, in seconds.
          * @property prefTool The tool affecting mining time.
          * @property minToolLevel The minimum level a tool needs to be to be able to break the block.
-         *
+         * @property drop An optional identifier of the item type dropped when mining this block (cobble for stone for example).
+
          * @property texSide Optional: Block side texture. [Properties.texture] will be used instead if null.
          * @property texBottom Optional: Block bottom texture. [Properties.texture] will be used instead if null.
          *
@@ -135,6 +134,7 @@ data class Item(
             val breakTime: Float = 1.5f,
             val prefTool: String? = null,
             val minToolLevel: Int = 0,
+            val drop: String? = null,
 
             val texSide: String? = null,
             val texBottom: String? = null,
