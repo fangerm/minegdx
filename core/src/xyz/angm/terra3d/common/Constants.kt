@@ -24,8 +24,8 @@ const val TICK_RATE = 20L
 /** The port server and client use */
 const val PORT = 25590
 
-/** Maximum size of a netty packet. */
-const val MAX_NETTY_FRAME_SIZE = 128_000
+/** Maximum size of a netty packet, in bytes. */
+const val MAX_NETTY_FRAME_SIZE = 1_024_000 // 1 MB
 
 /** Size of the receive buffer. */
 const val NETTY_BUFFER_SIZE = 8192

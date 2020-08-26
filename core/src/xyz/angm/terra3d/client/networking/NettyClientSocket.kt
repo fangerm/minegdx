@@ -52,7 +52,7 @@ class NettyClientSocket(client: Client) : ClientSocketInterface(client) {
 
     private class ClientHandler(private val client: Client) : ChannelInboundHandlerAdapter() {
 
-        internal lateinit var channel: Channel
+        lateinit var channel: Channel
 
         override fun channelActive(ctx: ChannelHandlerContext) {
             channel = ctx.channel()
