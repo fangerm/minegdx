@@ -14,7 +14,7 @@ import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.client.resources.configuration
 
 /** Multiplayer panel for adding a server to the list. */
-class MultiplayerServerAddPanel(screen: MenuScreen) : Panel(screen) {
+class MultiplayerServerAddPanel(screen: MenuScreen, parent: MultiplayerMenuPanel) : Panel(screen) {
 
     init {
         this + table {
@@ -31,6 +31,7 @@ class MultiplayerServerAddPanel(screen: MenuScreen) : Panel(screen) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
                 onClick {
                     configuration.addServer(nameInputField.text, ipInputField.text)
+                    parent.reload(screen)
                     screen.popPanel()
                 }
             }
@@ -40,9 +41,8 @@ class MultiplayerServerAddPanel(screen: MenuScreen) : Panel(screen) {
                     Input.Keys.ESCAPE -> screen.popPanel()
                     Input.Keys.ENTER -> {
                         configuration.addServer(nameInputField.text, ipInputField.text)
+                        parent.reload(screen)
                         screen.popPanel()
-                        screen.popPanel()
-                        screen.pushPanel(MultiplayerMenuPanel(screen))
                     }
                 }
             }

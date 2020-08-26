@@ -36,14 +36,12 @@ abstract class Panel(screen: Screen) : Table(Scene2DSkin.defaultSkin) {
         }
     }
 
-    /** @see [com.badlogic.gdx.scenes.scene2d.Actor.setStage] */
     override fun setStage(stage: Stage?) {
         super.setStage(stage)
         stage?.keyboardFocus = focusedActor
         stage?.scrollFocus = focusedActor
     }
 
-    /** @see [com.badlogic.gdx.scenes.scene2d.Actor.setVisible] and [PanelStack] */
     override fun setVisible(visible: Boolean) {
         super.setVisible(visible)
         if (visible) {

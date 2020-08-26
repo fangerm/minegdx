@@ -1,45 +1,56 @@
 package xyz.angm.terra3d.client.graphics.panels.menu.options
 
+import ktx.actors.onChange
 import ktx.actors.onClick
 import ktx.actors.onKey
 import ktx.actors.plus
-import ktx.scene2d.label
-import ktx.scene2d.table
-import ktx.scene2d.textButton
-import ktx.scene2d.textField
+import ktx.scene2d.*
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
+import xyz.angm.terra3d.client.graphics.panels.menu.MainMenuPanel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.client.graphics.screens.Screen
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.configuration
 
 /** Main options menu. */
-class OptionsPanel(private val screen: Screen) : Panel(screen) {
+class OptionsPanel(private val screen: Screen, parent: MainMenuPanel? = null) : Panel(screen) {
 
     init {
+        reload(screen, parent)
+    }
+
+    private fun reload(screen: Screen, parent: MainMenuPanel?) {
+        clearChildren()
         this + table {
-            // Only show video options panel on menu screen
+            // Only show certain options on menu screen
             if (screen is MenuScreen) {
-                textButton("Video Options") {
+                textButton(I18N["options.video"]) {
                     it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
                     onClick { screen.pushPanel(VideoOptionsPanel(screen)) }
                 }
-            }
 
-            textButton("Key Bindings / Controls") {
-                it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
-                // onClick { screen.pushPanel(KeybindsPanel(screen)) }
-            }
-
-            // Only show resource pack panel on menu screen
-            if (screen is MenuScreen) {
-                textButton("Resource/Texture Pack") {
+                textButton(I18N["options.resourcepack"]) {
                     it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
                     onClick { screen.pushPanel(ResourcePackPanel(screen)) }
                 }
+
+                val box = selectBoxOf(I18N.languages())
+                box.selected = configuration.language
+                box.onChange {
+                    I18N.setLanguage(box.selected)
+                    parent!!.reload(screen)
+                    screen.popPanel()
+                }
+                row()
             }
 
-            label("Player Name:", style = "default-24pt") {
+            textButton(I18N["options.controls"]) {
+                it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
+                onClick { screen.pushPanel(KeybindsPanel(screen)) }
+            }
+
+            label(I18N["options.playername"], style = "default-24pt") {
                 it.pad(10f)
             }
 

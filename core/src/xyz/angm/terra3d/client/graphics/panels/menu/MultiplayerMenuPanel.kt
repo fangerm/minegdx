@@ -12,6 +12,11 @@ import xyz.angm.terra3d.client.resources.configuration
 class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
 
     init {
+        reload(screen)
+    }
+
+    internal fun reload(screen: MenuScreen) {
+        clearChildren()
         this + table {
             focusedActor = scrollPane {
                 table {
@@ -43,7 +48,7 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
 
             textButton("Add Server") {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
-                onClick { screen.pushPanel(MultiplayerServerAddPanel(screen)) }
+                onClick { screen.pushPanel(MultiplayerServerAddPanel(screen, this@MultiplayerMenuPanel)) }
             }
 
             textButton("Direct Connect") {

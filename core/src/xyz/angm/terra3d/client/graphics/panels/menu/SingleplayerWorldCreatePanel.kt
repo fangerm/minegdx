@@ -14,7 +14,7 @@ import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.common.world.WorldSaveManager
 
 /** Panel for creating a new world/save. */
-class SingleplayerWorldCreatePanel(screen: MenuScreen) : Panel(screen) {
+class SingleplayerWorldCreatePanel(screen: MenuScreen, parent: SingleplayerWorldSelectionPanel) : Panel(screen) {
 
 
     init {
@@ -30,6 +30,7 @@ class SingleplayerWorldCreatePanel(screen: MenuScreen) : Panel(screen) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
                 onClick {
                     WorldSaveManager.addWorld(nameField.text, seedField.text)
+                    parent.reload(screen)
                     screen.popPanel()
                 }
             }
@@ -39,9 +40,8 @@ class SingleplayerWorldCreatePanel(screen: MenuScreen) : Panel(screen) {
                     Input.Keys.ESCAPE -> screen.popPanel()
                     Input.Keys.ENTER -> {
                         WorldSaveManager.addWorld(nameField.text, seedField.text)
+                        parent.reload(screen)
                         screen.popPanel()
-                        screen.popPanel()
-                        screen.pushPanel(SingleplayerWorldSelectionPanel(screen))
                     }
                 }
             }

@@ -40,7 +40,7 @@ class Configuration {
     val servers = HashMap<String, String>()
     var playerName = ""
     val clientUUID = 0
-    val language = "English"
+    var language = "English"
 
     /** Should be called after deserialization to allow the object to correct its state. */
     fun init() = keybinds.init()

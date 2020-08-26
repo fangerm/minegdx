@@ -6,6 +6,7 @@ import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import ktx.assets.toLocalFile
 import ktx.collections.*
+import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.yaml
 import java.util.*
 
@@ -46,5 +47,16 @@ object I18N {
         } catch (e: MissingResourceException) {
             null
         }
+    }
+
+    /** Returns all languages available. */
+    fun languages() = bundles.keys().toArray()!!
+
+    /** Sets and saves the current language. */
+    fun setLanguage(lang: String) {
+        configuration.language = lang
+        configuration.save()
+        bundle = bundles[lang]
+        Item.Properties.reloadNames()
     }
 }

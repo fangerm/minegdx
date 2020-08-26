@@ -15,6 +15,11 @@ import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 class MainMenuPanel(screen: MenuScreen) : Panel(screen) {
 
     init {
+        reload(screen)
+    }
+
+    internal fun reload(screen: MenuScreen) {
+        clearChildren()
         this + table {
             pad(0f, 0f, 100f, 0f)
 
@@ -32,7 +37,7 @@ class MainMenuPanel(screen: MenuScreen) : Panel(screen) {
             }
             textButton("Options") {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
-                onClick { screen.pushPanel(OptionsPanel(screen)) }
+                onClick { screen.pushPanel(OptionsPanel(screen, this@MainMenuPanel)) }
             }
             textButton("Exit Game") {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()

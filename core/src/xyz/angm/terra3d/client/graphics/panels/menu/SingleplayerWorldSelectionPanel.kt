@@ -12,6 +12,11 @@ import xyz.angm.terra3d.common.world.WorldSaveManager
 class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
 
     init {
+        reload(screen)
+    }
+
+    internal fun reload(screen: MenuScreen) {
+        clearChildren()
         this + table {
             focusedActor = scrollPane {
                 table {
@@ -27,7 +32,7 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
                                 it.right().row()
                                 onClick {
                                     WorldSaveManager.deleteWorld(save.location)
-                                    screen.pushPanel(SingleplayerWorldSelectionPanel(screen))
+                                    reload(screen)
                                 }
                             }
 
@@ -44,7 +49,7 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
 
             textButton("Create World") {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
-                onClick { screen.pushPanel(SingleplayerWorldCreatePanel(screen)) }
+                onClick { screen.pushPanel(SingleplayerWorldCreatePanel(screen, this@SingleplayerWorldSelectionPanel)) }
             }
 
             setFillParent(true)
