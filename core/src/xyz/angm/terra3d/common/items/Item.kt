@@ -65,7 +65,8 @@ data class Item(
      * @property stackSize How many of this item can be in 1 stack
      * @property texture The texture of this type of item
      * @property block The block properties of this type, null if type is not a block
-     * @property burnTime The amount of ticks an item burns for. Mainly used for determining fuel duration. */
+     * @property burnTime The amount of ticks an item burns for. Mainly used for determining fuel duration.
+     * @property hunger How much hunger this restores, should it be food. */
     @Serializable
     class Properties {
 
@@ -77,6 +78,7 @@ data class Item(
         val tool: ToolProperties? = null
         val stackSize = if (tool != null) 1 else 64
         val burnTime = 0
+        val hunger = 0
 
         val isBlock get() = (block != null)
 

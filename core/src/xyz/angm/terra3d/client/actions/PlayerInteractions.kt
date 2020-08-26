@@ -1,11 +1,14 @@
 package xyz.angm.terra3d.client.actions
 
 import com.badlogic.gdx.utils.ObjectMap
+import ktx.ashley.get
 import ktx.collections.*
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.ChestPanel
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.CraftingGridPanel
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.FurnacePanel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.common.ecs.components.specific.MAX_HUNGER
+import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.world.Block
@@ -30,6 +33,17 @@ object PlayerInteractions {
         setListener("furnace", Event.BLOCK_CLICKED) { ctx ->
             ctx.screen.pushPanel(ChestPanel(ctx.screen, ctx.block!!))
         }
+
+        for (item in Item.Properties.allItems) {
+            if (item.hunger != 0) {
+                setListener(item.type, Event.ITEM_CLICKED) { ctx ->
+                    if (ctx.screen.player[playerM]!!.hunger < MAX_HUNGER) {
+                        ctx.screen.player[playerM]!!.hunger += item.hunger
+                        ctx.screen.playerInventory.subtractFromHeldItem(1)
+                    }
+                }
+            }
+        }
     }
 
     /** Sets a listener.
@@ -38,6 +52,14 @@ object PlayerInteractions {
      * @param listener The listener to execute */
     private fun setListener(item: String, type: Event, listener: (EventContext) -> Unit) {
         listeners[Pair(Item.Properties.fromIdentifier(item).type, type)] = listener
+    }
+
+    /** Sets a listener.
+     * @param item The type of item to listen upon
+     * @param type The type of event to listen upon
+     * @param listener The listener to execute */
+    private fun setListener(item: ItemType, type: Event, listener: (EventContext) -> Unit) {
+        listeners[Pair(item, type)] = listener
     }
 
     /** Returns the listener registered. */

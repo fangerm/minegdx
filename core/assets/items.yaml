@@ -23,6 +23,7 @@ cobblestone:
     breakTime: 5.0
     prefTool: PICKAXE
     minToolLevel: 1
+    drop: stone
 
 planks_oak:
   burnTime: 400
@@ -43,7 +44,10 @@ leaves_oak:
   block:
     breakTime: 3
     prefTool: SHEARS
-    minToolLevel: 1
+    drop: apple
+
+apple:
+  hunger: 4
 
 snow:
   block:

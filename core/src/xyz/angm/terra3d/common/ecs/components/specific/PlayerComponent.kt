@@ -7,6 +7,9 @@ import ktx.ashley.entity
 import xyz.angm.terra3d.common.ecs.components.*
 import xyz.angm.terra3d.common.items.Inventory
 
+/** The maximum amount of hunger a player can have. */
+const val MAX_HUNGER = 20
+
 /** Component for all persistent player state.
  * @property name The (display)name of the player.
  * @property clientUUID The UUID of the client the player is from.
@@ -18,7 +21,7 @@ class PlayerComponent : Component {
 
     lateinit var name: String
     var clientUUID: Int = 0
-    var hunger = 20
+    var hunger = MAX_HUNGER
     val spawnPosition = defaultSpawnLocation.cpy()!!
     val inventory = PlayerInventory()
     var isDead = false
