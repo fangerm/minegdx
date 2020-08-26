@@ -2,7 +2,8 @@ PLAINS:
   surfaceBlock: grass_block
 
 FOREST:
-  surfaceBlock: leaves_oak
+  structuresGenerating:
+    small_oak_tree: 0.01
 
 DESERT:
   surfaceBlock: sand

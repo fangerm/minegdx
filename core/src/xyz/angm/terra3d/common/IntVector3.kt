@@ -25,6 +25,9 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     /** Constructs a vector from the translation of a libGDX Matrix4. */
     constructor(matrix4: Matrix4) : this(matrix4.getTranslation(tmpV))
 
+    /** Constructs from an integer array that must have at least 3 values. */
+    constructor(arr: IntArray) : this(arr[0], arr[1], arr[2])
+
     /** @return A copy of itself; allows for calculations without affecting original. */
     fun cpy() = IntVector3(x, y, z)
 

@@ -15,7 +15,7 @@ import kotlin.math.min
  * @property surfaceHeightDeviation Deviation of the height, the higher, the steeper the terrain
  * @property belowSurfaceBlock The block right below the surface
  * @property belowSurfaceLayers The amount of layers of below-surface blocks
- * @property structuresGenerating The structures generating in the biome, see [Structure]*/
+ * @property structuresGenerating The structures generating in the biome, see [Structure] */
 @Serializable
 class Biome {
 
@@ -36,5 +36,5 @@ class Biome {
     val surfaceHeightDeviation = 10
     val belowSurfaceBlock = "dirt"
     val belowSurfaceLayers = 3
-    val structuresGenerating = HashMap<Double, String>()
+    val structuresGenerating = HashMap<String, Double>()
 }

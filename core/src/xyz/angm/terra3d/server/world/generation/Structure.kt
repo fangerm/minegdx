@@ -1,23 +1,23 @@
 package xyz.angm.terra3d.server.world.generation
 
+import com.badlogic.gdx.utils.OrderedMap
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.json.Json
 import ktx.assets.file
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.items.ItemType
+import xyz.angm.terra3d.common.yaml
 import xyz.angm.terra3d.server.world.World
 
 /** A structure is a fixed set of blocks generated in the world. */
-@Serializable
-class Structure(private val blocks: Array<Array<Array<String?>>>, private val center: IntVector3) {
+class Structure private constructor(private val calls: Array<DrawCall>) {
 
     /** Manages and hold all structures */
     companion object {
-        private val structures =
-            Json.decodeFromString(MapSerializer(String.serializer(), serializer()), file("structures.json").readString())
+        private val structures = loadStructures()
 
         /** Generate a structure.
          * @param structure Type of structure
@@ -26,17 +26,44 @@ class Structure(private val blocks: Array<Array<Array<String?>>>, private val ce
 
         /** Update all structure's pending locations. */
         fun update(world: World) {
-            structures.values.forEach { it.update(world) }
+            structures.values().forEach { it.update(world) }
             world.flushBlockQueue() // Individual structures queue their blocks
         }
+
+        private fun loadStructures(): OrderedMap<String, Structure> {
+            val raw = yaml.decodeFromString(
+                MapSerializer(String.serializer(), ListSerializer(MapSerializer(String.serializer(), SerializedDrawCall.serializer()))),
+                file("structures.yaml").readString()
+            )
+
+            val structs = OrderedMap<String, Structure>(raw.size)
+            for (struct in raw) {
+                val name = struct.key
+                val calls = com.badlogic.gdx.utils.Array<DrawCall>(true, struct.value.size, DrawCall::class.java)
+                for (call in struct.value) {
+                    val v = call.values.first()
+                    calls.add(
+                        when (call.keys.first()) {
+                            "box" -> BoxCall(IntVector3(v.start), Item.Properties.fromIdentifier(v.block).type, IntVector3(v.end!!))
+                            else -> PointCall(IntVector3(v.start), Item.Properties.fromIdentifier(v.block).type)
+                        }
+                    )
+                }
+                structs.put(name, Structure(calls.items))
+            }
+
+            return structs
+        }
+
+        @Serializable
+        private class SerializedDrawCall(val start: IntArray, val block: String) {
+            val end: IntArray? = null
+        }
+
+        private val tmpIV = IntVector3() // Vector passed into draw calls
     }
 
-    @Transient
     private val locationsPending = com.badlogic.gdx.utils.Array<IntVector3>()
-    @Transient
-    private val tmpIV = IntVector3()
-    @Transient
-    private val tmpIV2 = IntVector3()
 
     /** Update the structure's pending locations
      * @param world The world to apply to */
@@ -50,16 +77,29 @@ class Structure(private val blocks: Array<Array<Array<String?>>>, private val ce
     fun queue(position: IntVector3) = locationsPending.add(position)
 
     private fun apply(world: World, pos: IntVector3): Boolean {
-        val position = tmpIV.set(pos).minus(center)
-        for (y in 0 until blocks.size)
-            for (x in 0 until blocks[y].size)
-                for (z in 0 until blocks[y][x].size) {
-                    if (!world.queueBlock(
-                            tmpIV2.set(position).add(x, y, z),
-                            Item.Properties.fromIdentifier(blocks[y][x][z] ?: continue).type
-                        )
-                    ) return false
-                }
+        for (call in calls) {
+            if (!call.draw(world, tmpIV.set(pos))) return false
+        }
         return true
     }
+}
+
+private val tmpIV = IntVector3() // Vector used by draw calls
+
+private sealed class DrawCall(val start: IntVector3, val block: ItemType) {
+    abstract fun draw(world: World, pos: IntVector3): Boolean
+}
+
+private class BoxCall(start: IntVector3, block: ItemType, val end: IntVector3) : DrawCall(start, block) {
+    override fun draw(world: World, pos: IntVector3): Boolean {
+        for (y in start.y..end.y)
+            for (x in start.x..end.x)
+                for (z in start.z..end.z)
+                    if (!world.queueBlock(tmpIV.set(pos).add(x, y, z), block)) return false
+        return true
+    }
+}
+
+private class PointCall(start: IntVector3, block: ItemType) : DrawCall(start, block) {
+    override fun draw(world: World, pos: IntVector3) = world.queueBlock(pos.add(start), block)
 }

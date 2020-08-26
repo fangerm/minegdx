@@ -84,10 +84,10 @@ class TerrainGenerator(val world: World) {
     private fun generateStructures(chunk: Chunk, position: IntVector3, height: Int, biome: Biome, random: Random) {
         if (isSurfaceChunk(chunk.position.y, height)) {
             var chance = 1.0
-            for (structureChance in biome.structuresGenerating.keys) {
-                chance -= structureChance
+            for (structure in biome.structuresGenerating) {
+                chance -= structure.value
                 if (random.nextDouble(1.0) > chance) {
-                    Structure.generate(biome.structuresGenerating[structureChance]!!, position)
+                    Structure.generate(structure.key, position)
                     break
                 }
             }
