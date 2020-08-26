@@ -24,10 +24,9 @@ internal class WorldDatabase(private val server: Server) {
     private val tmpV2 = IntVector3()
 
     // These chunks have been created/modified/accessed since the last flushToDB call.
-    // Performance is WAY better by keeping them in RAM, especially with systems that access chucks every tick.
-    private val newChunks = OrderedMap<IntVector3, Chunk>() // For new chunks
-    private val changedChunks = OrderedMap<IntVector3, Chunk>() // For changed chunks
-    private val unchangedChunks = OrderedMap<IntVector3, Chunk>() // For unchanged chunks
+    private val newChunks = OrderedMap<IntVector3, Chunk>()
+    private val changedChunks = OrderedMap<IntVector3, Chunk>()
+    private val unchangedChunks = OrderedMap<IntVector3, Chunk>()
 
     init {
         db = dbs[server.save.location] ?: {
@@ -65,7 +64,7 @@ internal class WorldDatabase(private val server: Server) {
     /** Returns chunk or null if it is not in the DB */
     internal fun getChunk(position: IntVector3): Chunk? {
         tmpIV.set(position).norm(CHUNK_SIZE)
-        val cacheChunk = unchangedChunks[tmpIV] ?: newChunks[tmpIV] ?: changedChunks[tmpIV]
+        val cacheChunk = getCachedChunk(tmpIV)
         if (cacheChunk != null) return cacheChunk
         val dbChunk = getDBChunk(position) ?: return null
         val chunk = fst.asObject(dbChunk[Chunks.data].binaryStream.readBytes()) as Chunk
@@ -77,10 +76,12 @@ internal class WorldDatabase(private val server: Server) {
      * @param position The chunks position, y axis is ignored.
      * @return All chunks with matching x and z axes */
     internal fun getChunkLine(position: IntVector3): Array<Chunk> {
-        position.norm(CHUNK_SIZE).y = 0
         val dbChunks = transaction(db) { Chunks.select { (Chunks.x eq position.x) and (Chunks.z eq position.z) }.toList() }
         return Array(dbChunks.size) { fst.asObject(dbChunks[it][Chunks.data].binaryStream.readBytes()) as Chunk }
     }
+
+    /** Get a chunk from one of the caches, if they have it. */
+    internal fun getCachedChunk(pos: IntVector3) = unchangedChunks[pos] ?: newChunks[pos] ?: changedChunks[pos]
 
     /** Sets the block. Does not do other needed things like firing events or updating block entities.
      * @param position The position to place it at

@@ -5,7 +5,6 @@ import com.badlogic.gdx.math.Vector3
 import ktx.ashley.get
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.items.Item
@@ -50,12 +49,13 @@ class World(private val server: Server) {
     fun getChunkLine(position: IntVector3): Array<Chunk> {
         tmpIV.set(position).norm(CHUNK_SIZE).y = 0
         val chunksFromDB = database.getChunkLine(tmpIV)
-        return when {
-            (chunksFromDB.size == WORLD_HEIGHT_IN_CHUNKS) -> chunksFromDB // All chunks are in the DB, return that
-            chunksFromDB.isEmpty() -> generator.generateChunks(tmpIV) // No chunks are in the DB, return generator output
-            else -> generator.generateMissing(chunksFromDB, tmpIV) // Only some are in the DB, let the generator create the rest
-        }
+        return generator.generateMissing(chunksFromDB, tmpIV)
     }
+
+    /** Returns a chunk in cache if it exists. Does not norm the position given!
+     * Used by the [TerrainGenerator] when filling in missing chunks in a line
+     * to catch chunks that are in cache but weren't spooled to disk yet. */
+    internal fun getCachedChunk(position: IntVector3) = database.getCachedChunk(position)
 
     /** Returns a block at the specified position, or null if there is none. */
     fun getBlock(position: IntVector3): Block? {

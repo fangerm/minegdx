@@ -35,19 +35,25 @@ class TerrainGenerator(val world: World) {
     /** Generates missing chunks in a line of chunks.
      * @param alreadyCreated Chunks already created in this line */
     fun generateMissing(alreadyCreated: Array<Chunk>, position: IntVector3): Array<Chunk> {
-        position.norm(CHUNK_SIZE).y = 0
-
         val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
         val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z, biomeMap)
 
-        return Array(WORLD_HEIGHT_IN_CHUNKS) { chunkIndex ->
-            alreadyCreated.firstOrNull { it.position.y == chunkIndex * CHUNK_SIZE } ?: {
+        val ret = Array(WORLD_HEIGHT_IN_CHUNKS) { chunkIndex ->
+            position.y = chunkIndex * CHUNK_SIZE
+
+            // Search in cache first in case that a chunk was changed
+            // and the DB version is outdated
+            val preexisting = world.getCachedChunk(position) ?: alreadyCreated.firstOrNull { it.position.y == position.y }
+            if (preexisting != null) preexisting
+            else {
                 val chunk = Chunk(chunkPosition = IntVector3(position.x, chunkIndex * CHUNK_SIZE, position.z))
                 generateChunk(chunk, heightMap, biomeMap)
                 world.addChunk(chunk)
                 chunk
-            }()
+            }
         }
+        Structure.update(world)
+        return ret
     }
 
     private fun generateChunk(chunk: Chunk, heightMap: Array<IntArray>, biomeMap: Array<Array<Biome>>) {
