@@ -12,11 +12,6 @@ interface Packet : Serializable
 
 
 // Sent by client
-/** Contains info about the player interacting with a block.
- * @property block The block the player interacted with
- * @property position It's position */
-class PlayerBlockInteractionPacket(val block: Block = Block(), val position: IntVector3 = IntVector3()) : Packet
-
 /** A request for the server to send chunks. See [ChunksUpdate]
  * @property position The position of the chunks requested */
 class ChunkRequest(val position: IntVector3 = IntVector3()) : Packet

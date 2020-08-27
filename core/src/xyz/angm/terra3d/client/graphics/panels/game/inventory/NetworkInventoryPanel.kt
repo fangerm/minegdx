@@ -2,7 +2,6 @@ package xyz.angm.terra3d.client.graphics.panels.game.inventory
 
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
-import xyz.angm.terra3d.common.networking.PlayerBlockInteractionPacket
 import xyz.angm.terra3d.common.world.Block
 
 /** A panel whose inventory is bound to a block. Anytime an inventory in this type of panel gets modified,
@@ -32,6 +31,6 @@ abstract class NetworkInventoryPanel(private val screen: GameScreen, private val
 
     private fun syncNetwork() {
         updateNetInventory()
-        screen.client.send(PlayerBlockInteractionPacket(block, block.position))
+        screen.client.send(block)
     }
 }
