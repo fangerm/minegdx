@@ -119,12 +119,11 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     /** Normalize this vector to a multiple of the specified number. */
     fun norm(num: Int) = this.div(num).mul(num)
 
-    /** @return the distance between this vector and the given vector */
-    fun dist(other: IntVector3): Float {
+    /** @return the distance between this vector and the given vector on the XZ axes */
+    fun distXZ(other: IntVector3): Float {
         val a = other.x - this.x
-        val b = other.y - this.y
         val c = other.z - this.z
-        return sqrt(a * a + b * b + (c * c).toDouble()).toFloat()
+        return sqrt(a * a + (c * c).toDouble()).toFloat()
     }
 
     /** String representation of all 3 axes */

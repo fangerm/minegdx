@@ -79,7 +79,7 @@ class World(private val client: Client) : Disposable {
             var i = 0
             while (i < chunks.size) {
                 val pos = chunks.orderedKeys()[i]
-                if (pos.dist(position) > MAX_CHUNK_DIST) {
+                if (pos.distXZ(position) > MAX_CHUNK_DIST) {
                     chunks[pos]!!.dispose()
                     chunks.removeIndex(i)
                 } else i++

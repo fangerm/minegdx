@@ -40,65 +40,60 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
         model.begin()
         Builder.begin()
 
+        // Render each face separately
         for (face in 0 until 6) {
-            val isBackFace = face > 2
-            val direction = face % 3
-            val workAxis1 = (direction + 1) % 3
-            val workAxis2 = (direction + 2) % 3
+            val isBackFace = face > 2 // If this face is a 'back' face, needing it's position & OGL calls adjusted
+            val direction = face % 3 // The axis of the face.
+            val workAxis1 = (direction + 1) % 3 // The first other axis
+            val workAxis2 = (direction + 2) % 3 // The second other axis
 
-            startPos[direction] = 0
-            while (startPos[direction] < CHUNK_SIZE) {
-                val merged = Array(CHUNK_SIZE) { BooleanArray(CHUNK_SIZE) }
+            // For each plane in the given direction...
+            startPos[direction] = -1
+            while (++startPos[direction] < CHUNK_SIZE) {
 
-                startPos[workAxis1] = 0
-                while (startPos[workAxis1] < CHUNK_SIZE) {
-                    startPos[workAxis2] = 0
-                    while (startPos[workAxis2] < CHUNK_SIZE) {
+                resetMerged() // Reset the faces merged
+
+                startPos[workAxis1] = -1
+                while (++startPos[workAxis1] < CHUNK_SIZE) {
+
+                    startPos[workAxis2] = -1
+                    while (++startPos[workAxis2] < CHUNK_SIZE) {
+
                         val block = getFromAIV3(startPos)
-
                         // Skip this block if it's been merged already, is air, or isn't visible
-                        if (merged[startPos[workAxis1]][startPos[workAxis2]]
-                            || block == 0
-                            || !isBlockFaceVisible(startPos, direction, isBackFace)
-                        ) {
-                            startPos[workAxis2]++
+                        if (isMerged(startPos[workAxis1], startPos[workAxis2]) || block == 0 || !faceVisible(startPos, direction, isBackFace))
                             continue
-                        }
 
-                        quadSize.reset()
+                        quadSize.reset() // Making a new quad, reset
 
                         // Figure out width & save
                         currPos.set(startPos)
                         while (currPos[workAxis2] < CHUNK_SIZE
-                            && compareStep(startPos, currPos, direction, isBackFace)
-                            && !merged[currPos[workAxis1]][currPos[workAxis2]]
+                            && canMerge(direction, isBackFace)
+                            && !isMerged(currPos[workAxis1], currPos[workAxis2])
                         ) currPos[workAxis2]++
                         quadSize[workAxis2] = currPos[workAxis2] - startPos[workAxis2]
 
                         // Figure out height & save
                         currPos.set(startPos)
                         while (currPos[workAxis1] < CHUNK_SIZE
-                            && compareStep(startPos, currPos, direction, isBackFace)
-                            && !merged[currPos[workAxis1]][currPos[workAxis2]]
+                            && canMerge(direction, isBackFace)
+                            && !isMerged(currPos[workAxis1], currPos[workAxis2])
                         ) {
-
                             currPos[workAxis2] = startPos[workAxis2]
                             while (currPos[workAxis2] < CHUNK_SIZE
-                                && compareStep(startPos, currPos, direction, isBackFace)
-                                && !merged[currPos[workAxis1]][currPos[workAxis2]]
+                                && canMerge(direction, isBackFace)
+                                && !isMerged(currPos[workAxis1], currPos[workAxis2])
                             ) currPos[workAxis2]++
 
-                            if (currPos[workAxis2] - startPos[workAxis2] < quadSize[workAxis2]) {
-                                break
-                            } else {
-                                currPos[workAxis2] = startPos[workAxis2]
-                            }
+                            if (currPos[workAxis2] - startPos[workAxis2] < quadSize[workAxis2]) break
+                            else currPos[workAxis2] = startPos[workAxis2]
 
                             currPos[workAxis1]++
                         }
                         quadSize[workAxis1] = currPos[workAxis1] - startPos[workAxis1]
 
-                        // Finally actually render a quad
+                        // Finally render the quad
                         tmpAIV.set(startPos)
                         tmpAIV[direction] += if (isBackFace) 0 else 1
                         tmpAIV.apply(corner1)
@@ -110,6 +105,7 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
                         m.apply(corner3).add(corner1).add(n.apply(tmpV3)) // corner3 = c1 + m + n
                         n.apply(corner4).add(corner1) // corner4 = c1 + n
 
+                        // Normal is always orthogonal to the quad
                         tmpAIV.reset()[direction] += 1
                         tmpAIV.apply(normal)
 
@@ -123,15 +119,11 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
 
                         for (f in 0 until quadSize[workAxis1]) {
                             for (g in 0 until quadSize[workAxis2]) {
-                                merged[startPos[workAxis1] + f][startPos[workAxis2] + g] = true
+                                markMerged(startPos[workAxis1] + f, startPos[workAxis2] + g)
                             }
                         }
-
-                        startPos[workAxis2]++
                     }
-                    startPos[workAxis1]++
                 }
-                startPos[direction]++
             }
         }
 
@@ -141,16 +133,18 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
         model.end()
     }
 
-    private fun isBlockFaceVisible(pos: ArrIV3, axis: Int, backFace: Boolean): Boolean {
+    /** Is this face visible and needs to be rendered? */
+    private fun faceVisible(pos: ArrIV3, axis: Int, backFace: Boolean): Boolean {
         tmpAIV.set(pos)[axis] += if (backFace) -1 else 1
         return (tmpAIV[axis] !in 0 until CHUNK_SIZE) || getFromAIV3(tmpAIV) == 0
     }
 
-    private fun compareStep(a: ArrIV3, b: ArrIV3, direction: Int, backFace: Boolean): Boolean {
-        val blockA = getFromAIV3(a)
-        val blockB = getFromAIV3(b)
-
-        return blockA == blockB && blockB != 0 && isBlockFaceVisible(b, direction, backFace)
+    /** Takes a face and returns if the block at currPos can be merged
+     * with the current mesh. */
+    private fun canMerge(direction: Int, backFace: Boolean): Boolean {
+        val blockA = getFromAIV3(startPos)
+        val blockB = getFromAIV3(currPos)
+        return blockA == blockB && blockB != 0 && faceVisible(currPos, direction, backFace)
     }
 
     private fun getFromAIV3(pos: ArrIV3) = blockTypes[pos[0]][pos[1]][pos[2]]
@@ -177,6 +171,16 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
         private val startPos = ArrIV3()
         private val currPos = ArrIV3()
         private val quadSize = ArrIV3()
+
+        // Holds the faces on the currently meshing plane that are already meshed.
+        // Flattened 2D array.
+        private val merged = BooleanArray(CHUNK_SIZE * CHUNK_SIZE)
+
+        private fun resetMerged() = merged.fill(false)
+        private fun isMerged(x: Int, y: Int) = merged[(x * CHUNK_SIZE) + y]
+        private fun markMerged(x: Int, y: Int) {
+            merged[(x * CHUNK_SIZE) + y] = true
+        }
 
         /** An array-backed integer vector used by the greedy meshing algorithm.
          * It's required as the it indexes the axes. */
