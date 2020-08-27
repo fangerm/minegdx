@@ -20,7 +20,10 @@ class ItemTooltip(panel: Panel) : Table(panel.skin) {
     /** Update the item the panel is showing. */
     private fun update(properties: Item.Properties?, id: ItemType?, metadata: IMetadata?) {
         clearChildren()
-        if (properties == null || id == null) return
+        if (properties == null || id == null) {
+            isVisible = false
+            return
+        }
 
         add(Label("${properties.name} (#$id)", skin, "default-24pt")).row()
         if (metadata != null) add(Label(metadata.toString(), skin, "italic-16pt")).row()
