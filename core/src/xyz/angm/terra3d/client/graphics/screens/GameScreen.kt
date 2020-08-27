@@ -86,6 +86,9 @@ class GameScreen(
     private val uiPanels = PanelStack()
     val gameplayPanel = GameplayOverlay(this)
 
+    val entitiesLoaded: Int get() = engine.entities.size()
+    val systemsActive: Int get() = engine.systems.size()
+
     override fun show() {
         initState()
         initRender()

@@ -1,9 +1,7 @@
 package xyz.angm.terra3d.client.graphics.panels.game
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.Image
@@ -30,7 +28,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
     private val hotbar = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 0, 364, 44))
     private val hotbarSelected = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 44, 48, 48))
     private val blockTooltip = ItemTooltip(this)
-    private val debugLabel = Label("", Label.LabelStyle(BitmapFont(), Color.WHITE))
+    private val debugLabel = Label("", skin["monospace", Label.LabelStyle::class.java])
     private val chat = Chat(skin, screen.client)
 
     init {
@@ -67,7 +65,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         blockTooltip.setPosition(0f, WORLD_HEIGHT, Align.topLeft)
         hotbarItems.setPosition(hotbar.x + 6, hotbar.y + 6)
         crosshair.setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, Align.center)
-        debugLabel.setPosition(5f, WORLD_HEIGHT - 120, Align.topLeft)
+        debugLabel.setPosition(5f, WORLD_HEIGHT - 150, Align.topLeft)
         healthBar.setPosition(hotbar.x, hotbar.height + 6, Align.bottomLeft)
         hungerBar.setPosition(hotbar.x + hotbar.width + 16, hotbar.height + 6, Align.bottomRight)
         chat.setPosition(10f, 90f)
@@ -77,7 +75,6 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         background = null
     }
 
-    /** @see com.badlogic.gdx.scenes.scene2d.Actor.act */
     override fun act(delta: Float) {
         super.act(delta)
         if (debugLabel.isVisible) debugLabel.setText(getDebugLabelString())
@@ -105,14 +102,16 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         FPS: ${Gdx.graphics.framesPerSecond}
         Time since last frame: ${Gdx.graphics.deltaTime}
 
-        OpenGL:
-            Version: ${Gdx.graphics.glVersion.majorVersion}
-            Vendor: ${Gdx.graphics.glVersion.vendorString}
-            Renderer: ${Gdx.graphics.glVersion.rendererString}
-            Supports GL30: ${Gdx.graphics.isGL30Available}
+        OpenGL ${Gdx.graphics.glVersion.majorVersion}: ${Gdx.graphics.glVersion.rendererString}
+        Display: ${Gdx.graphics.displayMode}
 
-        Player position: ${screen.player[position]!!}  /  ${screen.player[position]!!.toStringFloor()}
+        Player position: ${screen.player[position]!!.toStringFloor()} / ${screen.player[position]!!}
         Camera direction: ${screen.cam.direction}
+        
+        Chunks loaded: ${screen.world.chunksLoaded}
+        Chunks waiting to be rendered: ${screen.world.waitingForRender}
+        Entities loaded: ${screen.entitiesLoaded}
+        ECS systems active: ${screen.systemsActive}
         """.trimIndent()
 
     /** Add a chat message and display the chat. */

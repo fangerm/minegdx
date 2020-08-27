@@ -19,7 +19,7 @@ object Skin {
     /** The width of text buttons in most menus. */
     const val textButtonWidth = 400f
 
-    private val fontSizes = listOf(16, 24, 32, 48)
+    private val fontSizes = listOf(48, 32, 24, 16)
     private val colors5 = mapOf(
         Pair("white", Color.WHITE),
         Pair("light-grey", Color.LIGHT_GRAY),
@@ -39,6 +39,7 @@ object Skin {
     fun reload() {
         val regularGenerator = FreeTypeFontGenerator(file(ResourceManager.getFullPath("font/regular.ttf")))
         val italicGenerator = FreeTypeFontGenerator(file(ResourceManager.getFullPath("font/italic.ttf")))
+        val monospaceGen = FreeTypeFontGenerator(file(ResourceManager.getFullPath("font/monospace.ttf")))
         val parameter = FreeTypeFontGenerator.FreeTypeFontParameter()
         parameter.shadowColor = Color(0.4f, 0.4f, 0.4f, 0.8f)
 
@@ -57,6 +58,7 @@ object Skin {
                 add("italic-${size}pt", italic)
             }
             add("default", it.get<BitmapFont>("default-32pt"))
+            add("monospace", monospaceGen.generateFont(parameter))
 
             colors5.forEach { color ->
                 val pixmap = Pixmap(5, 5, Pixmap.Format.RGBA8888)
@@ -97,6 +99,12 @@ object Skin {
             label("pack-loading") {
                 font = it["default-48pt"]
                 fontColor = Color.ORANGE
+                background = it["black-transparent"]
+            }
+
+            label("debug") {
+                font = it["monospace"]
+                fontColor = Color.WHITE
                 background = it["black-transparent"]
             }
 
@@ -155,5 +163,6 @@ object Skin {
 
         regularGenerator.dispose()
         italicGenerator.dispose()
+        monospaceGen.dispose()
     }
 }

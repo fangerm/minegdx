@@ -43,6 +43,9 @@ class World(private val client: Client) : Disposable {
     private val chunks = OrderedMap<IntVector3, RenderableChunk>()
     private val chunksWaitingForRender = com.badlogic.gdx.utils.Array<RenderableChunk>()
 
+    val chunksLoaded: Int get() = chunks.size
+    val waitingForRender: Int get() = chunksWaitingForRender.size
+
     init {
         client.addListener { packet ->
             when (packet) {
@@ -181,7 +184,6 @@ class World(private val client: Client) : Disposable {
         chunks.forEach { addChunk(it) }
     }
 
-    /** @see com.badlogic.gdx.utils.Disposable */
     override fun dispose() {
         chunks.values().forEach { it.dispose() }
     }
