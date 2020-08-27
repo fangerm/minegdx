@@ -1,5 +1,6 @@
 package xyz.angm.terra3d.server.world
 
+import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import com.badlogic.gdx.utils.ObjectMap
 import com.badlogic.gdx.utils.OrderedMap
@@ -37,7 +38,7 @@ internal class WorldDatabase(private val server: Server) {
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
         transaction(db) {
             SchemaUtils.create(Chunks)
-            (exposedLogger as Logger).level = log.level
+            (exposedLogger as Logger).level = Level.ERROR
         }
     }
 
