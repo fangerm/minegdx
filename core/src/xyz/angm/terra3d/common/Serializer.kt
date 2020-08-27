@@ -95,6 +95,7 @@ private class FSTEntitySerializer : FSTBasicObjectSerializer() {
             noSerialize.add(LocalPlayerComponent::class)
             noSerialize.add(ModelRenderComponent::class)
             noSerialize.add(PlayerRenderComponent::class)
+            noSerialize.add(IgnoreSyncFlag::class)
         }
     }
 }

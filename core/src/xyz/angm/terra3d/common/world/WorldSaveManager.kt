@@ -7,8 +7,8 @@ import ktx.ashley.allOf
 import ktx.ashley.exclude
 import ktx.ashley.get
 import ktx.assets.toLocalFile
+import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
-import xyz.angm.terra3d.common.ecs.network
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.fst
 import xyz.angm.terra3d.common.networking.JoinPacket
@@ -61,7 +61,7 @@ object WorldSaveManager {
                 player
             } else PlayerComponent.create(engine, name, info.uuid)
 
-            entity[network]!!.id = info.uuidEntity
+            entity.remove(RemoveFlag::class.java) // Unsure why but this is here?
             return entity
         }
 

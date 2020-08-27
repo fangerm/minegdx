@@ -16,6 +16,7 @@ import xyz.angm.terra3d.client.graphics.panels.PanelStack
 import xyz.angm.terra3d.client.graphics.panels.menu.LoadingPanel
 import xyz.angm.terra3d.client.graphics.panels.menu.MainMenuPanel
 import xyz.angm.terra3d.client.graphics.panels.menu.MessagePanel
+import xyz.angm.terra3d.client.graphics.panels.menu.ServerSyncPanel
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.world.WorldSaveManager
 import java.io.IOException
@@ -60,6 +61,7 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
 
     /** Connect to server or display error, see method in [Terra3D] */
     fun connectToServer(ip: String) {
+        pushPanel(ServerSyncPanel(this))
         try {
             game.connectToServer(ip)
         } catch (e: IOException) {
@@ -68,7 +70,10 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
     }
 
     /** @see [Terra3D.localServer] */
-    fun localServer(save: WorldSaveManager.Save) = game.localServer(save)
+    fun localServer(save: WorldSaveManager.Save) {
+        pushPanel(ServerSyncPanel(this))
+        game.localServer(save)
+    }
 
     /** Called when [ResourceManager] has finished loading. Will remove the loading screen
      * and show the main menu. */

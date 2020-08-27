@@ -11,6 +11,7 @@ import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.network
+import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.log
@@ -96,7 +97,7 @@ class Server(
     }
 
     internal fun onConnected(connection: Connection) {
-        log.info { "[SERVER] Player connected. IP: ${connection.ip}" }
+        log.info { "[SERVER] Player connected. IP: ${connection.ip}. Awaiting join info..." }
         if (serverSocket.connections.size > configuration.maxPlayers) {
             serverSocket.closeConnection(connection)
             log.info { "[SERVER] Player disconnected: Server is full!" }
@@ -104,10 +105,11 @@ class Server(
     }
 
     private fun registerPlayer(connection: Connection, packet: JoinPacket) {
-        send(connection, EntitiesPacket(engine.getEntitiesFor(networkedFamily).toArray(Entity::class.java)))
-
+        val entities = engine.getEntitiesFor(networkedFamily).toArray<Entity>(Entity::class.java)
         val playerEntity = save.getPlayer(engine, packet)
         players[connection.id] = playerEntity
+
+        send(connection, InitPacket(playerEntity, entities, world.getInitData(playerEntity[position]!!)))
         playerEntity[network]!!.needsSync = true // Ensure player gets synced next tick
     }
 

@@ -27,17 +27,20 @@ import xyz.angm.terra3d.client.graphics.panels.menu.MessagePanel
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.client.networking.LocalServer
 import xyz.angm.terra3d.client.resources.ResourceManager
-import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.client.world.World
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.ecs.*
+import xyz.angm.terra3d.common.ecs.components.IgnoreSyncFlag
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
-import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
+import xyz.angm.terra3d.common.ecs.modelRender
+import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.playerRender
+import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
-import xyz.angm.terra3d.common.log
-import xyz.angm.terra3d.common.networking.*
+import xyz.angm.terra3d.common.networking.BlockUpdate
+import xyz.angm.terra3d.common.networking.ChatMessagePacket
+import xyz.angm.terra3d.common.networking.InitPacket
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -49,7 +52,10 @@ import java.util.concurrent.TimeUnit
  * setting up their interactions that drive the game.
  * The only other responsibility of this class is putting together all graphics sources and drawing them.
  *
- * @param client The client for communicating with the server; should be connected already
+ * The screen is initialized by [Terra3D], which means that it's only created after a server connection
+ * was established and the initial [InitPacket] was received, and the world around the player was meshed.
+ *
+ * @param client The client for communicating with the server
  * @property world The world
  * @property cam The player's camera
  *
@@ -62,13 +68,15 @@ import java.util.concurrent.TimeUnit
  * @property scheduler A scheduler for usage in the game */
 class GameScreen(
     private val game: Terra3D,
-    val client: Client
+    val client: Client,
+    val world: World,
+    val player: Entity,
+    entities: Array<Entity>
 ) : ScreenAdapter(), Screen {
 
     private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
 
     // 3D Graphics
-    val world = World(client)
     val cam = PerspectiveCamera(75f, WORLD_WIDTH, WORLD_HEIGHT)
     private val inputHandler = PlayerInputHandler(this)
     private val modelBatch = ModelBatch()
@@ -77,7 +85,6 @@ class GameScreen(
 
     // Entities
     private val engine = Engine()
-    val player = createLocalPlayer()
     val playerInputSystem: PlayerInputSystem get() = engine.getSystem(PlayerInputSystem::class.java)
     val playerInventory get() = player[playerM]!!.inventory
 
@@ -89,17 +96,16 @@ class GameScreen(
     val entitiesLoaded: Int get() = engine.entities.size()
     val systemsActive: Int get() = engine.systems.size()
 
-    override fun show() {
+    init {
+        initSystems()
+        engine.addEntity(player)
+        entities.forEach { engine.addEntity(it) }
+
         initState()
         initRender()
     }
 
     override fun render(delta: Float) {
-        if (cam.far != 300f) {
-            log.error { "????" }
-            return
-        }
-
         Gdx.gl.glClearColor(0.05f, 0.05f, 0.05f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
@@ -152,9 +158,9 @@ class GameScreen(
         })
     }
 
-    // Initialize everything not render-related
-    private fun initState() {
-        // Engine
+    // Initialize all ECS systems
+    private fun initSystems() {
+        addLocalPlayerComponents()
         engine.addSystem(PlayerSystem(this, player))
         engine.addSystem(PlayerPhysicsSystem(world::blockExists, player))
         engine.addSystem(PlayerInputSystem(this, player, engine.getSystem(PlayerPhysicsSystem::class.java), inputHandler))
@@ -165,38 +171,33 @@ class GameScreen(
         engine.addEntityListener(exclude(LocalPlayerComponent::class).get(), 1, renderSystem)
         engine.addSystem(netSystem)
         engine.addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
+    }
 
-
+    // Initialize everything not render-related
+    private fun initState() {
         // Network
         client.disconnectListener = { Gdx.app.postRunnable { returnToMenu("Disconnected from server.") } }
+        val netSystem = engine.getSystem(NetworkSystem::class.java)
         client.addListener {
             when (it) {
                 is Entity -> netSystem.receive(it)
-                is EntitiesPacket -> it.entities.forEach { netSystem.receive(it) }
             }
         }
         client.send(ChatMessagePacket("[CYAN]${player[playerM]!!.name}[LIGHT_GRAY] joined the game!"))
-        client.send(JoinPacket(configuration.playerName, configuration.clientUUID, player[network]!!.id))
-
 
         // Input
         Gdx.input.inputProcessor = inputHandler
         Gdx.input.isCursorCatched = true
 
-
         // Chunk loading
-        // Go ahead and immediately request the chunk the player is spawning in
-        client.send(ChunkRequest(IntVector3(player[position]!!)))
-        scheduler.scheduleAtFixedRate({ world.updateLoadedChunks(IntVector3(player[position]!!)) }, 0, 1, TimeUnit.SECONDS)
+        scheduler.scheduleAtFixedRate({ world.updateLoadedChunks(IntVector3(player[position]!!)) }, 2, 1, TimeUnit.SECONDS)
     }
 
-    // Creates the local player. See the player variable at the top of this file.
-    private fun createLocalPlayer(): Entity {
-        val player = PlayerComponent.create(engine, configuration.playerName, configuration.clientUUID)
+    // Adds local components to the player entity.
+    private fun addLocalPlayerComponents() {
         player.add(LocalPlayerComponent())
         player.add(PlayerRenderComponent())
-        player[network]!!.needsSync = false // Prevent player on server being overwritten
-        return player
+        player.add(IgnoreSyncFlag())
     }
 
     // Initialize all rendering components

@@ -20,12 +20,15 @@ import xyz.angm.terra3d.common.networking.ChunksUpdate
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
 
-private const val RENDER_DIST_CHUNKS = 3
+const val RENDER_DIST_CHUNKS = 3
 private const val RAYCAST_REACH = 5f
 private const val RAYCAST_STEP = 0.02f
 
 /** The amount of time to spend rendering/meshing chunks per frame. */
 private const val RENDER_TIME = 4
+
+/** The amount of time to spend rendering/meshing chunks per frame during initialization, see [Terra3D]. */
+const val RENDER_TIME_LOAD = 10
 
 /** The maximum distance a chunk can have to the player before being discarded. */
 private const val MAX_CHUNK_DIST = 150f
@@ -90,11 +93,12 @@ class World(private val client: Client) : Disposable {
         }
     }
 
-    /** Continues loading any chunks still waiting for render. Should be called once per frame. */
-    fun update() {
+    /** Continues loading any chunks still waiting for render. Should be called once per frame.
+     * @param renderTime The time to spend rendering per call */
+    fun update(renderTime: Int = RENDER_TIME) {
         val startTime = System.currentTimeMillis()
         // Mesh until there's nothing left or we run out of time
-        while (!chunksWaitingForRender.isEmpty && (System.currentTimeMillis() - startTime) < RENDER_TIME) {
+        while (!chunksWaitingForRender.isEmpty && (System.currentTimeMillis() - startTime) < renderTime) {
             val next = chunksWaitingForRender.pop()
             next.mesh()
 
@@ -180,7 +184,8 @@ class World(private val client: Client) : Disposable {
         queueForRender(renderableChunk)
     }
 
-    private fun addChunks(chunks: Array<Chunk>) {
+    /** Adds given chunks to the world and queues them for render. */
+    fun addChunks(chunks: Array<Chunk>) {
         chunks.forEach { addChunk(it) }
     }
 

@@ -9,7 +9,10 @@ import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
-import xyz.angm.terra3d.common.*
+import xyz.angm.terra3d.common.CHUNK_SIZE
+import xyz.angm.terra3d.common.IntVector3
+import xyz.angm.terra3d.common.WORLD_BUFFER_DIST
+import xyz.angm.terra3d.common.fst
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
@@ -73,12 +76,15 @@ internal class WorldDatabase(private val server: Server) {
         return chunk
     }
 
-    /** Returns an array of chunks with matching x and z axes.
-     * @param position The chunks position, y axis is ignored.
-     * @return All chunks with matching x and z axes */
-    internal fun getChunkLine(position: IntVector3): Array<Chunk> {
+    /** Gets all chunks with matching x and z axes, adding them to out.
+     * @param position The chunks position, y axis is ignored. */
+    internal fun getChunkLine(position: IntVector3, out: GdxArray<Chunk>) {
         val dbChunks = transaction(db) { Chunks.select { (Chunks.x eq position.x) and (Chunks.z eq position.z) }.toList() }
-        return Array(dbChunks.size) { fst.asObject(dbChunks[it][Chunks.data].binaryStream.readBytes()) as Chunk }
+        for (chunk in dbChunks) {
+            val ch = fst.asObject(chunk[Chunks.data].binaryStream.readBytes()) as Chunk
+            out.add(ch)
+            unchangedChunks[ch.position] = ch
+        }
     }
 
     /** Get a chunk from one of the caches, if they have it. */

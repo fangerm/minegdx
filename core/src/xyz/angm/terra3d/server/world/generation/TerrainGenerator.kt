@@ -1,5 +1,6 @@
 package xyz.angm.terra3d.server.world.generation
 
+import ktx.collections.*
 import xyz.angm.terra3d.common.*
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.Chunk
@@ -34,26 +35,25 @@ class TerrainGenerator(val world: World) {
 
     /** Generates missing chunks in a line of chunks.
      * @param alreadyCreated Chunks already created in this line */
-    fun generateMissing(alreadyCreated: Array<Chunk>, position: IntVector3): Array<Chunk> {
+    fun generateMissing(alreadyCreated: GdxArray<Chunk>, position: IntVector3) {
         val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
         val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z, biomeMap)
 
-        val ret = Array(WORLD_HEIGHT_IN_CHUNKS) { chunkIndex ->
+        for (chunkIndex in 0 until WORLD_HEIGHT_IN_CHUNKS) {
             position.y = chunkIndex * CHUNK_SIZE
 
             // Search in cache first in case that a chunk was changed
             // and the DB version is outdated
-            val preexisting = world.getCachedChunk(position) ?: alreadyCreated.firstOrNull { it.position.y == position.y }
-            if (preexisting != null) preexisting
+            val preexisting = world.getCachedChunk(position) ?: alreadyCreated.firstOrNull { it.position == position }
+            val chunk = if (preexisting != null) preexisting
             else {
                 val chunk = Chunk(chunkPosition = IntVector3(position.x, chunkIndex * CHUNK_SIZE, position.z))
                 generateChunk(chunk, heightMap, biomeMap)
                 world.addChunk(chunk)
                 chunk
             }
+            alreadyCreated.add(chunk)
         }
-        Structure.update(world)
-        return ret
     }
 
     private fun generateChunk(chunk: Chunk, heightMap: Array<IntArray>, biomeMap: Array<Array<Biome>>) {

@@ -28,6 +28,9 @@ class Client() {
         listeners.add(listener)
     }
 
+    /** Remove all currently registered listeners. */
+    fun clearListeners() = listeners.clear()
+
     /** Send the specified packet to server. */
     fun send(packet: Any) {
         client.send(packet)

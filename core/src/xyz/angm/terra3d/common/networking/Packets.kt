@@ -23,9 +23,8 @@ class ChunkRequest(val position: IntVector3 = IntVector3()) : Packet
 
 /** Sent when the client joins the server.
  * @property uuid The UUID of the client connecting.
- * @property uuidEntity The UUID of the entity that shall be used.
  * @property name The name of the client. Only used if the client is connecting for the first time. */
-class JoinPacket(val name: String = "Player", val uuid: Int = 0, val uuidEntity: Int = 0) : Packet
+class JoinPacket(val name: String = "Player", val uuid: Int = 0) : Packet
 
 
 // Sent by server
@@ -38,9 +37,13 @@ class ChunksUpdate(val chunks: Array<Chunk> = emptyArray()) : Packet
  * This can be sent by either client or server; server should echo to all clients. */
 typealias BlockUpdate = Block
 
-/** Contains all entities on the server. Sent to the client on first connect.
- * @property entities All entities on the server. */
-class EntitiesPacket(val entities: Array<Entity> = emptyArray()) : Packet
+/** A packet sent on first connect as a response to [JoinPacket].
+ * Contains all data required by the client to begin init and world loading. */
+class InitPacket(
+    val player: Entity = Entity(),
+    val entities: Array<Entity> = emptyArray(),
+    val world: Array<Chunk> = emptyArray()
+) : Packet
 
 
 // Sent by both
