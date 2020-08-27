@@ -114,8 +114,7 @@ class Server(
     internal fun onDisconnected(connection: Connection) {
         val player = players[connection.id] ?: return
         save.savePlayer(player)
-        player.add(RemoveFlag())
-        player[network]!!.needsSync = true
+        RemoveFlag.flag(player)
         log.info { "[SERVER] Disconnected from connection id ${connection.id}." }
     }
 

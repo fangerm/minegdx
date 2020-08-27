@@ -94,7 +94,7 @@ class PlayerSystem(
         engine.getEntitiesFor(allDroppedItems).forEach {
             if (it[item]!!.pickupTimeout <= 0f && tmpV.set(it[position]!!).dst(tmpV2.set(player[position]!!)) < 2f) {
                 playerC.inventory += it[item]!!.item
-                it.add(RemoveFlag())
+                RemoveFlag.flag(it)
             }
         }
     }

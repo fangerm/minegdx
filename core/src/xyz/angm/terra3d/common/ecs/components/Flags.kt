@@ -1,6 +1,9 @@
 package xyz.angm.terra3d.common.ecs.components
 
 import com.badlogic.ashley.core.Component
+import com.badlogic.ashley.core.Entity
+import ktx.ashley.get
+import xyz.angm.terra3d.common.ecs.network
 
 
 /*
@@ -12,7 +15,16 @@ import com.badlogic.ashley.core.Component
 class NoPhysicsFlag : Component
 
 /** Flags an entity to be removed from the engine; happens after the current update cycle. */
-class RemoveFlag : Component
+class RemoveFlag private constructor() : Component {
+    companion object {
+        /** Mark an entity to be scheduled for removal.
+         * Will also ensure it syncs if needed. */
+        fun flag(entity: Entity) {
+            entity.add(RemoveFlag())
+            entity[network]?.needsSync = true
+        }
+    }
+}
 
 /** Ignores the entity containing it when receiving it over network. */
 class IgnoreSyncFlag : Component
