@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.VertexAttributes
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.g3d.*
+import com.badlogic.gdx.graphics.g3d.ModelCache
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.graphics.g3d.model.Node
 import com.badlogic.gdx.graphics.g3d.model.NodePart
@@ -24,18 +25,19 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
 
     private val dimensions = Vector3(CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat())
     private val positionCentered = position.toV3().add(CHUNK_SIZE / 2f, CHUNK_SIZE / 2f, CHUNK_SIZE / 2f)
+
     @Transient
-    private var model = ModelInstance(Model())
+    private var model = ModelCache()
 
     /** Renders itself. */
     fun render(modelBatch: ModelBatch, environment: Environment) = modelBatch.render(model, environment)
 
-    override fun dispose() = model.model.dispose()
+    override fun dispose() = model.dispose()
 
     /** Called when the chunk is in the rendering queue. Will create the model.
      * This is a greedy meshing implementation. It's abridged from https://eddieabbondanz.io/post/voxel/greedy-mesh/. */
     fun mesh() {
-        model.model.dispose()
+        model.begin()
         Builder.begin()
 
         for (face in 0 until 6) {
@@ -133,8 +135,10 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
             }
         }
 
-        model = ModelInstance(Builder.end())
-        model.transform.setToTranslation(position.toV3(tmpV3))
+        val modelInst = ModelInstance(Builder.end())
+        modelInst.transform.setToTranslation(position.toV3(tmpV3))
+        model.add(modelInst)
+        model.end()
     }
 
     private fun isBlockFaceVisible(pos: ArrIV3, axis: Int, backFace: Boolean): Boolean {

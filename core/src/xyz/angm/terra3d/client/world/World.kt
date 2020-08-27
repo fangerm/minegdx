@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Disposable
-import com.badlogic.gdx.utils.ObjectMap
+import com.badlogic.gdx.utils.OrderedMap
 import ktx.collections.*
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.common.CHUNK_SIZE
@@ -27,6 +27,9 @@ private const val RAYCAST_STEP = 0.02f
 /** The amount of time to spend rendering/meshing chunks per frame. */
 private const val RENDER_TIME = 4
 
+/** The maximum distance a chunk can have to the player before being discarded. */
+private const val MAX_CHUNK_DIST = 150f
+
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
 class World(private val client: Client) : Disposable {
@@ -37,7 +40,7 @@ class World(private val client: Client) : Disposable {
     private val tmpV1 = Vector3()
     private val tmpV2 = Vector3()
 
-    private val chunks = ObjectMap<IntVector3, RenderableChunk>()
+    private val chunks = OrderedMap<IntVector3, RenderableChunk>()
     private val chunksWaitingForRender = com.badlogic.gdx.utils.Array<RenderableChunk>()
 
     init {
@@ -53,7 +56,8 @@ class World(private val client: Client) : Disposable {
         }
     }
 
-    /** Requests any chunks that are near the specified location from the server if they're not already loaded.
+    /** Requests any chunks that are near the specified location from the server if they're not already loaded,
+     * and unloads far away chunks.
      * @param position The position to check. Should be the player's position. */
     fun updateLoadedChunks(position: IntVector3) {
         for (x in 0..RENDER_DIST_CHUNKS) {
@@ -68,6 +72,19 @@ class World(private val client: Client) : Disposable {
                 if (getChunk(chunkPosition) == null) requestChunk(chunkPosition)
             }
         }
+
+        // Post a runnable since disposing gl data needs to happen on the main thread
+        Gdx.app.postRunnable {
+            // Iterate chunks and remove all that are too far
+            var i = 0
+            while (i < chunks.size) {
+                val pos = chunks.orderedKeys()[i]
+                if (pos.dist(position) > MAX_CHUNK_DIST) {
+                    chunks[pos]!!.dispose()
+                    chunks.removeIndex(i)
+                } else i++
+            }
+        }
     }
 
     /** Continues loading any chunks still waiting for render. Should be called once per frame. */
@@ -77,6 +94,11 @@ class World(private val client: Client) : Disposable {
         while (!chunksWaitingForRender.isEmpty && (System.currentTimeMillis() - startTime) < RENDER_TIME) {
             val next = chunksWaitingForRender.pop()
             next.mesh()
+
+            if (next != chunks[next.position]) {
+                chunks[next.position]?.dispose()
+                chunks[next.position] = next
+            }
         }
     }
 
@@ -153,7 +175,6 @@ class World(private val client: Client) : Disposable {
     private fun addChunk(chunk: Chunk) {
         val renderableChunk = RenderableChunk(serverChunk = chunk)
         queueForRender(renderableChunk)
-        chunks[chunk.position] = renderableChunk
     }
 
     private fun addChunks(chunks: Array<Chunk>) {

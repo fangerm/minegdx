@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 import java.io.Serializable
+import kotlin.math.sqrt
 
 /** A 3D vector using integers as values.
  * @constructor Applies supplied values. Default values are (0, 0, 0)
@@ -117,6 +118,14 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
 
     /** Normalize this vector to a multiple of the specified number. */
     fun norm(num: Int) = this.div(num).mul(num)
+
+    /** @return the distance between this vector and the given vector */
+    fun dist(other: IntVector3): Float {
+        val a = other.x - this.x
+        val b = other.y - this.y
+        val c = other.z - this.z
+        return sqrt(a * a + b * b + (c * c).toDouble()).toFloat()
+    }
 
     /** String representation of all 3 axes */
     override fun toString() = "($x | $y | $z)"
