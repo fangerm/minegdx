@@ -24,6 +24,9 @@ private const val RENDER_DIST_CHUNKS = 3
 private const val RAYCAST_REACH = 5f
 private const val RAYCAST_STEP = 0.02f
 
+/** The amount of time to spend rendering/meshing chunks per frame. */
+private const val RENDER_TIME = 4
+
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
 class World(private val client: Client) : Disposable {
@@ -69,14 +72,11 @@ class World(private val client: Client) : Disposable {
 
     /** Continues loading any chunks still waiting for render. Should be called once per frame. */
     fun update() {
-        if (!chunksWaitingForRender.isEmpty) {
+        val startTime = System.currentTimeMillis()
+        // Mesh until there's nothing left or we run out of time
+        while (!chunksWaitingForRender.isEmpty && (System.currentTimeMillis() - startTime) < RENDER_TIME) {
             val next = chunksWaitingForRender.pop()
             next.mesh()
-
-            if (next != chunks[next.position]) {
-                chunks[next.position]?.dispose()
-                chunks[next.position] = next
-            }
         }
     }
 
@@ -152,15 +152,13 @@ class World(private val client: Client) : Disposable {
 
     private fun addChunk(chunk: Chunk) {
         val renderableChunk = RenderableChunk(serverChunk = chunk)
-        if (requiresRender(chunk)) queueForRender(renderableChunk)
-        else chunks[chunk.position] = renderableChunk
+        queueForRender(renderableChunk)
+        chunks[chunk.position] = renderableChunk
     }
 
     private fun addChunks(chunks: Array<Chunk>) {
         chunks.forEach { addChunk(it) }
     }
-
-    private fun requiresRender(chunk: Chunk) = chunk.position.y in 40..90
 
     /** @see com.badlogic.gdx.utils.Disposable */
     override fun dispose() {
