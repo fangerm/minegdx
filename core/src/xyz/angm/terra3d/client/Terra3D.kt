@@ -49,6 +49,7 @@ class Terra3D : Game() {
         client.clearListeners() // Remove the collectWorld listener
         val world = World(client)
         world.addChunks(data.world)
+        (screen as MenuScreen).setWorldLoading(world)
         Gdx.app.postRunnable { updateWorld(client, world, data) }
     }
 

@@ -19,6 +19,7 @@ import xyz.angm.terra3d.client.graphics.panels.menu.MessagePanel
 import xyz.angm.terra3d.client.graphics.panels.menu.ServerSyncPanel
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
+import xyz.angm.terra3d.client.world.World
 import xyz.angm.terra3d.common.world.WorldSaveManager
 import java.io.IOException
 
@@ -74,6 +75,13 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
     fun localServer(save: WorldSaveManager.Save) {
         pushPanel(ServerSyncPanel(this))
         game.localServer(save)
+    }
+
+    /** See [Terra3D], used after the user has selected a world
+     * and called after the server sent init data (which is when world meshing starts).
+     * This is used to display the remaining chunks to mesh to the user. */
+    fun setWorldLoading(world: World) {
+        (panelStack.current as ServerSyncPanel).secondPhase(world)
     }
 
     /** Called when [ResourceManager] has finished loading. Will remove the loading screen
