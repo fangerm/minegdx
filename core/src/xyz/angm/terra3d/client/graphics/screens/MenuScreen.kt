@@ -63,9 +63,9 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
 
     /** Connect to server or display error, see method in [Terra3D] */
     fun connectToServer(ip: String) {
-        pushPanel(ServerSyncPanel(this))
         try {
             game.connectToServer(ip)
+            pushPanel(ServerSyncPanel(this))
         } catch (e: IOException) {
             pushPanel(MessagePanel(this, I18N["multi.connect-failed"], callback = this::popPanel))
         }
