@@ -29,6 +29,4 @@ resourcePack:
   sizeMod: 1.0
 servers:
   "local": "127.0.0.1"
-playerName: "felix"
-clientUUID: 154902
 language: "English"
