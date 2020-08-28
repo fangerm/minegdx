@@ -72,7 +72,7 @@ object ResourceManager {
     /** Turns a local resource path into the full path for the current pack.
      * If the pack does not contain the file, the default packs file path will be returned instead. */
     fun getFullPath(file: String) =
-        if (pack.containsFile(file)) "${pack.path}/$file"
+        if (assets.isLoaded("${pack.path}/$file") || pack.containsFile(file)) "${pack.path}/$file"
         else "${defaultPack.path}/$file"
 
     /** Returns the texture region specified, scaled to fit the current texture pack. */

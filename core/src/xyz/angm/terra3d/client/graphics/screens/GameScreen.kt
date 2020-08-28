@@ -1,3 +1,9 @@
+/*
+ * Developed by Felix Ang. (felix.ang@pm.me).
+ * Last modified on 7/5/19 4:00 PM.
+ * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
+ */
+
 package xyz.angm.terra3d.client.graphics.screens
 
 import com.badlogic.ashley.core.Engine
@@ -11,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.utils.PerformanceCounter
 import com.badlogic.gdx.utils.viewport.FitViewport
 import ktx.ashley.allOf
 import ktx.ashley.exclude
@@ -76,6 +83,7 @@ class GameScreen(
 ) : ScreenAdapter(), Screen {
 
     private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    val bench = PerformanceCounter("render")
 
     // 3D Graphics
     val cam = PerspectiveCamera(75f, WORLD_WIDTH, WORLD_HEIGHT)
@@ -110,6 +118,12 @@ class GameScreen(
         Gdx.gl.glClearColor(0.05f, 0.05f, 0.05f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
+        /* Uncomment this and the stop call at the end to enable performance profiling.
+        bench.tick(delta)
+        if (bench.time.count > 120) bench.reset()
+        bench.start()
+        */
+
         world.update()
         engine.update(delta)
 
@@ -121,6 +135,8 @@ class GameScreen(
 
         stage.act()
         stage.draw()
+
+        // bench.stop()
     }
 
     override fun pushPanel(panel: Panel) {

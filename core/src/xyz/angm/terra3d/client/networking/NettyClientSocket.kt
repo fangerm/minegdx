@@ -43,7 +43,7 @@ class NettyClientSocket(client: Client) : ClientSocketInterface(client) {
     }
 
     override fun send(packet: Any) {
-        future.channel().writeAndFlush(packet).sync()
+        future.channel().writeAndFlush(packet)
     }
 
     override fun close() {

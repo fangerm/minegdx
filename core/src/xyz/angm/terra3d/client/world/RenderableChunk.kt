@@ -23,7 +23,6 @@ import xyz.angm.terra3d.common.world.Chunk
 /** A chunk capable of rendering itself. Constructed from a regular chunk sent by the server. */
 class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disposable {
 
-    private val dimensions = Vector3(CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat())
     private val positionCentered = position.toV3().add(CHUNK_SIZE / 2f, CHUNK_SIZE / 2f, CHUNK_SIZE / 2f)
 
     @Transient
@@ -147,12 +146,14 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
         return blockA == blockB && blockB != 0 && faceVisible(currPos, direction, backFace)
     }
 
-    private fun getFromAIV3(pos: ArrIV3) = blockTypes[pos[0]][pos[1]][pos[2]]
+    private fun getFromAIV3(pos: ArrIV3) = this[pos[0], pos[1], pos[2]]
 
     /** Returns if the chunk is visible to the given camera. */
     fun isVisible(cam: Camera) = cam.frustum.boundsInFrustum(positionCentered, dimensions)
 
     private companion object {
+
+        private val dimensions = Vector3(CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat())
 
         private const val attributes = VertexAttributes.Usage.Position.toLong() or
                 VertexAttributes.Usage.Normal.toLong() or VertexAttributes.Usage.TextureCoordinates.toLong()
@@ -264,11 +265,10 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
             }
 
             private fun getRegion(texture: String): TextureRegion {
-                return regions[texture] ?: {
-                    val tex = ResourceManager.get<Texture>(texture)
-                    tex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
-                    TextureRegion(tex)
-                }()
+                if (regions[texture] != null) return regions[texture]
+                val tex = ResourceManager.get<Texture>(texture)
+                tex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
+                return TextureRegion(tex)
             }
         }
     }

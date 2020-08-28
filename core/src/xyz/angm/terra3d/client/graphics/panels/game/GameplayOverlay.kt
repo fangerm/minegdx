@@ -1,3 +1,9 @@
+/*
+ * Developed by Felix Ang. (felix.ang@pm.me).
+ * Last modified on 6/21/19 6:57 PM.
+ * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
+ */
+
 package xyz.angm.terra3d.client.graphics.panels.game
 
 import com.badlogic.gdx.Gdx
@@ -65,7 +71,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         blockTooltip.setPosition(0f, WORLD_HEIGHT, Align.topLeft)
         hotbarItems.setPosition(hotbar.x + 6, hotbar.y + 6)
         crosshair.setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, Align.center)
-        debugLabel.setPosition(5f, WORLD_HEIGHT - 150, Align.topLeft)
+        debugLabel.setPosition(5f, WORLD_HEIGHT - 175, Align.topLeft)
         healthBar.setPosition(hotbar.x, hotbar.height + 6, Align.bottomLeft)
         hungerBar.setPosition(hotbar.x + hotbar.width + 16, hotbar.height + 6, Align.bottomRight)
         chat.setPosition(10f, 90f)
@@ -100,7 +106,9 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
     private fun getDebugLabelString() =
         """
         FPS: ${Gdx.graphics.framesPerSecond}
-        Time since last frame: ${Gdx.graphics.deltaTime}
+        Time since last frame: ${(Gdx.graphics.deltaTime * 1000).toInt()}ms
+        Average time in render(): ${(screen.bench.time.average * 1000).toInt()}ms
+        Mean time in render(): ${(screen.bench.time.mean.mean * 1000).toInt()}ms
 
         OpenGL ${Gdx.graphics.glVersion.majorVersion}: ${Gdx.graphics.glVersion.rendererString}
         Display: ${Gdx.graphics.displayMode}

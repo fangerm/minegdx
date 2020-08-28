@@ -11,10 +11,7 @@ import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
 import xyz.angm.terra3d.common.ecs.components.*
 import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.Item
-import xyz.angm.terra3d.common.networking.ChatMessagePacket
-import xyz.angm.terra3d.common.networking.ChunkRequest
-import xyz.angm.terra3d.common.networking.ChunksUpdate
-import xyz.angm.terra3d.common.networking.JoinPacket
+import xyz.angm.terra3d.common.networking.*
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
 import kotlin.reflect.KClass
@@ -25,7 +22,7 @@ val yaml = Yaml()
 /** A FST serializer used for network communication and world storage. */
 val fst = createFST(
     // Packets
-    ChunkRequest::class, JoinPacket::class,
+    ChunkRequest::class, JoinPacket::class, InitPacket::class,
     ChunksUpdate::class, ChatMessagePacket::class,
 
     // Components
@@ -47,6 +44,7 @@ private fun createFST(vararg classes: KClass<out Any>): FSTConfiguration {
     classes.forEach { fst.registerClass(it.java) }
 
     fst.registerSerializer(Entity::class.java, FSTEntitySerializer(), true)
+    fst.registerSerializer(Chunk::class.java, Chunk.FSTChunkSerializer(), true)
     return fst
 }
 

@@ -49,11 +49,11 @@ class NettyServerSocket(server: Server) : ServerSocketInterface(server) {
     }
 
     override fun send(packet: Any, connection: Connection) {
-        (connection as ChannelConnection).channel.writeAndFlush(packet).sync()
+        (connection as ChannelConnection).channel.writeAndFlush(packet)
     }
 
     override fun sendAll(packet: Any) {
-        allChannels.writeAndFlush(packet).sync()
+        allChannels.writeAndFlush(packet)
     }
 
     override fun closeConnection(connection: Connection) {

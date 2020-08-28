@@ -54,7 +54,7 @@ class World(private val server: Server) {
      * @return All chunks with matching x and z axis */
     fun getChunkLine(position: IntVector3): Array<Chunk> {
         tmpIV.set(position).norm(CHUNK_SIZE).y = 0
-        val out = GdxArray<Chunk>(16)
+        val out = GdxArray<Chunk>(false, 16, Chunk::class.java)
         database.getChunkLine(tmpIV, out)
         generator.generateMissing(out, tmpIV)
         Structure.update(this)
