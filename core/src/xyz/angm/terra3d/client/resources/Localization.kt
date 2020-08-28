@@ -23,7 +23,7 @@ import java.util.*
 object I18N {
 
     private val bundles = ObjectMap<String, I18NBundle>()
-    var bundle: I18NBundle
+    private var bundle: I18NBundle
 
     init {
         val info = yaml.decodeFromString(

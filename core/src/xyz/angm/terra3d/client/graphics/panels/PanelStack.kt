@@ -17,7 +17,7 @@ private val TRANSITION = Interpolation.pow3
 class PanelStack : Actor(), Disposable {
 
     private val panels = Array<Panel>(true, 5)
-    val current get() = panels.last()
+    val current get() = panels.last()!!
     val panelsInStack: Int
         get() = panels.size
 

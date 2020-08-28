@@ -111,7 +111,6 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
     /** When a slot is no longer hovered */
     fun itemLeft() = tooltip.update(item = null)
 
-    /** See [com.badlogic.gdx.scenes.scene2d.Actor.act] */
     override fun act(delta: Float) {
         super.act(delta)
         heldItemActor?.setPosition(Gdx.input.x + heldItemOffsetX, (WORLD_HEIGHT - Gdx.input.y) + heldItemOffsetY)

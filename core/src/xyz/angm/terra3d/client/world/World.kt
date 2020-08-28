@@ -27,7 +27,7 @@ private const val RAYCAST_STEP = 0.02f
 /** The amount of time to spend rendering/meshing chunks per frame. */
 private const val RENDER_TIME = 4
 
-/** The amount of time to spend rendering/meshing chunks per frame during initialization, see [Terra3D]. */
+/** The amount of time to spend rendering/meshing chunks per frame during initialization, see [xyz.angm.terra3d.client.Terra3D]. */
 const val RENDER_TIME_LOAD = 10
 
 /** The maximum distance a chunk can have to the player before being discarded. */

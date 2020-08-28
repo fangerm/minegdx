@@ -43,7 +43,7 @@ class ServerSyncPanel(screen: MenuScreen) : Panel(screen) {
 
     }
 
-    /** See [MenuScreen.setWorldLoading] and [Terra3D], called when
+    /** See [MenuScreen.setWorldLoading] and [xyz.angm.terra3d.client.Terra3D], called when
      * server is connected and world will start meshing. */
     fun secondPhase(world: World) {
         this.world = world

@@ -33,7 +33,7 @@ class PhysicsSystem(
     private val blockBelow = Vector3()
     private val blockAbove = Vector3()
 
-    /** Update the entities position based on a very inaccurate (TODO?) physics simulation. */
+    /** Update the entities position based on a very inaccurate physics simulation. */
     override fun processEntity(entity: Entity, delta: Float) {
         val position = entity[position]!!
         val velocity = entity[velocity]!!

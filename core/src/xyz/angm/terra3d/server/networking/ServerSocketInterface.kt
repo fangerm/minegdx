@@ -4,7 +4,7 @@ import com.badlogic.gdx.utils.Array
 import xyz.angm.terra3d.server.Server
 
 /** A socket used for communicating with clients.
- * For approriate events, use [Server.connect], [Server.receive] and [Server.disconnect].
+ * For appropriate events, use [Server.onConnected], [Server.received] and [Server.onDisconnected].
  * @property connections A list of all active connections. See [Connection] */
 abstract class ServerSocketInterface(internal val server: Server) {
 

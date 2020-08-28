@@ -126,9 +126,6 @@ data class Item(
                 return newString
             }
 
-            /** If the given type of item exists. Useful for player input validation. */
-            fun typeExists(identifier: String) = items.keys().contains(identifier)
-
             /** Reload all names; called on lang change by [I18N]. */
             fun reloadNames() {
                 items.values().forEach { it.updateName() }

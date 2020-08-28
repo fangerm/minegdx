@@ -45,7 +45,7 @@ open class Chunk private constructor(
     fun blockExists(p: IntVector3) = p.isInBounds(0, CHUNK_SIZE) && blockExists(p.x, p.y, p.z)
 
     /** @see blockExists */
-    protected fun blockExists(x: Int, y: Int, z: Int) = this[x, y, z] != 0
+    private fun blockExists(x: Int, y: Int, z: Int) = this[x, y, z] != 0
 
     /** Sets the block.
      * @param position The position to place it at

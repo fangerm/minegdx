@@ -14,7 +14,7 @@ import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.configuration
 
 /** Main options menu. */
-class OptionsPanel(private val screen: Screen, parent: MainMenuPanel? = null) : Panel(screen) {
+class OptionsPanel(screen: Screen, parent: MainMenuPanel? = null) : Panel(screen) {
 
     init {
         reload(screen, parent)

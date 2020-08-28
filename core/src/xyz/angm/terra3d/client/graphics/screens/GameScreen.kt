@@ -232,14 +232,12 @@ class GameScreen(
         stage.addActor(uiPanels)
 
         // Lighting
-        // TODO sun and moon cycle
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
         environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f))
 
         // Sound
         client.addListener {
             if (it is BlockUpdate) {
-                // TODO find block type on block break without tightly coupling to world
                 val sound = it.properties?.block?.placedSound
                 if (sound != null) soundPlayer.playSound3D(sound, it.position.toV3())
             }

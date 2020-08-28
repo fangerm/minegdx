@@ -94,7 +94,7 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     /** Multiplies all axes.
      * @param num Value to multiply by.
      * @return Itself */
-    fun mul(num: Int): IntVector3 {
+    private fun mul(num: Int): IntVector3 {
         x *= num
         y *= num
         z *= num

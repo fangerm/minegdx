@@ -10,7 +10,7 @@ import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.playerM
 
-/** Mouse sensivity. TODO: Make this configurable. */
+/** Mouse sensitivity. TODO: Make this configurable. */
 private const val SENSITIVITY = 0.1f
 
 /** Amount of time the game will wait until registering a right click again when holding the button. */
