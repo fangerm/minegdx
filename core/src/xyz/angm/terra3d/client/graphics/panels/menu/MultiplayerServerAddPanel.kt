@@ -26,7 +26,7 @@ class MultiplayerServerAddPanel(screen: MenuScreen, parent: MultiplayerMenuPanel
 
             label(I18N["multi-add.ip"]) { it.pad(20f).row() }
 
-            val ipInputField = textField { it.width(400f).pad(20f).row() }
+            val ipInputField = textField { it.width(400f).pad(20f).padBottom(40f).row() }
 
             textButton(I18N["multi.add"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
@@ -36,6 +36,9 @@ class MultiplayerServerAddPanel(screen: MenuScreen, parent: MultiplayerMenuPanel
                     screen.popPanel()
                 }
             }
+
+            backButton(this, screen)
+            row()
 
             onKeyDown { keycode ->
                 when (keycode) {

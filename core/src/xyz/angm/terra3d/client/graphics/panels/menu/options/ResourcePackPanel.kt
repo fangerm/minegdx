@@ -52,8 +52,10 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
                         })
                     }
                 }
-                it.colspan(3).pad(50f, 0f, 50f, 0f).expand().row()
+                it.colspan(4).pad(50f, 0f, 50f, 0f).expand().row()
             }
+
+            backButton(this, screen)
 
             textButton(I18N["apply"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
@@ -70,11 +72,6 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
             textButton(I18N["res.import"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick { importDialog() }
-            }
-
-            textButton(I18N["cancel"]) {
-                it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
-                onClick { screen.popPanel() }
             }
 
             setFillParent(true)

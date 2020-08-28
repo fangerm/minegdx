@@ -27,6 +27,7 @@ resourcePack:
   path: "resourcepacks/default"
   description: "Pack shipped with MineGDX."
   sizeMod: 1.0
-servers:
-  "local": "127.0.0.1"
+servers: {}
+playerName: ""
+clientUUID: 0
 language: "English"

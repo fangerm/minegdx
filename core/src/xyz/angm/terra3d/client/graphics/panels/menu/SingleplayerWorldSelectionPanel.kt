@@ -1,6 +1,7 @@
 package xyz.angm.terra3d.client.graphics.panels.menu
 
 import ktx.actors.onClick
+import ktx.actors.onClickEvent
 import ktx.actors.plus
 import ktx.scene2d.*
 import xyz.angm.terra3d.client.graphics.Skin
@@ -29,15 +30,22 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
 
                             label("${I18N["single.seed"]} ${save.seed}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
 
-                            textButton(I18N["single.delete"], style = "server-delete") {
+                            val deleteBtn = textButton(I18N["single.delete"], style = "server-delete") {
                                 it.right().row()
                                 onClick {
-                                    WorldSaveManager.deleteWorld(save.location)
-                                    reload(screen)
+                                    screen.pushPanel(ConfirmationPanel(screen) {
+                                        if (it) {
+                                            WorldSaveManager.deleteWorld(save.location)
+                                            reload(screen)
+                                            this@SingleplayerWorldSelectionPanel.isVisible = true // Regrab focus lost by reload
+                                        }
+                                        screen.popPanel()
+                                    })
                                 }
                             }
 
-                            onClick {
+                            onClickEvent { event, actor ->
+                                if (event.target.parent == deleteBtn) return@onClickEvent
                                 screen.localServer(save)
                             }
 
@@ -45,8 +53,10 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
                         }
                     }
                 }
-                it.pad(50f, 0f, 50f, 0f).expand().row()
+                it.pad(50f, 0f, 50f, 0f).expand().colspan(2).row()
             }
+
+            backButton(this, screen)
 
             textButton(I18N["single.create"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)

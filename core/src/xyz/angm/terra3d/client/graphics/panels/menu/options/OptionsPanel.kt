@@ -40,8 +40,10 @@ class OptionsPanel(private val screen: Screen, parent: MainMenuPanel? = null) : 
                 box.onChange {
                     I18N.setLanguage(box.selected)
                     parent!!.reload(screen)
-                    screen.popPanel()
+                    reload(screen, parent)
+                    this@OptionsPanel.isVisible = true // Regrab focus lost by reload
                 }
+                box.inCell.colspan(2)
                 row()
             }
 
@@ -57,6 +59,11 @@ class OptionsPanel(private val screen: Screen, parent: MainMenuPanel? = null) : 
             textField(configuration.playerName) {
                 it.width(400f).pad(20f).row()
                 onKey { configuration.playerName = text }
+            }
+
+            textButton(I18N["back"]) {
+                it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2)
+                onClick { screen.popPanel() }
             }
 
             setFillParent(true)

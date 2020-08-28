@@ -1,6 +1,7 @@
 package xyz.angm.terra3d.client.graphics.panels.menu
 
 import ktx.actors.onClick
+import ktx.actors.onClickEvent
 import ktx.actors.plus
 import ktx.scene2d.*
 import xyz.angm.terra3d.client.graphics.Skin
@@ -29,23 +30,33 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
 
                             label("IP: ${server.value}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
 
-                            textButton(I18N["multi.delete"], style = "server-delete") {
+                            val deleteBtn = textButton(I18N["multi.delete"], style = "server-delete") {
                                 it.right().row()
                                 onClick {
-                                    configuration.removeServer(server.key)
-                                    screen.popPanel()
-                                    screen.pushPanel(MultiplayerMenuPanel(screen))
+                                    screen.pushPanel(ConfirmationPanel(screen) {
+                                        if (it) {
+                                            configuration.removeServer(server.key)
+                                            reload(screen)
+                                            this@MultiplayerMenuPanel.isVisible = true // Regrab focus lost by reload
+                                        }
+                                        screen.popPanel()
+                                    })
                                 }
                             }
 
-                            onClick { screen.connectToServer(server.value) }
+                            onClickEvent { event, actor ->
+                                if (event.target.parent == deleteBtn) return@onClickEvent
+                                screen.connectToServer(server.value)
+                            }
 
                             it.width(700f).pad(20f, 0f, 20f, 0f).row()
                         }
                     }
                 }
-                it.colspan(2).pad(50f, 0f, 50f, 0f).expand().row()
+                it.colspan(3).pad(50f, 0f, 50f, 0f).expand().row()
             }
+
+            backButton(this, screen)
 
             textButton(I18N["multi.add"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)

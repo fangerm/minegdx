@@ -25,7 +25,7 @@ class SingleplayerWorldCreatePanel(screen: MenuScreen, parent: SingleplayerWorld
             focusedActor = nameField
 
             label(I18N["single-add.seed"]) { it.pad(20f).row() }
-            val seedField = textField(System.currentTimeMillis().toString()) { it.width(400f).pad(20f).row() }
+            val seedField = textField(System.currentTimeMillis().toString()) { it.width(400f).pad(20f).padBottom(40f).row() }
 
             textButton(I18N["single-add.button"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
@@ -35,6 +35,9 @@ class SingleplayerWorldCreatePanel(screen: MenuScreen, parent: SingleplayerWorld
                     screen.popPanel()
                 }
             }
+
+            backButton(this, screen)
+            row()
 
             onKeyDown { keycode ->
                 when (keycode) {
