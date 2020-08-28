@@ -11,6 +11,7 @@ import ktx.scene2d.textField
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.configuration
 
 /** Multiplayer panel for adding a server to the list. */
@@ -18,16 +19,16 @@ class MultiplayerServerAddPanel(screen: MenuScreen, parent: MultiplayerMenuPanel
 
     init {
         this + table {
-            label("Enter Server Name") { it.pad(20f).row() }
+            label(I18N["multi-add.name"]) { it.pad(20f).row() }
 
             val nameInputField = textField { it.width(400f).pad(20f).row() }
             focusedActor = nameInputField
 
-            label("Enter Server IP:") { it.pad(20f).row() }
+            label(I18N["multi-add.ip"]) { it.pad(20f).row() }
 
             val ipInputField = textField { it.width(400f).pad(20f).row() }
 
-            textButton("Add Server") {
+            textButton(I18N["multi.add"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
                 onClick {
                     configuration.addServer(nameInputField.text, ipInputField.text)

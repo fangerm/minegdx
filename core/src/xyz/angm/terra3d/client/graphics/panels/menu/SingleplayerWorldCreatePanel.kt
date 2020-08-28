@@ -11,6 +11,7 @@ import ktx.scene2d.textField
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.common.world.WorldSaveManager
 
 /** Panel for creating a new world/save. */
@@ -19,14 +20,14 @@ class SingleplayerWorldCreatePanel(screen: MenuScreen, parent: SingleplayerWorld
 
     init {
         this + table {
-            label("Enter A Name:") { it.pad(20f).row() }
+            label(I18N["single-add.name"]) { it.pad(20f).row() }
             val nameField = textField { it.width(400f).pad(20f).row() }
             focusedActor = nameField
 
-            label("Enter Seed:") { it.pad(20f).row() }
+            label(I18N["single-add.seed"]) { it.pad(20f).row() }
             val seedField = textField(System.currentTimeMillis().toString()) { it.width(400f).pad(20f).row() }
 
-            textButton("Create") {
+            textButton(I18N["single-add.button"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
                 onClick {
                     WorldSaveManager.addWorld(nameField.text, seedField.text)

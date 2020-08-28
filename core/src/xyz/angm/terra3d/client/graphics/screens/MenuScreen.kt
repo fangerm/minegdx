@@ -17,6 +17,7 @@ import xyz.angm.terra3d.client.graphics.panels.menu.LoadingPanel
 import xyz.angm.terra3d.client.graphics.panels.menu.MainMenuPanel
 import xyz.angm.terra3d.client.graphics.panels.menu.MessagePanel
 import xyz.angm.terra3d.client.graphics.panels.menu.ServerSyncPanel
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.world.WorldSaveManager
 import java.io.IOException
@@ -65,7 +66,7 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
         try {
             game.connectToServer(ip)
         } catch (e: IOException) {
-            pushPanel(MessagePanel(this, "Failed to connect!", "Back", this::popPanel))
+            pushPanel(MessagePanel(this, I18N["multi.connect-failed"], callback = this::popPanel))
         }
     }
 

@@ -8,7 +8,7 @@ keybinds:
     "L-Ctrl": "sprint"
     "F11": "fullscreen"
     "L-Shift": "sneak"
-    "F3": "debugMenu"
+    "F3": "debugInfo"
     "Q": "dropItem"
     "1": "hotbarSlot1"
     "2": "hotbarSlot2"

@@ -13,6 +13,7 @@ import xyz.angm.terra3d.client.actions.PlayerAction
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.Screen
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.configuration
 
 /** Options submenu for keybinds. */
@@ -47,7 +48,7 @@ class KeybindsPanel(private var screen: Screen) : Panel(screen) {
         table.clearChildren()
 
         configuration.keybinds.getAllSorted().forEach { action ->
-            val label = Label("${action.second.name}:", skin)
+            val label = Label("${I18N["keybind.${action.second.type}"]}:", skin)
             table.add(label).pad(20f)
 
             val button = TextButton(Input.Keys.toString(action.first), skin)

@@ -26,6 +26,7 @@ import xyz.angm.terra3d.client.graphics.panels.game.GameplayOverlay
 import xyz.angm.terra3d.client.graphics.panels.menu.MessagePanel
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.client.networking.LocalServer
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.client.world.World
@@ -176,14 +177,14 @@ class GameScreen(
     // Initialize everything not render-related
     private fun initState() {
         // Network
-        client.disconnectListener = { Gdx.app.postRunnable { returnToMenu("Disconnected from server.") } }
+        client.disconnectListener = { Gdx.app.postRunnable { returnToMenu(I18N["disconnected-from-server"]) } }
         val netSystem = engine.getSystem(NetworkSystem::class.java)
         client.addListener {
             when (it) {
                 is Entity -> netSystem.receive(it)
             }
         }
-        client.send(ChatMessagePacket("[CYAN]${player[playerM]!!.name}[LIGHT_GRAY] joined the game!"))
+        client.send(ChatMessagePacket("[CYAN]${player[playerM]!!.name}[LIGHT_GRAY] ${I18N["joined-game"]}"))
 
         // Input
         Gdx.input.inputProcessor = inputHandler

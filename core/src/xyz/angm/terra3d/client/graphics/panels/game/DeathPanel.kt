@@ -9,6 +9,7 @@ import ktx.scene2d.textButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.common.ecs.health
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.ecs.position
@@ -20,9 +21,9 @@ class DeathPanel(screen: GameScreen) : Panel(screen) {
         background = skin.getDrawable("red-transparent")
 
         this + table {
-            label("You died!", style = "default-48pt") { it.pad(75f).row() }
+            label(I18N["death.message"], style = "default-48pt") { it.pad(75f).row() }
 
-            textButton("Respawn") {
+            textButton(I18N["death.respawn"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).row()
                 onClick {
                     screen.player[position]!!.set(screen.player[playerM]!!.spawnPosition)

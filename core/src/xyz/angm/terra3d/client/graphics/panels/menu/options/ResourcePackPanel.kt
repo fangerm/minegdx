@@ -18,6 +18,7 @@ import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.configuration
 
@@ -54,7 +55,7 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
                 it.colspan(3).pad(50f, 0f, 50f, 0f).expand().row()
             }
 
-            textButton("Apply") {
+            textButton(I18N["apply"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick {
                     if (ResourceManager.pack != selectedPack) {
@@ -66,12 +67,12 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
                 }
             }
 
-            textButton("Import MC pack") {
+            textButton(I18N["res.import"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick { importDialog() }
             }
 
-            textButton("Cancel") {
+            textButton(I18N["cancel"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick { screen.popPanel() }
             }
@@ -103,7 +104,7 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
                 }
                 loadingThread.start()
 
-                val messageLabel = Label("Please wait...", skin, "pack-loading")
+                val messageLabel = Label(I18N["wait"], skin, "pack-loading")
                 messageLabel.width = WORLD_WIDTH
                 messageLabel.height = WORLD_HEIGHT
                 messageLabel.setAlignment(Align.center)

@@ -6,6 +6,7 @@ import ktx.scene2d.*
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.common.world.WorldSaveManager
 
 /** Singleplayer world selection. */
@@ -26,9 +27,9 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
 
                             label(save.name) { it.pad(5f).colspan(2).expandX().left().row() }
 
-                            label("Seed: ${save.seed}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
+                            label("${I18N["single.seed"]} ${save.seed}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
 
-                            textButton("Delete", style = "server-delete") {
+                            textButton(I18N["single.delete"], style = "server-delete") {
                                 it.right().row()
                                 onClick {
                                     WorldSaveManager.deleteWorld(save.location)
@@ -47,7 +48,7 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
                 it.pad(50f, 0f, 50f, 0f).expand().row()
             }
 
-            textButton("Create World") {
+            textButton(I18N["single.create"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick { screen.pushPanel(SingleplayerWorldCreatePanel(screen, this@SingleplayerWorldSelectionPanel)) }
             }

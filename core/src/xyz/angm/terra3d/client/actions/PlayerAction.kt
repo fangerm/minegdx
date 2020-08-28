@@ -13,12 +13,10 @@ import xyz.angm.terra3d.common.ecs.velocity
 
 /** An action represents a function to be executed when the player presses a key.
  * @property type The internal name for an action, ex. 'walkLeft'
- * @property name The name shown to the player, ex. 'Walk Left'
  * @property keyDown Function to be executed when the key is pressed down
  * @property keyUp Function to be executed when the key is released, can be null (which will be an empty function) */
 data class PlayerAction(
     val type: String,
-    val name: String,
     val keyDown: (GameScreen) -> Unit,
     val keyUp: (GameScreen) -> Unit = {}
 )
@@ -29,27 +27,27 @@ object PlayerActions {
     private val actions = ObjectMap<String, PlayerAction>()
 
     init {
-        addAction(PlayerAction("walkForward", "Walk Forward", { it.player[velocity]!!.x++ }, { it.player[velocity]!!.x-- }))
-        addAction(PlayerAction("walkBackward", "Walk Backward", { it.player[velocity]!!.x-- }, { it.player[velocity]!!.x++ }))
-        addAction(PlayerAction("walkRight", "Walk Right", { it.player[velocity]!!.z++ }, { it.player[velocity]!!.z-- }))
-        addAction(PlayerAction("walkLeft", "Walk Left", { it.player[velocity]!!.z-- }, { it.player[velocity]!!.z++ }))
+        addAction(PlayerAction("walkForward", { it.player[velocity]!!.x++ }, { it.player[velocity]!!.x-- }))
+        addAction(PlayerAction("walkBackward", { it.player[velocity]!!.x-- }, { it.player[velocity]!!.x++ }))
+        addAction(PlayerAction("walkRight", { it.player[velocity]!!.z++ }, { it.player[velocity]!!.z-- }))
+        addAction(PlayerAction("walkLeft", { it.player[velocity]!!.z-- }, { it.player[velocity]!!.z++ }))
 
-        addAction(PlayerAction("jump", "Jump", { it.playerInputSystem.jump() }))
-        addAction(PlayerAction("sneak", "Sneak", { it.playerInputSystem.sneak(true) }, { it.playerInputSystem.sneak(false) }))
-        addAction(PlayerAction("sprint", "Sprint", { it.playerInputSystem.sprint(true) }, { it.playerInputSystem.sprint(false) }))
-        addAction(PlayerAction("dropItem", "Drop Held Item", { it.playerInputSystem.dropItem() }))
+        addAction(PlayerAction("jump", { it.playerInputSystem.jump() }))
+        addAction(PlayerAction("sneak", { it.playerInputSystem.sneak(true) }, { it.playerInputSystem.sneak(false) }))
+        addAction(PlayerAction("sprint", { it.playerInputSystem.sprint(true) }, { it.playerInputSystem.sprint(false) }))
+        addAction(PlayerAction("dropItem", { it.playerInputSystem.dropItem() }))
 
-        addAction(PlayerAction("debugMenu", "Toggle Debug Menu", { it.gameplayPanel.toggleDebugInfo() }))
-        addAction(PlayerAction("pauseMenu", "Open Pause Menu", { it.pushPanel(PausePanel(it)) }))
-        addAction(PlayerAction("chat", "Chat", { it.pushPanel(ChatPanel(it)) }))
-        addAction(PlayerAction("openInventory", "Open Inventory", { it.pushPanel(PlayerInventoryPanel(it)) }))
-        addAction(PlayerAction("fullscreen", "Toggle Fullscreen", {
+        addAction(PlayerAction("debugInfo", { it.gameplayPanel.toggleDebugInfo() }))
+        addAction(PlayerAction("pauseMenu", { it.pushPanel(PausePanel(it)) }))
+        addAction(PlayerAction("chat", { it.pushPanel(ChatPanel(it)) }))
+        addAction(PlayerAction("openInventory", { it.pushPanel(PlayerInventoryPanel(it)) }))
+        addAction(PlayerAction("fullscreen", {
             if (Gdx.graphics.isFullscreen) Gdx.graphics.setWindowedMode(Gdx.graphics.displayMode.width, Gdx.graphics.displayMode.height)
             else Gdx.graphics.setFullscreenMode(Gdx.graphics.displayMode)
         }))
 
         for (i in 1..9) {
-            addAction(PlayerAction("hotbarSlot$i", "Select Hotbar Item $i", {
+            addAction(PlayerAction("hotbarSlot$i", {
                 it.player[playerM]!!.inventory.hotbarPosition = i - 1
                 it.gameplayPanel.updateHotbarSelector(it.player[playerM]!!.inventory.hotbarPosition)
             }))

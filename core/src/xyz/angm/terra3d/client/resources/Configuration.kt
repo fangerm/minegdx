@@ -95,7 +95,7 @@ class Configuration {
         fun getAllSorted(): List<Pair<Int, PlayerAction>> {
             val array = Array<Pair<Int, PlayerAction>>(binds.size)
             binds.entries().forEach { array.add(Pair(it.key, it.value)) }
-            return array.sortedBy { it.second.name }
+            return array.sortedBy { I18N["keybind.${it.second.type}"] }
         }
 
         /** Register a keybind.
