@@ -26,6 +26,7 @@ class Structure private constructor(private val calls: Array<DrawCall>) {
 
         /** Update all structure's pending locations. */
         fun update(world: World) {
+            // TODO: This is broken. #44
             structures.values().forEach { it.update(world) }
             world.flushBlockQueue() // Individual structures queue their blocks
         }

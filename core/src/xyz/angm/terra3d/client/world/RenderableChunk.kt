@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.ObjectMap
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.CHUNK_SIZE
+import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.Chunk
 
@@ -27,6 +28,7 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
 
     @Transient
     private var model = ModelCache()
+    internal var isMeshed = false
 
     /** Renders itself. */
     fun render(modelBatch: ModelBatch, environment: Environment) = modelBatch.render(model, environment)
@@ -35,7 +37,7 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
 
     /** Called when the chunk is in the rendering queue. Will create the model.
      * This is a greedy meshing implementation. It's abridged from https://eddieabbondanz.io/post/voxel/greedy-mesh/. */
-    fun mesh() {
+    internal fun mesh(world: World) {
         model.begin()
         Builder.begin()
 
@@ -60,7 +62,7 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
 
                         val block = getFromAIV3(startPos)
                         // Skip this block if it's been merged already, is air, or isn't visible
-                        if (isMerged(startPos[workAxis1], startPos[workAxis2]) || block == 0 || !faceVisible(startPos, direction, isBackFace))
+                        if (isMerged(startPos[workAxis1], startPos[workAxis2]) || block == 0 || !faceVisible(world, startPos, direction, isBackFace))
                             continue
 
                         quadSize.reset() // Making a new quad, reset
@@ -68,7 +70,7 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
                         // Figure out width & save
                         currPos.set(startPos)
                         while (currPos[workAxis2] < CHUNK_SIZE
-                            && canMerge(direction, isBackFace)
+                            && canMerge(world, direction, isBackFace)
                             && !isMerged(currPos[workAxis1], currPos[workAxis2])
                         ) currPos[workAxis2]++
                         quadSize[workAxis2] = currPos[workAxis2] - startPos[workAxis2]
@@ -76,12 +78,12 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
                         // Figure out height & save
                         currPos.set(startPos)
                         while (currPos[workAxis1] < CHUNK_SIZE
-                            && canMerge(direction, isBackFace)
+                            && canMerge(world, direction, isBackFace)
                             && !isMerged(currPos[workAxis1], currPos[workAxis2])
                         ) {
                             currPos[workAxis2] = startPos[workAxis2]
                             while (currPos[workAxis2] < CHUNK_SIZE
-                                && canMerge(direction, isBackFace)
+                                && canMerge(world, direction, isBackFace)
                                 && !isMerged(currPos[workAxis1], currPos[workAxis2])
                             ) currPos[workAxis2]++
 
@@ -130,26 +132,32 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
         modelInst.transform.setToTranslation(position.toV3(tmpV3))
         model.add(modelInst)
         model.end()
+        isMeshed = true
     }
 
     /** Is this face visible and needs to be rendered? */
-    private fun faceVisible(pos: ArrIV3, axis: Int, backFace: Boolean): Boolean {
+    private fun faceVisible(world: World, pos: ArrIV3, axis: Int, backFace: Boolean): Boolean {
         tmpAIV.set(pos)[axis] += if (backFace) -1 else 1
-        return (tmpAIV[axis] !in 0 until CHUNK_SIZE) || getFromAIV3(tmpAIV) == 0
+        return if (tmpAIV[axis] !in 0 until CHUNK_SIZE)
+            ((position.y + tmpAIV[1]) > -1) && !world.blockExists(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]), true)
+        else getFromAIV3(tmpAIV) == 0
     }
 
     /** Takes a face and returns if the block at currPos can be merged
      * with the current mesh. */
-    private fun canMerge(direction: Int, backFace: Boolean): Boolean {
+    private fun canMerge(world: World, direction: Int, backFace: Boolean): Boolean {
         val blockA = getFromAIV3(startPos)
         val blockB = getFromAIV3(currPos)
-        return blockA == blockB && blockB != 0 && faceVisible(currPos, direction, backFace)
+        return blockA == blockB && blockB != 0 && faceVisible(world, currPos, direction, backFace)
     }
 
     private fun getFromAIV3(pos: ArrIV3) = this[pos[0], pos[1], pos[2]]
 
-    /** Returns if the chunk is visible to the given camera. */
-    fun isVisible(cam: Camera) = cam.frustum.boundsInFrustum(positionCentered, dimensions)
+    /** Returns if the chunk is meshed and visible to the given camera. */
+    fun shouldRender(cam: Camera) = isMeshed && cam.frustum.boundsInFrustum(positionCentered, dimensions)
+
+    override fun hashCode() = position.hashCode()
+    override fun equals(other: Any?) = other is RenderableChunk && other.position == position
 
     private companion object {
 
@@ -165,6 +173,7 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
         private val normal = Vector3()
 
         private val tmpAIV = ArrIV3()
+        private val tmpIV = IntVector3()
         private val tmpV3 = Vector3()
         private val m = ArrIV3()
         private val n = ArrIV3()

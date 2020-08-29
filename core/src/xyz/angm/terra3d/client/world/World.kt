@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.OrderedMap
+import com.badlogic.gdx.utils.Queue
 import ktx.collections.*
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.common.CHUNK_SIZE
@@ -44,7 +45,7 @@ class World(private val client: Client) : Disposable {
     private val tmpV2 = Vector3()
 
     private val chunks = OrderedMap<IntVector3, RenderableChunk>()
-    private val chunksWaitingForRender = com.badlogic.gdx.utils.Array<RenderableChunk>()
+    private val chunksWaitingForRender = Queue<RenderableChunk>(400)
 
     val chunksLoaded: Int get() = chunks.size
     val waitingForRender: Int get() = chunksWaitingForRender.size
@@ -99,8 +100,8 @@ class World(private val client: Client) : Disposable {
         val startTime = System.currentTimeMillis()
         // Mesh until there's nothing left or we run out of time
         while (!chunksWaitingForRender.isEmpty && (System.currentTimeMillis() - startTime) < renderTime) {
-            val next = chunksWaitingForRender.pop()
-            next.mesh()
+            val next = chunksWaitingForRender.removeLast()
+            next.mesh(this)
 
             if (next != chunks[next.position]) {
                 chunks[next.position]?.dispose()
@@ -114,7 +115,7 @@ class World(private val client: Client) : Disposable {
      * @param cam The camera used for frustum culling.
      * @param environment The environment to render with. */
     fun render(modelBatch: ModelBatch, cam: PerspectiveCamera, environment: Environment) {
-        chunks.values().forEach { if (it.isVisible(cam)) it.render(modelBatch, environment) }
+        chunks.values().forEach { if (it.shouldRender(cam)) it.render(modelBatch, environment) }
     }
 
     private val last = IntVector3()
@@ -157,13 +158,27 @@ class World(private val client: Client) : Disposable {
         return chunk?.getBlock(tmpIV1.set(position).minus(chunk.position))
     }
 
-    /** @return If there's a block at the given position */
-    fun blockExists(position: IntVector3): Boolean {
+    /** @return If there's a block at the given position. */
+    fun blockExists(position: IntVector3, default: Boolean = false): Boolean {
         val chunk = getChunk(position)
-        return chunk?.blockExists(tmpIV3.set(position).minus(chunk.position)) ?: false
+        return chunk?.blockExists(tmpIV3.set(position).minus(chunk.position)) ?: default
     }
 
-    private fun queueForRender(chunk: RenderableChunk) = chunksWaitingForRender.add(chunk)
+    private fun queueForRender(chunk: RenderableChunk) {
+        chunksWaitingForRender.addFirst(chunk)
+
+        // TODO: don't do this
+        queueRerender(getChunk(tmpIV3.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
+        queueRerender(getChunk(tmpIV3.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
+        queueRerender(getChunk(tmpIV3.set(chunk.position).minus(0, 0, CHUNK_SIZE)))
+        queueRerender(getChunk(tmpIV3.set(chunk.position).add(CHUNK_SIZE, 0, 0)))
+        queueRerender(getChunk(tmpIV3.set(chunk.position).add(0, CHUNK_SIZE, 0)))
+        queueRerender(getChunk(tmpIV3.set(chunk.position).add(0, 0, CHUNK_SIZE)))
+    }
+
+    private fun queueRerender(chunk: RenderableChunk?) {
+        if (chunk?.isMeshed == true) chunksWaitingForRender.addFirst(chunk)
+    }
 
     private fun setBlock(position: IntVector3, item: Item?) {
         val block = if (item != null) Block(item, position) else Block(0, position)
@@ -182,6 +197,7 @@ class World(private val client: Client) : Disposable {
     private fun addChunk(chunk: Chunk) {
         val renderableChunk = RenderableChunk(serverChunk = chunk)
         queueForRender(renderableChunk)
+        if (!chunks.containsKey(renderableChunk.position)) chunks[renderableChunk.position] = renderableChunk
     }
 
     /** Adds given chunks to the world and queues them for render. */
