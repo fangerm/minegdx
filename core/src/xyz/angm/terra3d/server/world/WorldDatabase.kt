@@ -16,8 +16,8 @@ import xyz.angm.terra3d.common.fst
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
+import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
-import xyz.angm.terra3d.server.world.generation.TerrainGenerator
 import java.sql.Connection
 import javax.sql.rowset.serial.SerialBlob
 
@@ -81,6 +81,7 @@ internal class WorldDatabase(private val server: Server) {
     internal fun getChunkLine(position: IntVector3, out: GdxArray<Chunk>) {
         val dbChunks = transaction(db) { Chunks.select { (Chunks.x eq position.x) and (Chunks.z eq position.z) }.toList() }
         for (chunk in dbChunks) {
+            if (out.any { it.position.y == chunk[Chunks.y] }) continue // Already got this one from cache
             val ch = fst.asObject(chunk[Chunks.data].binaryStream.readBytes()) as Chunk
             out.add(ch)
             unchangedChunks[ch.position] = ch
@@ -88,7 +89,7 @@ internal class WorldDatabase(private val server: Server) {
     }
 
     /** Get a chunk from one of the caches, if they have it. */
-    internal fun getCachedChunk(pos: IntVector3) = unchangedChunks[pos] ?: newChunks[pos] ?: changedChunks[pos]
+    internal fun getCachedChunk(pos: IntVector3): Chunk? = unchangedChunks[pos] ?: newChunks[pos] ?: changedChunks[pos]
 
     /** Sets the block. Does not do other needed things like firing events or updating block entities.
      * @param position The position to place it at
@@ -105,16 +106,16 @@ internal class WorldDatabase(private val server: Server) {
     }
 
     /** Same as above, but takes type instead of block. Also returns chunk instead of old block.
-     * Better performance than the method above; mainly used for batching block operations ([World.queueBlock]).
+     * Better performance than the method above; mainly used for batching block operations ([World.setBlockRaw]).
      * Does not consider a chunk that the block was placed in to be changed. */
-    internal fun setBlock(position: IntVector3, type: ItemType): Chunk? {
-        val chunk = getChunk(position) ?: return null
+    internal fun setBlockRaw(position: IntVector3, type: ItemType): Boolean {
+        val chunk = getChunk(position) ?: return false
         tmpIV.set(position).minus(chunk.position)
 
         chunk.setBlock(tmpIV, type)
         unchangedChunks[chunk.position] = chunk
 
-        return chunk
+        return true
     }
 
     /** Saves all chunks to DB. Called at regular intervals; as well as on shutdown. */

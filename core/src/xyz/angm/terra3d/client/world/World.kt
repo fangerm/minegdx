@@ -15,11 +15,14 @@ import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.networking.BlockUpdate
 import xyz.angm.terra3d.common.networking.ChunkRequest
-import xyz.angm.terra3d.common.networking.ChunksUpdate
+import xyz.angm.terra3d.common.networking.ChunksLine
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
+import xyz.angm.terra3d.common.world.WorldInterface
+import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 
 const val RENDER_DIST_CHUNKS = 3
 private const val RAYCAST_REACH = 5f
@@ -36,7 +39,7 @@ private const val MAX_CHUNK_DIST = 150f
 
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
-class World(private val client: Client) : Disposable {
+class World(private val client: Client, override val seed: String) : Disposable, WorldInterface {
 
     private val tmpIV1 = IntVector3()
     private val tmpIV2 = IntVector3()
@@ -46,6 +49,7 @@ class World(private val client: Client) : Disposable {
 
     private val chunks = OrderedMap<IntVector3, RenderableChunk>()
     private val chunksWaitingForRender = Queue<RenderableChunk>(400)
+    private val generator = TerrainGenerator(this)
 
     val chunksLoaded: Int get() = chunks.size
     val waitingForRender: Int get() = chunksWaitingForRender.size
@@ -58,7 +62,7 @@ class World(private val client: Client) : Disposable {
                     chunk.setBlock(packet.position.minus(chunk.position), packet)
                     queueForRender(chunk)
                 }
-                is ChunksUpdate -> Gdx.app.postRunnable { addChunks(packet.chunks) }
+                is ChunksLine -> addChunks(packet.chunks)
             }
         }
     }
@@ -70,15 +74,16 @@ class World(private val client: Client) : Disposable {
         for (x in 0..RENDER_DIST_CHUNKS) {
             for (z in 0..RENDER_DIST_CHUNKS) {
                 val chunkPosition = tmpIV2.set(position).add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE)
-                if (getChunk(chunkPosition) == null) requestChunk(chunkPosition)
+                if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
                 chunkPosition.set(position).add(x * -CHUNK_SIZE, 0, z * CHUNK_SIZE)
-                if (getChunk(chunkPosition) == null) requestChunk(chunkPosition)
+                if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
                 chunkPosition.set(position).add(x * CHUNK_SIZE, 0, z * -CHUNK_SIZE)
-                if (getChunk(chunkPosition) == null) requestChunk(chunkPosition)
+                if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
                 chunkPosition.set(position).add(x * -CHUNK_SIZE, 0, z * -CHUNK_SIZE)
-                if (getChunk(chunkPosition) == null) requestChunk(chunkPosition)
+                if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
             }
         }
+        generator.finalizeGen()
 
         // Post a runnable since disposing gl data needs to happen on the main thread
         Gdx.app.postRunnable {
@@ -165,6 +170,8 @@ class World(private val client: Client) : Disposable {
     }
 
     private fun queueForRender(chunk: RenderableChunk) {
+        if (chunk.isQueued) return
+        chunk.isQueued = true
         chunksWaitingForRender.addFirst(chunk)
 
         // TODO: don't do this
@@ -177,7 +184,11 @@ class World(private val client: Client) : Disposable {
     }
 
     private fun queueRerender(chunk: RenderableChunk?) {
-        if (chunk?.isMeshed == true) chunksWaitingForRender.addFirst(chunk)
+        chunk ?: return
+        if (chunk.isMeshed && !chunk.isQueued) {
+            chunksWaitingForRender.addFirst(chunk)
+            chunk.isQueued = true
+        }
     }
 
     private fun setBlock(position: IntVector3, item: Item?) {
@@ -190,11 +201,26 @@ class World(private val client: Client) : Disposable {
      * the change occur when this client also receives the echo and applies it. */
     fun setBlock(block: Block) = client.send(block)
 
+    override fun setBlockRaw(position: IntVector3, type: ItemType): Boolean {
+        val chunk = getChunk(position)
+        chunk.setBlock(tmpIV1.set(position).minus(chunk.position), type)
+        queueForRender(chunk)
+        return true
+    }
+
     private fun getChunk(position: IntVector3) = chunks[tmpIV1.set(position).norm(CHUNK_SIZE)]
 
-    private fun requestChunk(position: IntVector3) = client.send(ChunkRequest(position))
+    override fun getLoadedChunk(position: IntVector3): Chunk? = getChunk(position)
 
-    private fun addChunk(chunk: Chunk) {
+    /** Will load all chunks in the given XZ coordinates.
+     * Generates them first using [generator], and also requests them from the server
+     * (which will only return chunks that were changed by players). */
+    private fun loadChunkLine(position: IntVector3) {
+        client.send(ChunkRequest(position))
+        generator.generateChunks(position)
+    }
+
+    override fun addChunk(chunk: Chunk) {
         val renderableChunk = RenderableChunk(serverChunk = chunk)
         queueForRender(renderableChunk)
         if (!chunks.containsKey(renderableChunk.position)) chunks[renderableChunk.position] = renderableChunk

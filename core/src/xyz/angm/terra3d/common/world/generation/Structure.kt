@@ -1,4 +1,4 @@
-package xyz.angm.terra3d.server.world.generation
+package xyz.angm.terra3d.common.world.generation
 
 import com.badlogic.gdx.utils.OrderedMap
 import kotlinx.serialization.Serializable
@@ -6,30 +6,61 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import ktx.assets.file
+import ktx.collections.*
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
+import xyz.angm.terra3d.common.world.WorldInterface
 import xyz.angm.terra3d.common.yaml
-import xyz.angm.terra3d.server.world.World
+
+internal class Structures {
+
+    private val structures = OrderedMap<Structure, GdxArray<IntVector3>>()
+
+    /** Generate a structure.
+     * @param structureName Name of structure
+     * @param position The position of the structure's center. */
+    fun generate(structureName: String, position: IntVector3) {
+        val structure = Structure.structures[structureName]
+        var arr = structures.get(structure)
+        if (arr == null) {
+            arr = GdxArray(16)
+            structures[structure] = arr
+        }
+
+        arr.add(position.cpy())
+    }
+
+    /** Update all structure's pending locations. */
+    fun update(world: WorldInterface) = structures.forEach { it.key.update(world, it.value) }
+}
 
 /** A structure is a fixed set of blocks generated in the world. */
-class Structure private constructor(private val calls: Array<DrawCall>) {
+private class Structure private constructor(private val calls: Array<DrawCall>) {
 
-    /** Manages and hold all structures */
-    companion object {
-        private val structures = loadStructures()
-
-        /** Generate a structure.
-         * @param structure Type of structure
-         * @param position The position of the structure's center. */
-        fun generate(structure: String, position: IntVector3) = structures[structure]?.queue(position.cpy())
-
-        /** Update all structure's pending locations. */
-        fun update(world: World) {
-            // TODO: This is broken. #44
-            structures.values().forEach { it.update(world) }
-            world.flushBlockQueue() // Individual structures queue their blocks
+    /** Update the structure's pending locations
+     * @param world The world to apply to
+     * @param pending All locations pending. */
+    fun update(world: WorldInterface, pending: GdxArray<IntVector3>) {
+        pending.removeAll {
+            apply(world, it)
         }
+    }
+
+    private fun apply(world: WorldInterface, pos: IntVector3): Boolean {
+        var success = true
+        for (call in calls) {
+            success = success && call.draw(world, tmpIV.set(pos))
+        }
+        return success
+    }
+
+    override fun equals(other: Any?) = this === other
+    override fun hashCode() = calls.contentHashCode()
+
+    /** Manages and holds all structures */
+    companion object {
+        internal val structures = loadStructures()
 
         private fun loadStructures(): OrderedMap<String, Structure> {
             val raw = yaml.decodeFromString(
@@ -63,44 +94,25 @@ class Structure private constructor(private val calls: Array<DrawCall>) {
 
         private val tmpIV = IntVector3() // Vector passed into draw calls
     }
-
-    private val locationsPending = com.badlogic.gdx.utils.Array<IntVector3>()
-
-    /** Update the structure's pending locations
-     * @param world The world to apply to */
-    fun update(world: World) {
-        locationsPending.removeAll {
-            apply(world, it)
-        }
-    }
-
-    /** Queue a position for the structure to apply at */
-    fun queue(position: IntVector3) = locationsPending.add(position)
-
-    private fun apply(world: World, pos: IntVector3): Boolean {
-        for (call in calls) {
-            if (!call.draw(world, tmpIV.set(pos))) return false
-        }
-        return true
-    }
 }
 
 private val tmpIV = IntVector3() // Vector used by draw calls
 
 private sealed class DrawCall(val start: IntVector3, val block: ItemType) {
-    abstract fun draw(world: World, pos: IntVector3): Boolean
+    abstract fun draw(world: WorldInterface, pos: IntVector3): Boolean
 }
 
 private class BoxCall(start: IntVector3, block: ItemType, val end: IntVector3) : DrawCall(start, block) {
-    override fun draw(world: World, pos: IntVector3): Boolean {
+    override fun draw(world: WorldInterface, pos: IntVector3): Boolean {
+        var success = true
         for (y in start.y..end.y)
             for (x in start.x..end.x)
                 for (z in start.z..end.z)
-                    if (!world.queueBlock(tmpIV.set(pos).add(x, y, z), block)) return false
-        return true
+                    success = success && world.setBlockRaw(tmpIV.set(pos).add(x, y, z), block)
+        return success
     }
 }
 
 private class PointCall(start: IntVector3, block: ItemType) : DrawCall(start, block) {
-    override fun draw(world: World, pos: IntVector3) = world.queueBlock(pos.add(start), block)
+    override fun draw(world: WorldInterface, pos: IntVector3) = world.setBlockRaw(pos.add(start), block)
 }

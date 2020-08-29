@@ -1,11 +1,11 @@
-package xyz.angm.terra3d.server.world.generation
+package xyz.angm.terra3d.common.world.generation
 
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import kotlin.math.sqrt
 import kotlin.random.Random
 
 /** Generates noise for the terrain.
- * @param seed The world seed*/
+ * @param seed The world seed */
 class NoiseGenerator(seed: Long) {
 
     // A lot of this class is abridged from (http://www.java-gaming.org/index.php?topic=31637.0) and

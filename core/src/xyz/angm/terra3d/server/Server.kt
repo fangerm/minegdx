@@ -86,7 +86,7 @@ class Server(
                 world.setBlock(packet.position, packet)
                 sendToAll(packet)
             }
-            is ChunkRequest -> send(connection, ChunksUpdate(world.getChunkLine(packet.position)))
+            is ChunkRequest -> send(connection, ChunksLine(packet.position, world.getChunkLine(packet.position)))
             is ChatMessagePacket -> sendToAll(packet)
             is JoinPacket -> registerPlayer(connection, packet)
             is Entity -> {
@@ -109,7 +109,7 @@ class Server(
         val playerEntity = save.getPlayer(engine, packet)
         players[connection.id] = playerEntity
 
-        send(connection, InitPacket(playerEntity, entities, world.getInitData(playerEntity[position]!!)))
+        send(connection, InitPacket(playerEntity, entities, world.getInitData(playerEntity[position]!!), world.seed))
         playerEntity[network]!!.needsSync = true // Ensure player gets synced next tick
     }
 

@@ -13,24 +13,22 @@ import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
-import xyz.angm.terra3d.common.networking.ChunksUpdate
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
+import xyz.angm.terra3d.common.world.WorldInterface
+import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
 import xyz.angm.terra3d.server.ecs.systems.BlockEntitySystem
-import xyz.angm.terra3d.server.world.generation.Structure
-import xyz.angm.terra3d.server.world.generation.TerrainGenerator
 import java.util.concurrent.TimeUnit
 
 /** Server-side representation of a World containing all blocks.
  * @param server The server this world is running under.
  * @property seed The world seed used for generating the terrain. */
-class World(private val server: Server) {
+class World(private val server: Server) : WorldInterface {
 
-    val seed = server.save.seed
+    override val seed = server.save.seed
     private val database = WorldDatabase(server)
     private val generator = TerrainGenerator(this)
-    private val chunksWithQueuedChanges = GdxArray<Chunk>(false, 8, Chunk::class.java)
     private val blockEntitySystem = BlockEntitySystem(this)
     private val tmpV = Vector3()
     private val tmpIV = IntVector3()
@@ -46,25 +44,27 @@ class World(private val server: Server) {
      * @param players A list of all players */
     fun updateLoadedChunksByPlayers(players: Iterable<Entity>) = players.forEach { database.generateChunks(tmpIV.set(it[position]!!), generator) }
 
-    /** Adds the specified chunk to the world. */
-    internal fun addChunk(newChunk: Chunk) = database.addChunk(newChunk)
+    /** Adds the specified chunk to the world; does not save it to disk. */
+    override fun addChunk(chunk: Chunk) = database.addChunk(chunk)
 
-    /** Returns an array of chunks.
+    /** Returns an array of chunks, returning only those that were changed since world generation.
      * @param position The chunk's position, y axis is ignored.
-     * @return All chunks with matching x and z axis */
+     * @return All chunks with matching x and z axis that had player modification */
     fun getChunkLine(position: IntVector3): Array<Chunk> {
         tmpIV.set(position).norm(CHUNK_SIZE).y = 0
-        val out = GdxArray<Chunk>(false, 16, Chunk::class.java)
+        val out = GdxArray<Chunk>(false, 6, Chunk::class.java)
+        for (chunk in 0..WORLD_HEIGHT_IN_CHUNKS) {
+            val loaded = getLoadedChunk(tmpIV.add(0, CHUNK_SIZE, 0))
+            if (loaded != null) out.add(loaded)
+        }
         database.getChunkLine(tmpIV, out)
-        generator.generateMissing(out, tmpIV)
-        Structure.update(this)
         return out.toArray()
     }
 
     /** Returns a chunk in cache if it exists. Does not norm the position given!
      * Used by the [TerrainGenerator] when filling in missing chunks in a line
      * to catch chunks that are in cache but weren't spooled to disk yet. */
-    internal fun getCachedChunk(position: IntVector3) = database.getCachedChunk(position)
+    override fun getLoadedChunk(position: IntVector3) = database.getCachedChunk(position)
 
     /** Returns all chunks in render distance for the given position.
      * Used for initial world sync with clients. */
@@ -80,7 +80,7 @@ class World(private val server: Server) {
                 generator.generateMissing(out, tmpIV2)
             }
 
-        Structure.update(this)
+        generator.finalizeGen()
         return out.toArray()
     }
 
@@ -120,27 +120,7 @@ class World(private val server: Server) {
         return true
     }
 
-    /** Queues a block to be set. Way faster than setBlock, but assumes block was null before and does not consider block entities.
-     * This is useful when a lot of simple blocks have to be set at once,
-     * since it prevents the network packet spam that batch setting blocks would cause
-     * since full chunks are sent anew on flush.
-     * A call to [flushBlockQueue] will set all blocks queued and sync state.
-     * Chunks with blocks changed by batching are not considered to be changed; they will not be spooled to DB.
-     * The main use of all this is world generation *after* initial chunk generation - this is the case
-     * when generating structures that cross chunk boundaries.
-     * @return If the block was successfully queued. No means the world at that location is not yet generated. */
-    fun queueBlock(position: IntVector3, type: ItemType): Boolean {
-        val chunk = database.setBlock(position, type) ?: return false
-        if (chunk !in chunksWithQueuedChanges) chunksWithQueuedChanges.add(chunk)
-        return true
-    }
-
-    /** @see queueBlock; flushes all blocks queued and syncs network and database. */
-    fun flushBlockQueue() {
-        if (chunksWithQueuedChanges.isEmpty) return
-        server.sendToAll(ChunksUpdate(chunksWithQueuedChanges.toArray()))
-        chunksWithQueuedChanges.clear()
-    }
+    override fun setBlockRaw(position: IntVector3, type: ItemType) = database.setBlockRaw(position, type)
 
     /** Called on server close; saves to disk */
     fun close() = database.flushChunks()

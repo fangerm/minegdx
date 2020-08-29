@@ -23,7 +23,7 @@ val yaml = Yaml()
 val fst = createFST(
     // Packets
     ChunkRequest::class, JoinPacket::class, InitPacket::class,
-    ChunksUpdate::class, ChatMessagePacket::class,
+    ChunksLine::class, ChatMessagePacket::class,
 
     // Components
     Component::class,

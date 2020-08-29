@@ -12,7 +12,7 @@ interface Packet : Serializable
 
 
 // Sent by client
-/** A request for the server to send chunks. See [ChunksUpdate]
+/** A request for the server to send chunks. See [ChunksLine]
  * @property position The position of the chunks requested */
 class ChunkRequest(val position: IntVector3 = IntVector3()) : Packet
 
@@ -24,8 +24,9 @@ class JoinPacket(val name: String = "Player", val uuid: Int = 0) : Packet
 
 // Sent by server
 /** Contains chunks. Sent after a [ChunkRequest].
+ * @property position The position of the line
  * @property chunks The chunks requested */
-class ChunksUpdate(val chunks: Array<Chunk> = emptyArray()) : Packet
+class ChunksLine(val position: IntVector3, val chunks: Array<Chunk> = emptyArray()) : Packet
 
 /** Contains info of a single block change.
  * Note that this is one of the few cases where [Block.type] can be 0 (if the block was removed).
@@ -37,7 +38,8 @@ typealias BlockUpdate = Block
 class InitPacket(
     val player: Entity = Entity(),
     val entities: Array<Entity> = emptyArray(),
-    val world: Array<Chunk> = emptyArray()
+    val world: Array<Chunk> = emptyArray(),
+    val seed: String
 ) : Packet
 
 

@@ -1,18 +1,23 @@
-package xyz.angm.terra3d.server.world.generation
+package xyz.angm.terra3d.common.world.generation
 
 import ktx.collections.*
 import xyz.angm.terra3d.common.*
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.Chunk
-import xyz.angm.terra3d.server.world.World
+import xyz.angm.terra3d.common.world.WorldInterface
 import kotlin.random.Random
 
-/** Generates terrain/chunks for a [World].
+/** Generates terrain/chunks for a world.
  * @param world The world to generate for */
-class TerrainGenerator(val world: World) {
+class TerrainGenerator(val world: WorldInterface) {
 
     private val noiseGenerator = NoiseGenerator(world.seed.convertToLong())
+    private val structures = Structures()
     private val tmpIV = IntVector3()
+
+    /** Finalize generation.
+     * Call after finishing with generating something, usually something batched. */
+    fun finalizeGen() = structures.update(world)
 
     /** Generate a line of chunks.
      * @param position Position of the chunks; Y axis ignored. */
@@ -28,14 +33,14 @@ class TerrainGenerator(val world: World) {
             chunk
         }
 
-        Structure.update(world)
         log.debug { "[WORLDGEN] Generated chunks at $position." }
         return chunks
     }
 
     /** Generates missing chunks in a line of chunks.
-     * @param alreadyCreated Chunks already created in this line */
-    fun generateMissing(alreadyCreated: GdxArray<Chunk>, position: IntVector3) {
+     * @param alreadyCreated Chunks already created in this line.
+     * Optional, if null the generator will simply only add new chunks to the world. */
+    fun generateMissing(alreadyCreated: GdxArray<Chunk>?, position: IntVector3) {
         val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
         val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z, biomeMap)
 
@@ -44,7 +49,7 @@ class TerrainGenerator(val world: World) {
 
             // Search in cache first in case that a chunk was changed
             // and the DB version is outdated
-            val preexisting = world.getCachedChunk(position) ?: alreadyCreated.firstOrNull { it.position == position }
+            val preexisting = world.getLoadedChunk(position) ?: alreadyCreated?.firstOrNull { it.position == position }
             val chunk = if (preexisting != null) preexisting
             else {
                 val chunk = Chunk(chunkPosition = IntVector3(position.x, chunkIndex * CHUNK_SIZE, position.z))
@@ -52,7 +57,7 @@ class TerrainGenerator(val world: World) {
                 world.addChunk(chunk)
                 chunk
             }
-            alreadyCreated.add(chunk)
+            alreadyCreated?.add(chunk)
         }
     }
 
@@ -93,7 +98,7 @@ class TerrainGenerator(val world: World) {
             for (structure in biome.structuresGenerating) {
                 chance -= structure.value
                 if (random.nextDouble(1.0) > chance) {
-                    Structure.generate(structure.key, position)
+                    structures.generate(structure.key, position)
                     break
                 }
             }

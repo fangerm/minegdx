@@ -1,4 +1,4 @@
-package xyz.angm.terra3d.server.world.generation
+package xyz.angm.terra3d.common.world.generation
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer

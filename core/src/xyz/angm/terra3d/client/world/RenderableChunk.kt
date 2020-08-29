@@ -22,13 +22,18 @@ import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.Chunk
 
 /** A chunk capable of rendering itself. Constructed from a regular chunk sent by the server. */
-class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disposable {
+internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disposable {
 
     private val positionCentered = position.toV3().add(CHUNK_SIZE / 2f, CHUNK_SIZE / 2f, CHUNK_SIZE / 2f)
 
     @Transient
     private var model = ModelCache()
+
+    /** If this chunk is meshed and ready to be rendered. */
     internal var isMeshed = false
+
+    /** If this chunk is queued for meshing. */
+    internal var isQueued = false
 
     /** Renders itself. */
     fun render(modelBatch: ModelBatch, environment: Environment) = modelBatch.render(model, environment)
@@ -133,6 +138,7 @@ class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disp
         model.add(modelInst)
         model.end()
         isMeshed = true
+        isQueued = false
     }
 
     /** Is this face visible and needs to be rendered? */
