@@ -77,7 +77,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         chat.setPosition(10f, 90f)
 
         debugLabel.isVisible = false
-        updateHotbarSelector(0)
+        updateHotbarSelector(screen.player[playerM]!!.inventory.hotbarPosition)
         background = null
     }
 
