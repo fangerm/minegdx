@@ -7,6 +7,8 @@ import ktx.ashley.get
 import xyz.angm.terra3d.client.actions.Event
 import xyz.angm.terra3d.client.actions.EventContext
 import xyz.angm.terra3d.client.actions.PlayerInteractions
+import xyz.angm.terra3d.client.ecs.components.FOV
+import xyz.angm.terra3d.client.ecs.components.SPRINT_FOV
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.set
@@ -16,9 +18,6 @@ import xyz.angm.terra3d.common.world.NOTHING
 
 /** Sprinting speed multiplier. */
 const val SPRINT_SPEED_MULTIPLIER = 1.5f
-
-/** How much the camera FOV changes when sprinting */
-const val SPRINT_FOV_MULTIPLIER = 1.08f
 
 /** System responsible for handling player input.
  * Does not use Ashley's update system for the most part; input is event-driven.
@@ -73,10 +72,10 @@ class PlayerInputSystem(
     fun sprint(sprint: Boolean) {
         if (sprint) {
             player[velocity]!!.speedModifier *= SPRINT_SPEED_MULTIPLIER
-            screen.cam.fieldOfView *= SPRINT_FOV_MULTIPLIER
+            player[localPlayer]!!.fov = SPRINT_FOV
         } else {
             player[velocity]!!.speedModifier /= SPRINT_SPEED_MULTIPLIER
-            screen.cam.fieldOfView /= SPRINT_FOV_MULTIPLIER
+            player[localPlayer]!!.fov = FOV
         }
     }
 

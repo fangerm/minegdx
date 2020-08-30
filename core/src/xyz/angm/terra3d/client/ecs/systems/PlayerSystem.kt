@@ -43,7 +43,7 @@ class PlayerSystem(
     /** Updates various things; mostly positions.
      * @param delta Unused; time since last call. */
     override fun update(delta: Float) {
-        updatePositions()
+        updatePositions(delta)
         updateHunger(delta)
         checkPickedUpItems()
         checkBelowWorld()
@@ -56,7 +56,7 @@ class PlayerSystem(
         }
     }
 
-    private fun updatePositions() {
+    private fun updatePositions(delta: Float) {
         // Update player position
         pDirection.set(screen.cam.direction)
 
@@ -67,6 +67,9 @@ class PlayerSystem(
         // Update camera position
         screen.cam.position.set(pPosition)
         screen.cam.update()
+
+        // Update camera FOV
+        screen.cam.fieldOfView -= (screen.cam.fieldOfView - player[localPlayer]!!.fov) * 10f * delta
 
         // Update rendering-related positions
         pRender.skybox.transform.setToTranslation(tmpV.set(pPosition))

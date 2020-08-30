@@ -23,6 +23,7 @@ import ktx.ashley.allOf
 import ktx.ashley.exclude
 import ktx.ashley.get
 import xyz.angm.terra3d.client.Terra3D
+import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
@@ -86,7 +87,7 @@ class GameScreen(
     val bench = PerformanceCounter("render")
 
     // 3D Graphics
-    val cam = PerspectiveCamera(75f, WORLD_WIDTH, WORLD_HEIGHT)
+    val cam = PerspectiveCamera(FOV, WORLD_WIDTH, WORLD_HEIGHT)
     private val inputHandler = PlayerInputHandler(this)
     private val modelBatch = ModelBatch()
     private val environment = Environment()
