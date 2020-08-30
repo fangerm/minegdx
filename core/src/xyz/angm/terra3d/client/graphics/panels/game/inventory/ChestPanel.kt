@@ -1,7 +1,6 @@
 package xyz.angm.terra3d.client.graphics.panels.game.inventory
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
@@ -30,8 +29,7 @@ class ChestPanel(screen: GameScreen, private val chest: Block) : NetworkInventor
         chestInv.setPosition(16f, 196f)
         Gdx.app.postRunnable {
             // The position of actors in the table only get calculated at the first draw call
-            val position = inventoryImage.localToStageCoordinates(Vector2(0f, 0f))
-            chestInv.setPosition(position.x + chestInv.x, position.y + chestInv.y)
+            chestInv.setPosition(inventoryImage.x + chestInv.x, inventoryImage.y + chestInv.y)
         }
     }
 

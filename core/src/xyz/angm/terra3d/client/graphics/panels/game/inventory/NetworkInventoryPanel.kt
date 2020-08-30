@@ -14,17 +14,17 @@ abstract class NetworkInventoryPanel(private val screen: GameScreen, private val
     /** Called before the block is synced with the server, use it to change the inventories as needed. */
     abstract fun updateNetInventory()
 
-    override fun itemLeftClicked(actor: ItemGroup.ItemActor) {
+    override fun itemLeftClicked(actor: ItemGroup.GroupedItemActor) {
         super.itemLeftClicked(actor)
         syncNetwork()
     }
 
-    override fun itemRightClicked(actor: ItemGroup.ItemActor) {
+    override fun itemRightClicked(actor: ItemGroup.GroupedItemActor) {
         super.itemRightClicked(actor)
         syncNetwork()
     }
 
-    override fun itemShiftClicked(actor: ItemGroup.ItemActor) {
+    override fun itemShiftClicked(actor: ItemGroup.GroupedItemActor) {
         super.itemShiftClicked(actor)
         syncNetwork()
     }

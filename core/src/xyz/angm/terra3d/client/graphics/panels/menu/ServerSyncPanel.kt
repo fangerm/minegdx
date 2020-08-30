@@ -19,8 +19,8 @@ class ServerSyncPanel(screen: MenuScreen) : Panel(screen) {
 
     init {
         clearListeners() // Prevent the user from exiting the screen
-        this.add(loadingMsg).pad(15f).row()
-        this.add(chunksLeft).pad(15f)
+        add(loadingMsg).pad(15f).row()
+        add(chunksLeft).pad(15f)
     }
 
     override fun act(delta: Float) {
@@ -40,7 +40,6 @@ class ServerSyncPanel(screen: MenuScreen) : Panel(screen) {
         } else {
             loadingMsg.setText(I18N["client-loading-msg"] + ".".repeat(dots))
         }
-
     }
 
     /** See [MenuScreen.setWorldLoading] and [xyz.angm.terra3d.client.Terra3D], called when

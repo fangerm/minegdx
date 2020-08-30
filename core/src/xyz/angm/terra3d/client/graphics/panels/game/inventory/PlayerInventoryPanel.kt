@@ -1,7 +1,6 @@
 package xyz.angm.terra3d.client.graphics.panels.game.inventory
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import ktx.ashley.get
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
@@ -47,15 +46,16 @@ open class PlayerInventoryPanel(screen: GameScreen) : InventoryPanel(screen) {
 
         Gdx.app.postRunnable {
             // The position of actors in the table only get calculated at the first draw call
-            val position = inventoryImage.localToStageCoordinates(Vector2(0f, 0f))
-            inventoryItems.setPosition(position.x + 16, position.y + 60)
-            hotbarItems.setPosition(position.x + 16, position.y + 16)
-            craftingGrid.setPosition(position.x + craftingGrid.x, position.y + craftingGrid.y)
-            craftingResult.setPosition(position.x + craftingResult.x, position.y + craftingResult.y)
+            val x = inventoryImage.x
+            val y = inventoryImage.y
+            inventoryItems.setPosition(x + 16, y + 60)
+            hotbarItems.setPosition(x + 16, y + 16)
+            craftingGrid.setPosition(x + craftingGrid.x, y + craftingGrid.y)
+            craftingResult.setPosition(x + craftingResult.x, y + craftingResult.y)
         }
     }
 
-    override fun itemLeftClicked(actor: ItemGroup.ItemActor) {
+    override fun itemLeftClicked(actor: ItemGroup.GroupedItemActor) {
         if (actor.group == craftingResult && craftingResult.inventory[0] != null) {
             for (i in 0 until craftingGrid.inventory.size) craftingGrid.inventory.subtractFromSlot(i, 1)
         }
@@ -63,13 +63,13 @@ open class PlayerInventoryPanel(screen: GameScreen) : InventoryPanel(screen) {
         updateCraftingGrid(actor)
     }
 
-    override fun itemRightClicked(actor: ItemGroup.ItemActor) {
+    override fun itemRightClicked(actor: ItemGroup.GroupedItemActor) {
         if (actor.group == craftingResult) itemLeftClicked(actor)
         else super.itemRightClicked(actor)
         updateCraftingGrid(actor)
     }
 
-    override fun itemShiftClicked(actor: ItemGroup.ItemActor) {
+    override fun itemShiftClicked(actor: ItemGroup.GroupedItemActor) {
         /* if (actor.group == craftingResult) {
             var match = CraftingRecipe.matchAll(craftingGrid.inventory)
             while (match != null) {
@@ -87,7 +87,7 @@ open class PlayerInventoryPanel(screen: GameScreen) : InventoryPanel(screen) {
         updateCraftingGrid(actor)
     }
 
-    private fun updateCraftingGrid(actor: ItemGroup.ItemActor) {
+    private fun updateCraftingGrid(actor: ItemGroup.GroupedItemActor) {
         if (actor.group == craftingGrid || actor.group == craftingResult) {
             // craftingResult.inventory[0] = CraftingRecipe.matchAll(craftingGrid.inventory)
         }

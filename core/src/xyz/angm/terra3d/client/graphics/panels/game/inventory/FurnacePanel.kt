@@ -1,7 +1,6 @@
 package xyz.angm.terra3d.client.graphics.panels.game.inventory
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
@@ -39,10 +38,11 @@ class FurnacePanel(screen: GameScreen, private val furnace: Block) : NetworkInve
 
         Gdx.app.postRunnable {
             // The position of actors in the table only get calculated at the first draw call
-            val position = inventoryImage.localToStageCoordinates(Vector2(0f, 0f))
-            fuelItem.setPosition(position.x + fuelItem.x, position.y + fuelItem.y)
-            burntItem.setPosition(position.x + burntItem.x, position.y + burntItem.y)
-            resultItem.setPosition(position.x + resultItem.x, position.y + resultItem.y)
+            val x = inventoryImage.x
+            val y = inventoryImage.y
+            fuelItem.setPosition(x + fuelItem.x, y + fuelItem.y)
+            burntItem.setPosition(x + burntItem.x, y + burntItem.y)
+            resultItem.setPosition(x + resultItem.x, y + resultItem.y)
         }
     }
 
