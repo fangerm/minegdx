@@ -81,7 +81,8 @@ internal class WorldDatabase(private val server: Server) {
     internal fun getChunkLine(position: IntVector3, out: GdxArray<Chunk>) {
         val dbChunks = transaction(db) { Chunks.select { (Chunks.x eq position.x) and (Chunks.z eq position.z) }.toList() }
         for (chunk in dbChunks) {
-            if (out.any { it.position.y == chunk[Chunks.y] }) continue // Already got this one from cache
+            // Already got this one in cache if true
+            if (out.any { it.position.x == chunk[Chunks.x] && it.position.y == chunk[Chunks.y] && it.position.z == chunk[Chunks.z] }) continue
             val ch = fst.asObject(chunk[Chunks.data].binaryStream.readBytes()) as Chunk
             out.add(ch)
             unchangedChunks[ch.position] = ch
@@ -89,7 +90,7 @@ internal class WorldDatabase(private val server: Server) {
     }
 
     /** Get a chunk from one of the caches, if they have it. */
-    internal fun getCachedChunk(pos: IntVector3): Chunk? = unchangedChunks[pos] ?: newChunks[pos] ?: changedChunks[pos]
+    internal fun getCachedChunk(pos: IntVector3): Chunk? = newChunks[pos] ?: changedChunks[pos] ?: unchangedChunks[pos]
 
     /** Sets the block. Does not do other needed things like firing events or updating block entities.
      * @param position The position to place it at

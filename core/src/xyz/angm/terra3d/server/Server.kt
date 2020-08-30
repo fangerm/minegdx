@@ -65,6 +65,7 @@ class Server(
         save.getAllEntities(engine)
 
         // Executed on SIGTERM
+        Runtime.getRuntime().addShutdownHook(Thread { close() })
     }
 
     private fun send(connection: Connection, packet: Packet) {
@@ -122,6 +123,7 @@ class Server(
 
     /** Close the server. Will save world and close all connections, making the object unusable. */
     fun close() {
+        log.info { "[SERVER] Shutting down..." }
         serverSocket.close()
         world.close()
         save.saveAllEntities(engine)
