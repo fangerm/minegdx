@@ -38,8 +38,8 @@ class Configuration {
     lateinit var resourcePack: ResourcePack
 
     val servers = HashMap<String, String>()
-    var playerName = ""
-    val clientUUID = 0
+    val clientUUID = System.nanoTime().toInt()
+    var playerName = "player #$clientUUID"
     var language = "English"
 
     /** Should be called after deserialization to allow the object to correct its state. */
