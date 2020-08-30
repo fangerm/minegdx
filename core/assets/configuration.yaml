@@ -1,7 +1,7 @@
 keybinds:
   bindings:
-    "Escape": "pauseMenu"
     "Space": "jump"
+    "Escape": "pauseMenu"
     "A": "walkLeft"
     "D": "walkRight"
     "E": "openInventory"
@@ -19,13 +19,13 @@ keybinds:
     "6": "hotbarSlot6"
     "7": "hotbarSlot7"
     "W": "walkForward"
-    "Enter": "chat"
     "8": "hotbarSlot8"
+    "Enter": "chat"
     "9": "hotbarSlot9"
 resourcePack:
   name: "Default Pack"
   path: "resourcepacks/default"
   description: "Pack shipped with MineGDX."
   sizeMod: 1.0
-
 language: "English"
+sensitivity: 1.0

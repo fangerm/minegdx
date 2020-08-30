@@ -10,7 +10,7 @@ import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.playerM
 
-/** Mouse sensitivity. TODO: Make this configurable. */
+/** Mouse sensitivity, will be multiplied with [configuration.sensitivity]. */
 private const val SENSITIVITY = 0.1f
 
 /** Amount of time the game will wait until registering a right click again when holding the button. */
@@ -78,8 +78,8 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
             firstMouseInput = false
         }
 
-        val xOffset = (xPos - lastX) * SENSITIVITY
-        val yOffset = (lastY - yPos) * SENSITIVITY
+        val xOffset = (xPos - lastX) * SENSITIVITY * configuration.sensitivity
+        val yOffset = (lastY - yPos) * SENSITIVITY * configuration.sensitivity
         lastX = xPos.toFloat()
         lastY = yPos.toFloat()
 

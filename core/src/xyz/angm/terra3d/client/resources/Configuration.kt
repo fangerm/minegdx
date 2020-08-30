@@ -28,6 +28,7 @@ val configuration = {
  * @property servers A list of all servers known to the client.
  * @property resourcePack The resource pack in use
  * @property language The language to use for [I18N].
+ * @property sensitivity Mouse sensitivity.
  *
  * @property keybinds All keybinds. */
 @Serializable
@@ -41,6 +42,7 @@ class Configuration {
     val clientUUID = System.nanoTime().toInt()
     var playerName = "player #$clientUUID"
     var language = "English"
+    var sensitivity: Float = 1f
 
     /** Should be called after deserialization to allow the object to correct its state. */
     fun init() = keybinds.init()
@@ -93,8 +95,11 @@ class Configuration {
         /** Returns all binds as a sorted list of pairs.
          * The weird array gymnastics are needed since IntMap.Entry is static and not reusable. */
         fun getAllSorted(): List<Pair<Int, PlayerAction>> {
-            val array = Array<Pair<Int, PlayerAction>>(binds.size)
-            binds.entries().forEach { array.add(Pair(it.key, it.value)) }
+            val array = Array<Pair<Int, PlayerAction>>(PlayerActions.actions.size)
+            PlayerActions.actions.entries().forEach {
+                val bind = bindsRev[it.key, 0]
+                array.add(Pair(bind, it.value))
+            }
             return array.sortedBy { I18N["keybind.${it.second.type}"] }
         }
 
@@ -110,6 +115,7 @@ class Configuration {
         /** Unregister a keybind.
          * @param key The key to unbind. */
         fun unregisterKeybind(key: Int) {
+            if (!binds.containsKey(key)) return
             bindsRev.remove(this[key]?.type, -1)
             binds.remove(key)
             bindings.remove(Input.Keys.toString(key))

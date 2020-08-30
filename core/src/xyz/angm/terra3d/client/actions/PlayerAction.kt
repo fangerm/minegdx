@@ -24,7 +24,7 @@ data class PlayerAction(
 /** The object that contains all actions and allows retrieving them. */
 object PlayerActions {
 
-    private val actions = ObjectMap<String, PlayerAction>()
+    val actions = ObjectMap<String, PlayerAction>()
 
     init {
         addAction(PlayerAction("walkForward", { it.player[velocity]!!.x++ }, { it.player[velocity]!!.x-- }))

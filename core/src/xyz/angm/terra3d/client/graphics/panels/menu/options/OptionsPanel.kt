@@ -49,7 +49,7 @@ class OptionsPanel(screen: Screen, parent: MainMenuPanel? = null) : Panel(screen
 
             textButton(I18N["options.controls"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
-                onClick { screen.pushPanel(KeybindsPanel(screen)) }
+                onClick { screen.pushPanel(ControlsPanel(screen)) }
             }
 
             label(I18N["options.playername"], style = "default-24pt") {
