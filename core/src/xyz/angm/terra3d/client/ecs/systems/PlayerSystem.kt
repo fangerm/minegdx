@@ -46,6 +46,7 @@ class PlayerSystem(
         updatePositions()
         updateHunger(delta)
         checkPickedUpItems()
+        checkBelowWorld()
         checkDeath()
 
         timeSinceSync += delta
@@ -96,6 +97,12 @@ class PlayerSystem(
                 playerC.inventory += it[item]!!.item
                 RemoveFlag.flag(it)
             }
+        }
+    }
+
+    private fun checkBelowWorld() {
+        if (pPosition.y < 0f) {
+            player[health]!!.health--
         }
     }
 

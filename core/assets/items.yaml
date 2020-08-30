@@ -25,6 +25,10 @@ cobblestone:
     minToolLevel: 1
     drop: stone
 
+bedrock:
+  block:
+    breakTime: 100000.0
+
 planks_oak:
   burnTime: 400
   block:

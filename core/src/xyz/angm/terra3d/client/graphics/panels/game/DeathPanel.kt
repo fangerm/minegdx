@@ -33,6 +33,8 @@ class DeathPanel(screen: GameScreen) : Panel(screen) {
                     screen.popAllPanels()
                 }
             }
+
+            setFillParent(true)
         }
     }
 }

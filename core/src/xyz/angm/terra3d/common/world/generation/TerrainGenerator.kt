@@ -82,9 +82,10 @@ class TerrainGenerator(val world: WorldInterface) {
 
             if (diff < 0) continue // block should be air; aka null
 
-            val type = when (diff) {
-                in 0 until biome.surfaceLayers -> biome.surfaceBlock
-                in biome.surfaceLayers until biome.belowSurfaceLayers -> biome.belowSurfaceBlock
+            val type = when {
+                chunk.position.y == 0 && y == 0 -> "bedrock"
+                diff in 0 until biome.surfaceLayers -> biome.surfaceBlock
+                diff in biome.surfaceLayers until biome.belowSurfaceLayers -> biome.belowSurfaceBlock
                 else -> "stone"
             }
 
