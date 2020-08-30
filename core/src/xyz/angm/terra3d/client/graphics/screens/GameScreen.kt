@@ -168,8 +168,8 @@ class GameScreen(
     fun returnToMenu(message: String? = null) {
         client.send(player) // Make sure the player is up-to-date on the server
         client.disconnectListener = {} // Prevent it from showing the 'disconnected' message when it shouldn't
-        dispose()
         game.screen = MenuScreen(game)
+        dispose()
         (game.screen as Screen).pushPanel(MessagePanel(game.screen as Screen, message ?: return) {
             (game.screen as Screen).popPanel()
         })
@@ -256,5 +256,6 @@ class GameScreen(
         gameplayPanel.dispose()
         uiPanels.dispose()
         scheduler.shutdown()
+        engine.getSystem(PlayerPhysicsSystem::class.java).dispose()
     }
 }

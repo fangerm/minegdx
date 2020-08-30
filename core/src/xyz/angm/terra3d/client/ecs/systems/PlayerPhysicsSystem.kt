@@ -186,17 +186,17 @@ class PlayerPhysicsSystem(
 
     /** Free all Bullet objects */
     override fun dispose() {
-        collisionConfig.dispose()
-        dispatcher.dispose()
-        sweep.dispose()
-        ghostPairCallback.dispose()
-        constraintSolver.dispose()
         world.dispose()
         playerController.dispose()
         playerBody.dispose()
         playerGhostObj.dispose()
         playerShape.dispose()
         blocks.forEach { x -> x.forEach { y -> y.forEach { it.dispose() } } }
+        collisionConfig.dispose()
+        dispatcher.dispose()
+        constraintSolver.dispose()
+        ghostPairCallback.dispose()
+        sweep.dispose()
     }
 
     /** Following code is abridged from libGDXs built-in FirstPersonCameraController
