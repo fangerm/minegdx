@@ -9,19 +9,19 @@ grass_block:
   texture: textures/blocks/grass_top.png
   block:
     breakTime: 3.5
-    prefTool: SHOVEL
+    prefTool: shovel
     texSide: textures/blocks/grass_side.png
     texBottom: textures/blocks/dirt.png
 
 dirt:
   block:
     breakTime: 2.5
-    prefTool: SHOVEL
+    prefTool: shovel
 
 cobblestone:
   block:
     breakTime: 5.0
-    prefTool: PICKAXE
+    prefTool: pickaxe
     minToolLevel: 1
     drop: stone
 
@@ -29,44 +29,47 @@ planks_oak:
   burnTime: 400
   block:
     breakTime: 3.5
-    prefTool: AXE
+    prefTool: axe
 
 oak_wood:
   burnTime: 600
   texture: textures/blocks/log_oak_top.png
   block:
     breakTime: 4
-    prefTool: AXE
+    prefTool: axe
     texSide: textures/blocks/log_oak.png
 
 leaves_oak:
   burnTime: 100
   block:
     breakTime: 3
-    prefTool: SHEARS
+    prefTool: shears
     drop: apple
+
+stick:
+  burnTime: 150
 
 apple:
   hunger: 4
 
 snow:
   block:
-    prefTool: SHOVEL
+    prefTool: shovel
     minToolLevel: 1
 
 gravel:
   block:
-    prefTool: SHOVEL
+    prefTool: shovel
 
 sand:
   block:
-    prefTool: SHOVEL
+    prefTool: shovel
 
 sandstone:
   texture: textures/blocks/sandstone_top.png
   block:
     breakTime: 5.0
-    prefTool: PICKAXE
+    prefTool: pickaxe
     minToolLevel: 1
     texSide: textures/blocks/sandstone_normal.png
     texBottom: textures/blocks/sandstone_bottom.png
@@ -82,7 +85,7 @@ crafting_table:
   texture: textures/blocks/crafting_table_top.png
   block:
     breakTime: 5.0
-    prefTool: AXE
+    prefTool: axe
     texSide: textures/blocks/crafting_table_side.png
     texBottom: textures/blocks/planks_oak.png
 
@@ -90,7 +93,7 @@ furnace:
   texture: textures/blocks/furnace_top.png
   block:
     breakTime: 10
-    prefTool: PICKAXE
+    prefTool: pickaxe
     minToolLevel: 1
     texSide: textures/blocks/furnace_side.png
 
@@ -98,88 +101,88 @@ chest:
   texture: textures/blocks/log_oak_top.png
   block:
     breakTime: 10
-    prefTool: AXE
+    prefTool: axe
 
 wood_pickaxe:
   tool:
-    type: PICKAXE
+    type: pickaxe
     multiplier: 0.75
     durability: 60
     level: 1
 
 stone_pickaxe:
   tool:
-    type: PICKAXE
+    type: pickaxe
     multiplier: 0.6
     durability: 250
     level: 2
 
 iron_pickaxe:
   tool:
-    type: PICKAXE
+    type: pickaxe
     multiplier: 0.5
     durability: 500
     level: 3
 
 diamond_pickaxe:
   tool:
-    type: PICKAXE
+    type: pickaxe
     multiplier: 0.3
     durability: 1500
     level: 4
 
 wood_shovel:
   tool:
-    type: SHOVEL
+    type: shovel
     multiplier: 0.75
     durability: 60
     level: 1
 
 stone_shovel:
   tool:
-    type: SHOVEL
+    type: shovel
     multiplier: 0.6
     durability: 250
     level: 2
 
 iron_shovel:
   tool:
-    type: SHOVEL
+    type: shovel
     multiplier: 0.5
     durability: 500
     level: 3
 
 diamond_shovel:
   tool:
-    type: SHOVEL
+    type: shovel
     multiplier: 0.3
     durability: 1500
     level: 4
 
 wood_axe:
   tool:
-    type: AXE
+    type: axe
     multiplier: 0.75
     durability: 60
     level: 1
 
 stone_axe:
   tool:
-    type: AXE
+    type: axe
     multiplier: 0.6
     durability: 250
     level: 2
 
 iron_axe:
   tool:
-    type: AXE
+    type: axe
     multiplier: 0.5
     durability: 500
     level: 3
 
 diamond_axe:
   tool:
-    type: AXE
+    type: axe
     multiplier: 0.3
     durability: 1500
     level: 4

@@ -8,6 +8,7 @@ import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Inventory
+import xyz.angm.terra3d.common.recipes.CraftingRecipe
 
 /** Player inventory panel. Override for inventories containing a simple crafting interface.
  * @property inventoryImage The image for the inventory interface.
@@ -70,26 +71,26 @@ open class PlayerInventoryPanel(screen: GameScreen) : InventoryPanel(screen) {
     }
 
     override fun itemShiftClicked(actor: ItemGroup.GroupedItemActor) {
-        /* if (actor.group == craftingResult) {
+        if (actor.group == craftingResult) {
             var match = CraftingRecipe.matchAll(craftingGrid.inventory)
             while (match != null) {
                 for (i in 0 until craftingGrid.inventory.size) craftingGrid.inventory.subtractFromSlot(i, 1)
                 inventory += match
                 match = CraftingRecipe.matchAll(craftingGrid.inventory)
             }
-        } else { */
-        updateCraftingGrid(actor)
-        val item = actor.item ?: return
-        actor.item = null
-        if (actor.slot > 8 || actor.group.inventory != inventory) inventory += item
-        else inventory.addToRange(item, 9 until 36) // 9 until 36 is inventory without hotbar
-        //}
+        } else {
+            updateCraftingGrid(actor)
+            val item = actor.item ?: return
+            actor.item = null
+            if (actor.slot > 8 || actor.group.inventory != inventory) inventory += item
+            else inventory.addToRange(item, 9 until 36) // 9 until 36 is inventory without hotbar
+        }
         updateCraftingGrid(actor)
     }
 
     private fun updateCraftingGrid(actor: ItemGroup.GroupedItemActor) {
         if (actor.group == craftingGrid || actor.group == craftingResult) {
-            // craftingResult.inventory[0] = CraftingRecipe.matchAll(craftingGrid.inventory)
+            craftingResult.inventory[0] = CraftingRecipe.matchAll(craftingGrid.inventory)
         }
     }
 }

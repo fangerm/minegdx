@@ -6,9 +6,9 @@ import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.IMetadata
 import java.io.Serializable
 
-/** A simple constant for 'air' blocks to make code removing blocks slightly easier
+/** A simple constant for 'air' blocks and no items to make code slightly easier
  * to understand. */
-const val AIR = 0
+const val NOTHING = 0
 
 /** Represents a block.
  * @property type Block/Item type, can be 0 ('air' block) in some cases

@@ -1,5 +1,6 @@
 package xyz.angm.terra3d.common.items
 
+import xyz.angm.terra3d.common.world.NOTHING
 import java.io.Serializable
 
 /** An inventory, capable of holding and modifying a specified amount of items.
@@ -80,6 +81,7 @@ open class Inventory(size: Int = 0) : Serializable {
      * @param type The item type to search for.
      * @param amount The amount needed; item.amount used when not specified. */
     fun contains(type: ItemType, amount: Int = 1): Boolean {
+        if (type == NOTHING) return true
         for (i in 0 until size) {
             val it = items[i] ?: continue
             if (it.type == type && it.amount >= amount) return true
@@ -91,6 +93,9 @@ open class Inventory(size: Int = 0) : Serializable {
     fun clear() {
         for (i in 0 until size) items[i] = null
     }
+
+    /** @return The amount of slots that contain an item. */
+    fun occupiedSize() = items.count { it != null }
 
     /** Returns a formatted list of all items in the inventory; 1 slot per line. */
     override fun toString(): String {

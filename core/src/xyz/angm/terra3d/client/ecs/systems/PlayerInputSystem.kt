@@ -11,8 +11,8 @@ import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
-import xyz.angm.terra3d.common.world.AIR
 import xyz.angm.terra3d.common.world.Block
+import xyz.angm.terra3d.common.world.NOTHING
 
 /** Sprinting speed multiplier. */
 const val SPRINT_SPEED_MULTIPLIER = 1.5f
@@ -47,7 +47,7 @@ class PlayerInputSystem(
         val breakTime = block.properties!!.block!!.getBreakTime(playerC.inventory.heldItem?.properties?.tool)
         localPlayerC.blockHitPercent = (localPlayerC.blockHitTime / breakTime) * 100
 
-        if (localPlayerC.blockHitPercent > 100f) screen.world.setBlock(Block(AIR, localPlayerC.blockLookingAt))
+        if (localPlayerC.blockHitPercent > 100f) screen.world.setBlock(Block(NOTHING, localPlayerC.blockLookingAt))
     }
 
     /** Called when the player right-clicks. */
