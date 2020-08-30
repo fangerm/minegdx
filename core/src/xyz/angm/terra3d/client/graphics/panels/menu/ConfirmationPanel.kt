@@ -19,7 +19,7 @@ import xyz.angm.terra3d.client.resources.I18N
 class ConfirmationPanel(screen: MenuScreen, callback: (Boolean) -> Unit) : Panel(screen) {
 
     init {
-        this + table {
+        focusedActor = table {
             label(I18N["confirm"]) { it.pad(20f).row() }
 
             textButton(I18N["yes"]) {
@@ -41,6 +41,7 @@ class ConfirmationPanel(screen: MenuScreen, callback: (Boolean) -> Unit) : Panel
 
             setFillParent(true)
         }
+        this + focusedActor
         clearListeners()
     }
 }
