@@ -208,7 +208,16 @@ class GameScreen(
         Gdx.input.isCursorCatched = true
 
         // Chunk loading
-        scheduler.scheduleAtFixedRate({ world.updateLoadedChunks(IntVector3(player[position]!!)) }, 2, 1, TimeUnit.SECONDS)
+        scheduler.scheduleAtFixedRate({
+            // This is needed since world generation with TerrainGenerator can sometimes
+            // cause race conditions due to threads sharing temporary vectors.
+            // This isn't a great solution, but cheaper than using ThreadLocal
+            // for temporary vectors.
+            try {
+                world.updateLoadedChunks(IntVector3(player[position]!!))
+            } catch (e: Exception) {
+            }
+        }, 2, 1, TimeUnit.SECONDS)
     }
 
     // Adds local components to the player entity.

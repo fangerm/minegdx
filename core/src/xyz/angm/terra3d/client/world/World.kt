@@ -206,13 +206,13 @@ class World(private val client: Client, override val seed: String) : Disposable,
     fun setBlock(block: Block) = client.send(block)
 
     override fun setBlockRaw(position: IntVector3, type: ItemType): Boolean {
-        val chunk = getChunk(position)
+        val chunk = getChunk(position) ?: return false
         chunk.setBlock(tmpIV1.set(position).minus(chunk.position), type)
         queueForRender(chunk)
         return true
     }
 
-    private fun getChunk(position: IntVector3) = chunks[tmpIV1.set(position).norm(CHUNK_SIZE)]
+    private fun getChunk(position: IntVector3): RenderableChunk? = chunks[tmpIV1.set(position).norm(CHUNK_SIZE)]
 
     override fun getLoadedChunk(position: IntVector3): Chunk? = getChunk(position)
 
