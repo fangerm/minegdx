@@ -106,9 +106,12 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
     private fun getDebugLabelString() =
         """
         FPS: ${Gdx.graphics.framesPerSecond}
-        Time since last frame: ${(Gdx.graphics.deltaTime * 1000).toInt()}ms
-        Average time in render(): ${(screen.bench.time.average * 1000).toInt()}ms
-        Mean time in render(): ${(screen.bench.time.mean.mean * 1000).toInt()}ms
+        Time since last frame: ${(Gdx.graphics.deltaTime * 1000).format(1)}ms
+        Average time in render(): ${(screen.bench.time.average * 1000).format(1)}ms
+        Mean time in render(): ${(screen.bench.time.mean.mean * 1000).format(1)}ms
+        
+        Heap Size: ${Runtime.getRuntime().totalMemory()}
+        Heap Free: ${Runtime.getRuntime().freeMemory()}
 
         OpenGL ${Gdx.graphics.glVersion.majorVersion}: ${Gdx.graphics.glVersion.rendererString}
         Display: ${Gdx.graphics.displayMode}
@@ -121,6 +124,8 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         Entities loaded: ${screen.entitiesLoaded}
         ECS systems active: ${screen.systemsActive}
         """.trimIndent()
+
+    private fun Float.format(digits: Int) = "%.${digits}f".format(this)
 
     // A bar displayed as an array of sprites. Every sprite can be empty/half/full.
     // The getter is required, since primitive types (kotlin.Int compiles to JVM primitive int) get passed by value, not reference

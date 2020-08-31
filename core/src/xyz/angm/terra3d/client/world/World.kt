@@ -189,7 +189,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
     private fun queueRerender(chunk: RenderableChunk?) {
         chunk ?: return
-        if (chunk.isMeshed && !chunk.isQueued) {
+        if (!chunk.isQueued) {
             chunksWaitingForRender.addFirst(chunk)
             chunk.isQueued = true
         }

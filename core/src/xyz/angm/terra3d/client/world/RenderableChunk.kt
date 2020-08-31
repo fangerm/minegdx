@@ -29,8 +29,10 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     @Transient
     private var model = ModelCache()
 
-    /** If this chunk is meshed and ready to be rendered. */
-    internal var isMeshed = false
+    /** If this chunk has a mesh and needs to be rendered.
+     * This can still be false even after [RenderableChunk.mesh()]
+     * if the chunk is just air. */
+    private var hasMesh = false
 
     /** If this chunk is queued for meshing. */
     internal var isQueued = false
@@ -43,6 +45,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     /** Called when the chunk is in the rendering queue. Will create the model.
      * This is a greedy meshing implementation. It's abridged from https://eddieabbondanz.io/post/voxel/greedy-mesh/. */
     internal fun mesh(world: World) {
+        hasMesh = false
         model.begin()
         Builder.begin()
 
@@ -122,6 +125,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                             else -> Item.Properties.fromType(block)!!.block?.texSide ?: tex // Side face
                         }
                         Builder.drawRect(texture, quadSize[workAxis1].toFloat(), quadSize[workAxis2].toFloat(), isBackFace, direction == 0)
+                        hasMesh = true
 
                         for (f in 0 until quadSize[workAxis1]) {
                             for (g in 0 until quadSize[workAxis2]) {
@@ -137,7 +141,6 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         modelInst.transform.setToTranslation(position.toV3(tmpV3))
         model.add(modelInst)
         model.end()
-        isMeshed = true
         isQueued = false
     }
 
@@ -160,7 +163,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     private fun getFromAIV3(pos: ArrIV3) = this[pos[0], pos[1], pos[2]]
 
     /** Returns if the chunk is meshed and visible to the given camera. */
-    fun shouldRender(cam: Camera) = isMeshed && cam.frustum.boundsInFrustum(positionCentered, dimensions)
+    fun shouldRender(cam: Camera) = hasMesh && cam.frustum.boundsInFrustum(positionCentered, dimensions)
 
     override fun hashCode() = position.hashCode()
     override fun equals(other: Any?) = other is RenderableChunk && other.position == position
