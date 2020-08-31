@@ -67,9 +67,8 @@ class TerrainGenerator(val world: WorldInterface) {
         for (x in 0 until CHUNK_SIZE) {
             for (z in 0 until CHUNK_SIZE) {
                 generateTerrain(chunk, heightMap[x][z], biomeMap[x][z], x, z)
-
                 generateStructures(
-                    chunk, tmpIV.set(chunk.position.x + x, heightMap[x][z], chunk.position.z + z),
+                    chunk, tmpIV.set(x, heightMap[x][z] - chunk.position.y, z),
                     heightMap[x][z], biomeMap[x][z], random
                 )
             }
@@ -77,10 +76,11 @@ class TerrainGenerator(val world: WorldInterface) {
     }
 
     private fun generateTerrain(chunk: Chunk, height: Int, biome: Biome, x: Int, z: Int) {
+        if (height - chunk.position.y < 0) return // This chunk is 100% air
+
         for (y in 0 until CHUNK_SIZE) {
             val diff = height - (chunk.position.y + y)
-
-            if (diff < 0) continue // block should be air; aka null
+            if (diff < 0) break // blocks beyond should be air; aka null
 
             val type = when {
                 chunk.position.y == 0 && y == 0 -> "bedrock"
