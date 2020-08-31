@@ -78,7 +78,6 @@ object Skin {
             add("button-hover", ResourceManager.getTextureRegion(guiWidgets, 0, 172, 400, 40))
             add("button-disabled", ResourceManager.getTextureRegion(guiWidgets, 0, 92, 400, 40))
             add("logo", ResourceManager.get("textures/gui/title/terra3d.png"))
-            add("logo-editor", ResourceManager.get("textures/gui/title/terra3d-editor.png"))
 
             textButton {
                 font = it["default-32pt"]

@@ -11,6 +11,7 @@ import xyz.angm.terra3d.client.networking.LocalServer
 import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.client.world.RENDER_TIME_LOAD
 import xyz.angm.terra3d.client.world.World
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.networking.InitPacket
 import xyz.angm.terra3d.common.networking.JoinPacket
 import xyz.angm.terra3d.common.world.WorldSaveManager
@@ -63,5 +64,6 @@ class Terra3D : Game() {
         }
     }
 
-    private fun startGame(client: Client, world: World, data: InitPacket) = setScreen(GameScreen(this, client, world, data.player, data.entities))
+    private fun startGame(client: Client, world: World, data: InitPacket) =
+        setScreen(GameScreen(this, client, world, data.player.toEntity(), EntityData.toEntities(data.entities)))
 }

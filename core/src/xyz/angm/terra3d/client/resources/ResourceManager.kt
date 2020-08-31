@@ -109,7 +109,6 @@ object ResourceManager {
     private fun loadMenuAssets() {
         load<Texture>("textures/gui/widgets.png")
         load<Texture>("textures/gui/title/terra3d.png")
-        load<Texture>("textures/gui/title/terra3d-editor.png")
         load<Model>("models/skybox.obj")
         assets.finishLoading()
         Skin.reload()

@@ -5,6 +5,7 @@ import com.badlogic.ashley.core.EntityListener
 import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.utils.IntMap
 import ktx.ashley.get
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.ignoreSync
 import xyz.angm.terra3d.common.ecs.network
 
@@ -13,7 +14,7 @@ import xyz.angm.terra3d.common.ecs.network
  * It also automatically manages all entities sent via network by adding them to the engine automatically;
  * entities that request network update are sent automatically as well. */
 class NetworkSystem(
-    private val send: (Entity) -> Unit
+    private val send: (EntityData) -> Unit
 ) : EntitySystem(Int.MAX_VALUE - 1), EntityListener {
 
     private val entities = IntMap<Entity>()
@@ -23,20 +24,20 @@ class NetworkSystem(
         entities.values().forEach { entity ->
             if (entity[network]!!.needsSync) {
                 entity[network]!!.needsSync = false
-                send(entity)
+                send(EntityData.from(entity))
             }
         }
     }
 
     /** Either add the new entity or update the local one.
      * Called when entity was received over network. */
-    fun receive(entity: Entity) {
-        if (!entities.containsKey(entity[network]!!.id)) {
-            engine.addEntity(entity)
+    fun receive(data: EntityData) {
+        if (!entities.containsKey(data.network.id)) {
+            engine.addEntity(data.toEntity())
         } else {
-            val localEntity = entities[entity[network]!!.id]
+            val localEntity = entities[data.network.id]
             if (localEntity[ignoreSync] != null) return // Things with this flag shouldn't be synced
-            entity.components.forEach { localEntity.add(it) }
+            data.components.forEach { localEntity.add(it) }
         }
     }
 

@@ -8,7 +8,10 @@ import org.nustaq.serialization.*
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.*
+import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
+import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.networking.*
@@ -27,8 +30,8 @@ val fst = createFST(
 
     // Components
     Component::class,
-    LocalPlayerComponent::class,
-    HealthComponent::class,
+    LocalPlayerComponent::class, PlayerComponent::class,
+    HealthComponent::class, ItemComponent::class,
     NetworkSyncComponent::class,
     PositionComponent::class, VelocityComponent::class, DirectionComponent::class, SizeComponent::class,
     NoPhysicsFlag::class, RemoveFlag::class,
@@ -36,67 +39,14 @@ val fst = createFST(
     // Various
     IntVector3::class, Vector3::class,
     Chunk::class, Block::class, Item::class,
-    Inventory::class
+    Inventory::class, PlayerComponent.PlayerInventory::class
 )
 
 private fun createFST(vararg classes: KClass<out Any>): FSTConfiguration {
     val fst = FSTConfiguration.createDefaultConfiguration()
     classes.forEach { fst.registerClass(it.java) }
 
-    fst.registerSerializer(Entity::class.java, FSTEntitySerializer(), true)
+    fst.registerSerializer(EntityData::class.java, EntityData.FSTEntitySerializer(), true)
     fst.registerSerializer(Chunk::class.java, Chunk.FSTChunkSerializer(), true)
     return fst
-}
-
-/** Custom ECS entity serializer.
- * Only serializes components to vastly improve speed and prevent internal state from being transferred. */
-private class FSTEntitySerializer : FSTBasicObjectSerializer() {
-
-    override fun writeObject(
-        output: FSTObjectOutput,
-        entity: Any,
-        clzInfo: FSTClazzInfo,
-        referencedBy: FSTClazzInfo.FSTFieldInfo,
-        streamPosition: Int
-    ) {
-        entity as Entity
-
-        // Renderable components are not sent, and the size of the components needs to reflect that
-        var size = entity.components.size()
-        entity.components.forEach { if (noSerialize.contains(it::class)) size-- }
-        output.writeInt(size)
-
-        for (component in entity.components) {
-            if (noSerialize.contains(component::class)) continue
-            output.writeObject(component)
-        }
-    }
-
-    override fun instantiate(
-        objectClass: Class<*>,
-        input: FSTObjectInput,
-        serializationInfo: FSTClazzInfo,
-        referencee: FSTClazzInfo.FSTFieldInfo,
-        streamPosition: Int
-    ): Any {
-        val entity = Entity()
-        val componentAmount = input.readInt()
-        for (i in 0 until componentAmount) {
-            val component = input.readObject() as Component
-            entity.add(component)
-        }
-        return entity
-    }
-
-    companion object {
-        /** A set of components that do not get serialized. */
-        val noSerialize = HashSet<KClass<out Any>>()
-
-        init {
-            noSerialize.add(LocalPlayerComponent::class)
-            noSerialize.add(ModelRenderComponent::class)
-            noSerialize.add(PlayerRenderComponent::class)
-            noSerialize.add(IgnoreSyncFlag::class)
-        }
-    }
 }

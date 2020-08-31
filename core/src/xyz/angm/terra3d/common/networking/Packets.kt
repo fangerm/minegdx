@@ -1,7 +1,7 @@
 package xyz.angm.terra3d.common.networking
 
-import com.badlogic.ashley.core.Entity
 import xyz.angm.terra3d.common.IntVector3
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
 import java.io.Serializable
@@ -36,8 +36,8 @@ typealias BlockUpdate = Block
 /** A packet sent on first connect as a response to [JoinPacket].
  * Contains all data required by the client to begin init and world loading. */
 class InitPacket(
-    val player: Entity = Entity(),
-    val entities: Array<Entity> = emptyArray(),
+    val player: EntityData = EntityData(),
+    val entities: Array<EntityData> = emptyArray(),
     val world: Array<Chunk> = emptyArray(),
     val seed: String
 ) : Packet

@@ -7,6 +7,7 @@ import ktx.ashley.allOf
 import ktx.ashley.exclude
 import ktx.ashley.get
 import ktx.assets.toLocalFile
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.playerM
@@ -56,7 +57,7 @@ object WorldSaveManager {
         fun getPlayer(engine: Engine, info: JoinPacket): Entity {
             val player = "$location/players/${info.uuid}.bin".toLocalFile()
             val entity = if (player.exists()) {
-                val player = fst.asObject(player.readBytes()) as Entity
+                val player = (fst.asObject(player.readBytes()) as EntityData).toEntity()
                 engine.addEntity(player)
                 player
             } else PlayerComponent.create(engine, name, info.uuid)
@@ -69,7 +70,7 @@ object WorldSaveManager {
          * @param player The player to save */
         fun savePlayer(player: Entity) {
             "$location/players".toLocalFile().mkdirs()
-            "$location/players/${player[playerM]!!.clientUUID}.bin".toLocalFile().writeBytes(fst.asByteArray(player), false)
+            "$location/players/${player[playerM]!!.clientUUID}.bin".toLocalFile().writeBytes(fst.asByteArray(EntityData.from(player)), false)
         }
 
         /** Will save all entities to disk, including players.
@@ -80,8 +81,9 @@ object WorldSaveManager {
 
             engine.getEntitiesFor(playerFamily).forEach { savePlayer(it) }
 
-            val entities = engine.getEntitiesFor(otherFamily).toArray<Entity>(Entity::class.java)
-            val rawData = fst.asByteArray(entities)
+            val entities = engine.getEntitiesFor(otherFamily)
+            val entityData = Array(entities.size()) { EntityData.from(entities[it]) }
+            val rawData = fst.asByteArray(entityData)
             "$location/entities.bin".toLocalFile().writeBytes(rawData, false)
         }
 
@@ -90,8 +92,8 @@ object WorldSaveManager {
         fun getAllEntities(engine: Engine) {
             val file = "$location/entities.bin".toLocalFile()
             if (!file.exists()) return // No entities to restore
-            val entities = fst.asObject(file.readBytes()) as Array<Entity>
-            entities.forEach { engine.addEntity(it) }
+            val entities = fst.asObject(file.readBytes()) as Array<EntityData>
+            entities.forEach { engine.addEntity(it.toEntity()) }
         }
     }
 }

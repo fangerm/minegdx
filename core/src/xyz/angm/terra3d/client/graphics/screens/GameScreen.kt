@@ -38,13 +38,12 @@ import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.client.world.World
-import xyz.angm.terra3d.common.IntVector3
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.IgnoreSyncFlag
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.modelRender
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.ecs.playerRender
-import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.networking.BlockUpdate
@@ -167,7 +166,7 @@ class GameScreen(
      * Returns to the menu screen.
      * @param message The message to display. Defaults to no message which will return to menu screen immediately. */
     fun returnToMenu(message: String? = null) {
-        client.send(player) // Make sure the player is up-to-date on the server
+        client.send(EntityData.from(player)) // Make sure the player is up-to-date on the server
         client.disconnectListener = {} // Prevent it from showing the 'disconnected' message when it shouldn't
         game.screen = MenuScreen(game)
         dispose()
@@ -198,7 +197,7 @@ class GameScreen(
         val netSystem = engine.getSystem(NetworkSystem::class.java)
         client.addListener {
             when (it) {
-                is Entity -> netSystem.receive(it)
+                is EntityData -> netSystem.receive(it)
             }
         }
         client.send(ChatMessagePacket("[CYAN]${player[playerM]!!.name}[LIGHT_GRAY] ${I18N["joined-game"]}"))
