@@ -52,9 +52,6 @@ private fun showDialog(text: String, type: Int) = JOptionPane.showMessageDialog(
 
 /** Shows any warnings related to the user's system. */
 private fun showWarnings() {
-    if ((Runtime.getRuntime().maxMemory() / 1024 / 1024) < 2500)
-        showDialog("Your device does not have 2.5GB free RAM!\nExpect the game to crash.", JOptionPane.ERROR_MESSAGE)
-
     if ((Gdx.graphics as LwjglGraphics).isSoftwareMode)
         showDialog("Your device does not support OpenGL!\nFalling back to software render. Expect bad performance.", JOptionPane.WARNING_MESSAGE)
 }
@@ -64,5 +61,5 @@ private fun setConfiguration() {
     configuration.backgroundFPS = 15
     configuration.vSyncEnabled = false
     configuration.allowSoftwareMode = true
-    configuration.title = "MineGDX"
+    configuration.title = "Terra3D"
 }
