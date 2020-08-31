@@ -3,7 +3,13 @@ package xyz.angm.terra3d.common
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import org.nustaq.serialization.FSTBasicObjectSerializer
+import org.nustaq.serialization.FSTClazzInfo
+import org.nustaq.serialization.FSTObjectInput
+import org.nustaq.serialization.FSTObjectOutput
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
+import xyz.angm.terra3d.common.items.metadata.IMetadata
+import xyz.angm.terra3d.common.world.Chunk
 import java.io.Serializable
 import kotlin.math.sqrt
 
@@ -134,5 +140,21 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
 
         /** @return If all 3 directions are in bounds */
         fun isInBounds(x: Int, y: Int, z: Int, min: Int, max: Int) = x >= min && y >= min && z >= min && x < max && y < max && z < max
+    }
+
+
+    /** Simple vector serializer to improve performance a bit compared to reflection. */
+    class FSTVectorSerializer : FSTBasicObjectSerializer() {
+
+        override fun writeObject(out: FSTObjectOutput, vec: Any, cInfo: FSTClazzInfo, fInfo: FSTClazzInfo.FSTFieldInfo, strPos: Int) {
+            vec as IntVector3
+            out.writeInt(vec.x)
+            out.writeInt(vec.y)
+            out.writeInt(vec.z)
+        }
+
+        override fun instantiate(oClass: Class<*>, input: FSTObjectInput, cInfo: FSTClazzInfo, fInfo: FSTClazzInfo.FSTFieldInfo, strPos: Int): Any {
+            return IntVector3(input.readInt(), input.readInt(), input.readInt())
+        }
     }
 }

@@ -48,5 +48,6 @@ private fun createFST(vararg classes: KClass<out Any>): FSTConfiguration {
 
     fst.registerSerializer(EntityData::class.java, EntityData.FSTEntitySerializer(), true)
     fst.registerSerializer(Chunk::class.java, Chunk.FSTChunkSerializer(), true)
+    fst.registerSerializer(IntVector3::class.java, IntVector3.FSTVectorSerializer(), true)
     return fst
 }
