@@ -5,6 +5,10 @@ import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 
 /** Interface for playing sound. */
 interface SoundInterface {
+
+    /** Initialize and get ready for playing sounds. */
+    fun init()
+
     /** Play a sound to the player. */
     fun playSound(sound: String)
 
@@ -18,6 +22,7 @@ interface SoundInterface {
 /** A dummy sound interface that deliberately does nothing.
  * Used by default when the launcher didn't specify an interface. */
 private object DummySoundInterface : SoundInterface {
+    override fun init() {}
     override fun playSound(sound: String) {}
     override fun playSound3D(sound: String, location: Vector3) {}
     override fun updateListenerPosition(position: VectoredComponent, direction: VectoredComponent) {}

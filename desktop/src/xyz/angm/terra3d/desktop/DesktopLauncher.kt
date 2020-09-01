@@ -2,9 +2,8 @@ package xyz.angm.terra3d.desktop
 
 import ch.qos.logback.classic.Level
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication
-import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
-import com.badlogic.gdx.backends.lwjgl.LwjglGraphics
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
 import xyz.angm.terra3d.client.Terra3D
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.level
@@ -13,7 +12,7 @@ import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
 /** The LWJGL configuration used for the game */
-val configuration = LwjglApplicationConfiguration()
+val configuration = Lwjgl3ApplicationConfiguration()
 
 /** The game instance */
 val game = Terra3D()
@@ -24,14 +23,12 @@ fun main(arg: Array<String>) {
     Thread.setDefaultUncaughtExceptionHandler(::handleException)
 
     setConfiguration()
-    LwjglApplication(game, configuration)
-    showWarnings()
     soundPlayer = Sound
+    Lwjgl3Application(game, configuration)
 }
 
 /** Handle exceptions */
 private fun handleException(thread: Thread, throwable: Throwable) {
-    configuration.forceExit = false // Setting this during boot would cause the game to not exit when closing normally as well
     Gdx.app?.exit()
 
     log.error { "Whoops. This shouldn't have happened..." }
@@ -48,18 +45,11 @@ private fun handleException(thread: Thread, throwable: Throwable) {
 }
 
 /** Simple method for showing a dialog. Type should be a type from JOptionPane */
-private fun showDialog(text: String, type: Int) = JOptionPane.showMessageDialog(null, text, "MineGDX", type)
-
-/** Shows any warnings related to the user's system. */
-private fun showWarnings() {
-    if ((Gdx.graphics as LwjglGraphics).isSoftwareMode)
-        showDialog("Your device does not support OpenGL!\nFalling back to software render. Expect bad performance.", JOptionPane.WARNING_MESSAGE)
-}
+private fun showDialog(text: String, type: Int) = JOptionPane.showMessageDialog(null, text, "Terra3D", type)
 
 /** Returns the LWJGL configuration. */
 private fun setConfiguration() {
-    configuration.backgroundFPS = 15
-    configuration.vSyncEnabled = false
-    configuration.allowSoftwareMode = true
-    configuration.title = "Terra3D"
+    configuration.setIdleFPS(15)
+    configuration.useVsync(true)
+    configuration.setTitle("Terra3D")
 }

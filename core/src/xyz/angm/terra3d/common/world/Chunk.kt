@@ -79,6 +79,7 @@ open class Chunk private constructor(
 
         /** Creates the chunk, also reads it during instance creation */
         override fun instantiate(oClass: Class<*>, input: FSTObjectInput, cInfo: FSTClazzInfo, fInfo: FSTClazzInfo.FSTFieldInfo, strPos: Int): Any {
+            @Suppress("UNCHECKED_CAST")
             return Chunk(
                 position = IntVector3(input.readInt(), input.readInt(), input.readInt()),
                 blockMetadata = input.readObject(HashMap::class.java) as HashMap<IntVector3, IMetadata>,

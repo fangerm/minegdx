@@ -18,11 +18,14 @@ task debug(dependsOn: classes, type: JavaExec) {
 }
 
 task dist(type: Jar) {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     from files(sourceSets.main.output.classesDirs)
     from files(sourceSets.main.output.resourcesDir)
-    from {configurations.compile.collect {zipTree(it)}}
+    from {configurations.runtimeClasspath.collect {zipTree(it)}}
     from files(project.assetsDir)
     archiveBaseName = "terra3d-server"
+    // Exclude Linux ARM targets
+    exclude('linux/arm32/**', 'linux/arm64/**')
 
     manifest {
         attributes "Main-Class": project.mainClassName

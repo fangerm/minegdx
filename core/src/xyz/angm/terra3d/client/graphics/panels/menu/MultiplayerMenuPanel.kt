@@ -44,7 +44,7 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                                 }
                             }
 
-                            onClickEvent { event, actor ->
+                            onClickEvent { event, _ ->
                                 if (event.target.parent == deleteBtn) return@onClickEvent
                                 screen.connectToServer(server.value)
                             }

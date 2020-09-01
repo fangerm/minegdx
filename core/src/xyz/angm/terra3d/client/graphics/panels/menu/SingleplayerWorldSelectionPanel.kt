@@ -44,7 +44,7 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
                                 }
                             }
 
-                            onClickEvent { event, actor ->
+                            onClickEvent { event, _ ->
                                 if (event.target.parent == deleteBtn) return@onClickEvent
                                 screen.localServer(save)
                             }

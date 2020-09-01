@@ -2,7 +2,7 @@ package xyz.angm.terra3d.desktop
 
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.backends.lwjgl.audio.OggInputStream
+import com.badlogic.gdx.backends.lwjgl3.audio.OggInputStream
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.ObjectIntMap
 import com.badlogic.gdx.utils.StreamUtils
@@ -23,7 +23,7 @@ object Sound : SoundInterface {
     private val sounds = ObjectIntMap<String>()
     private val listenerPosition = Vector3()
 
-    init {
+    override fun init() {
         alListener3f(AL_POSITION, 0f, 0f, 0f)
         alListener3f(AL_VELOCITY, 0f, 0f, 0f)
         updateListenerPosition(PositionComponent(), DirectionComponent())

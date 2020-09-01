@@ -57,9 +57,9 @@ object WorldSaveManager {
         fun getPlayer(engine: Engine, info: JoinPacket): Entity {
             val player = "$location/players/${info.uuid}.bin".toLocalFile()
             val entity = if (player.exists()) {
-                val player = (fst.asObject(player.readBytes()) as EntityData).toEntity()
-                engine.addEntity(player)
-                player
+                val entity = (fst.asObject(player.readBytes()) as EntityData).toEntity()
+                engine.addEntity(entity)
+                entity
             } else PlayerComponent.create(engine, name, info.uuid)
 
             entity.remove(RemoveFlag::class.java) // Unsure why but this is here?
@@ -92,6 +92,7 @@ object WorldSaveManager {
         fun getAllEntities(engine: Engine) {
             val file = "$location/entities.bin".toLocalFile()
             if (!file.exists()) return // No entities to restore
+            @Suppress("UNCHECKED_CAST")
             val entities = fst.asObject(file.readBytes()) as Array<EntityData>
             entities.forEach { engine.addEntity(it.toEntity()) }
         }

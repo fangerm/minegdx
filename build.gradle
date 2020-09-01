@@ -33,7 +33,7 @@ allprojects {
     version = new SimpleDateFormat("yyyyMMdd").format(new Date())
     ext {
         appName = "terra3d"
-        gdxVersion = "1.9.12"
+        gdxVersion = "1.9.11"
         ashleyVersion = "1.7.3"
         aiVersion = "1.8.2"
         ktxVersion = "1.9.8-b5"
@@ -74,19 +74,19 @@ allprojects {
 
 project(":desktop") {
     dependencies {
-        compile project(":core")
-        compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
+        implementation project(":core")
+        implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        implementation "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        implementation "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
     }
 }
 
 project(":server") {
     dependencies {
-        compile project(":core")
-        compile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        implementation project(":core")
+        implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     }
 }
 
@@ -97,26 +97,20 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx-ai:$aiVersion"
         api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
 
+        api "io.github.libktx:ktx-ashley:$ktxVersion"
+        api "io.github.libktx:ktx-assets:$ktxVersion"
+        api "io.github.libktx:ktx-actors:$ktxVersion"
+        api "io.github.libktx:ktx-collections:$ktxVersion"
+        api "io.github.libktx:ktx-style:$ktxVersion"
+        api "io.github.libktx:ktx-scene2d:$ktxVersion"
+        api "com.kotcrab.vis:vis-ui:1.4.6"
+
         api "com.github.fangerm:ashley:1.7.4"
+        api "de.ruedigermoeller:fst:2.56"
+        api "io.netty:netty-all:4.1.36.Final"
 
-        implementation "de.ruedigermoeller:fst:2.56"
-
-        implementation "org.jetbrains.exposed:exposed:0.11.2"
-        implementation "org.xerial:sqlite-jdbc:3.21.0.1"
-
-        implementation "com.mojang:brigadier:1.0.15"
-
-        implementation "io.netty:netty-all:4.1.36.Final"
-
-        compile "io.github.libktx:ktx-ashley:$ktxVersion"
-        compile "io.github.libktx:ktx-assets:$ktxVersion"
-        compile "io.github.libktx:ktx-actors:$ktxVersion"
-        compile "io.github.libktx:ktx-collections:$ktxVersion"
-        compile "io.github.libktx:ktx-style:$ktxVersion"
-        compile "io.github.libktx:ktx-scene2d:$ktxVersion"
-
-        compile "com.kotcrab.vis:vis-ui:1.4.6"
-
-        implementation "org.zeroturnaround:zt-zip:1.13"
+        api "org.jetbrains.exposed:exposed:0.11.2"
+        api "org.xerial:sqlite-jdbc:3.21.0.1"
+        api "org.zeroturnaround:zt-zip:1.13"
     }
 }
