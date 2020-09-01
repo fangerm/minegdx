@@ -24,7 +24,7 @@ import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.WorldInterface
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 
-const val RENDER_DIST_CHUNKS = 3
+const val RENDER_DIST_CHUNKS = 2
 
 /** How far a block raycast goes - The max distance a player can change blocks from. */
 private const val RAYCAST_REACH = 5f
