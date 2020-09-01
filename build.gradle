@@ -33,12 +33,11 @@ allprojects {
     version = new SimpleDateFormat("yyyyMMdd").format(new Date())
     ext {
         appName = "terra3d"
-        gdxVersion = "1.9.11"
-        roboVMVersion = "2.3.8"
+        gdxVersion = "1.9.12"
         ashleyVersion = "1.7.3"
         aiVersion = "1.8.2"
         ktxVersion = "1.9.8-b5"
-        assetsDir = new File("../core/assets")
+        assetsDir = new File("../assets")
     }
 
     repositories {
@@ -51,7 +50,6 @@ allprojects {
         maven { url "https://jitpack.io" }
         maven { url "https://dl.bintray.com/kotlin/exposed" }
         maven { url "https://kotlin.bintray.com/kotlinx" }
-        maven { url "https://libraries.minecraft.net" }
     }
 
     dokka {
@@ -63,14 +61,14 @@ allprojects {
         }
     }
 
-     dependencies {
-         implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-         implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-         implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC"
-         implementation "com.charleskorn.kaml:kaml:0.19.0"
+    dependencies {
+        implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+        implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.0-RC"
+        implementation "com.charleskorn.kaml:kaml:0.19.0"
 
-         implementation "io.github.microutils:kotlin-logging:1.6.22"
-         implementation "ch.qos.logback:logback-classic:1.2.3"
+        implementation "io.github.microutils:kotlin-logging:1.6.22"
+        implementation "ch.qos.logback:logback-classic:1.2.3"
     }
 }
 
@@ -79,9 +77,6 @@ project(":desktop") {
         compile project(":core")
         compile "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-controllers-desktop:$gdxVersion"
-        compile "com.badlogicgames.gdx:gdx-controllers-platform:$gdxVersion:natives-desktop"
-        compile "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-bullet-platform:$gdxVersion:natives-desktop"
     }
