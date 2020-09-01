@@ -8,7 +8,6 @@ import org.nustaq.serialization.FSTClazzInfo
 import org.nustaq.serialization.FSTObjectInput
 import org.nustaq.serialization.FSTObjectOutput
 import java.io.Serializable
-import kotlin.math.sqrt
 
 /** A 3D vector using integers as values.
  * @constructor Applies supplied values. Default values are (0, 0, 0)
@@ -113,11 +112,11 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     /** Normalize this vector to a multiple of the specified number. */
     fun norm(num: Int) = this.div(num).mul(num)
 
-    /** @return the distance between this vector and the given vector on the XZ axes */
-    fun distXZ(other: IntVector3): Float {
+    /** @return the distance between this vector and the given vector on the XZ axes squared */
+    fun distXZSQ(other: IntVector3): Int {
         val a = other.x - this.x
         val c = other.z - this.z
-        return sqrt(a * a + (c * c).toDouble()).toFloat()
+        return a * a + c * c
     }
 
     /** String representation of all 3 axes */

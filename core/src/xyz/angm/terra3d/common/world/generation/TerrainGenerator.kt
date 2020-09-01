@@ -15,8 +15,7 @@ class TerrainGenerator(val world: WorldInterface) {
     private val structures = Structures()
     private val tmpIV = IntVector3()
 
-    /** Finalize generation.
-     * Call after finishing with generating something, usually something batched. */
+    /** Finalize generation. Call after finishing with generating something, usually something batched. */
     fun finalizeGen() = structures.update(world)
 
     /** Generate a line of chunks.

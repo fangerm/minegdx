@@ -36,8 +36,8 @@ private const val RENDER_TIME = 4
 /** The amount of time to spend rendering/meshing chunks per frame during initialization, see [xyz.angm.terra3d.client.Terra3D]. */
 const val RENDER_TIME_LOAD = 10
 
-/** The maximum distance a chunk can have to the player before being discarded. */
-private const val MAX_CHUNK_DIST = 150f
+/** The maximum distance a chunk can have to the player before being discarded, squared. */
+private const val MAX_CHUNK_DIST = 150 * 150
 
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
@@ -73,15 +73,9 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * and unloads far away chunks.
      * @param position The position to check. Should be the player's position. */
     fun updateLoadedChunks(position: IntVector3) {
-        for (x in 0..RENDER_DIST_CHUNKS) {
-            for (z in 0..RENDER_DIST_CHUNKS) {
+        for (x in -RENDER_DIST_CHUNKS..RENDER_DIST_CHUNKS) {
+            for (z in -RENDER_DIST_CHUNKS..RENDER_DIST_CHUNKS) {
                 val chunkPosition = tmpIV2.set(position).add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE)
-                if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
-                chunkPosition.set(position).add(x * -CHUNK_SIZE, 0, z * CHUNK_SIZE)
-                if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
-                chunkPosition.set(position).add(x * CHUNK_SIZE, 0, z * -CHUNK_SIZE)
-                if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
-                chunkPosition.set(position).add(x * -CHUNK_SIZE, 0, z * -CHUNK_SIZE)
                 if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
             }
         }
@@ -93,7 +87,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
             var i = 0
             while (i < chunks.size) {
                 val pos = chunks.orderedKeys()[i]
-                if (pos.distXZ(position) > MAX_CHUNK_DIST) {
+                if (pos.distXZSQ(position) > MAX_CHUNK_DIST) {
                     chunks[pos]!!.dispose()
                     chunks.removeIndex(i)
                 } else i++
