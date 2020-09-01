@@ -7,9 +7,6 @@ import org.nustaq.serialization.FSTBasicObjectSerializer
 import org.nustaq.serialization.FSTClazzInfo
 import org.nustaq.serialization.FSTObjectInput
 import org.nustaq.serialization.FSTObjectOutput
-import xyz.angm.terra3d.common.ecs.components.VectoredComponent
-import xyz.angm.terra3d.common.items.metadata.IMetadata
-import xyz.angm.terra3d.common.world.Chunk
 import java.io.Serializable
 import kotlin.math.sqrt
 
@@ -24,13 +21,6 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     /** Constructs a vector from a libGDX float vector. Values are floored.
      * @param vector3 The float vector to be floored */
     constructor(vector3: Vector3) : this(MathUtils.floor(vector3.x), MathUtils.floor(vector3.y), MathUtils.floor(vector3.z))
-
-    /** Constructs a vector from a vectored component. Values are floored.
-     * @param vC The VectoredComponent. */
-    constructor(vC: VectoredComponent) : this(MathUtils.floor(vC.x), MathUtils.floor(vC.y), MathUtils.floor(vC.z))
-
-    /** Constructs a vector from the translation of a libGDX Matrix4. */
-    constructor(matrix4: Matrix4) : this(matrix4.getTranslation(tmpV))
 
     /** Constructs from an integer array that must have at least 3 values. */
     constructor(arr: IntArray) : this(arr[0], arr[1], arr[2])
@@ -59,11 +49,9 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
      * @return Itself */
     fun set(v: IntVector3) = set(v.x, v.y, v.z)
 
-    /** @see set */
     fun set(v: Vector3) = set(MathUtils.floor(v.x), MathUtils.floor(v.y), MathUtils.floor(v.z))
 
-    /** @see set */
-    fun set(v: VectoredComponent) = set(MathUtils.floor(v.x), MathUtils.floor(v.y), MathUtils.floor(v.z))
+    fun setTrans(m: Matrix4) = set(m.getTranslation(tmpV))
 
     /** @see set */
     fun set(x: Int, y: Int, z: Int): IntVector3 {

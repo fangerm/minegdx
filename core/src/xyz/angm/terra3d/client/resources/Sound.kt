@@ -1,7 +1,6 @@
 package xyz.angm.terra3d.client.resources
 
 import com.badlogic.gdx.math.Vector3
-import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 
 /** Interface for playing sound. */
 interface SoundInterface {
@@ -16,7 +15,7 @@ interface SoundInterface {
     fun playSound3D(sound: String, location: Vector3)
 
     /** Updates the position and direction of the listener for 3D sound, which is usually the player. */
-    fun updateListenerPosition(position: VectoredComponent, direction: VectoredComponent)
+    fun updateListenerPosition(position: Vector3, direction: Vector3)
 }
 
 /** A dummy sound interface that deliberately does nothing.
@@ -25,7 +24,7 @@ private object DummySoundInterface : SoundInterface {
     override fun init() {}
     override fun playSound(sound: String) {}
     override fun playSound3D(sound: String, location: Vector3) {}
-    override fun updateListenerPosition(position: VectoredComponent, direction: VectoredComponent) {}
+    override fun updateListenerPosition(position: Vector3, direction: Vector3) {}
 }
 
 /** An interface for playing sound effects.

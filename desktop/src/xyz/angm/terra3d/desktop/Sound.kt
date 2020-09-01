@@ -9,10 +9,6 @@ import com.badlogic.gdx.utils.StreamUtils
 import org.lwjgl.openal.AL10.*
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.SoundInterface
-import xyz.angm.terra3d.common.ecs.components.DirectionComponent
-import xyz.angm.terra3d.common.ecs.components.PositionComponent
-import xyz.angm.terra3d.common.ecs.components.VectoredComponent
-import xyz.angm.terra3d.common.ecs.components.set
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -26,10 +22,10 @@ object Sound : SoundInterface {
     override fun init() {
         alListener3f(AL_POSITION, 0f, 0f, 0f)
         alListener3f(AL_VELOCITY, 0f, 0f, 0f)
-        updateListenerPosition(PositionComponent(), DirectionComponent())
+        updateListenerPosition(Vector3.Zero, Vector3.Zero)
     }
 
-    override fun updateListenerPosition(position: VectoredComponent, direction: VectoredComponent) {
+    override fun updateListenerPosition(position: Vector3, direction: Vector3) {
         listenerPosition.set(position)
         alListener3f(AL_POSITION, position.x, position.y, position.z)
         alListener3f(AL_ORIENTATION, direction.x, direction.y, direction.z)

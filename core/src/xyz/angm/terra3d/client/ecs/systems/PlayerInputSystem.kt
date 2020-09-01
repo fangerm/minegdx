@@ -2,7 +2,6 @@ package xyz.angm.terra3d.client.ecs.systems
 
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.EntitySystem
-import com.badlogic.gdx.math.Vector3
 import ktx.ashley.get
 import xyz.angm.terra3d.client.actions.Event
 import xyz.angm.terra3d.client.actions.EventContext
@@ -10,14 +9,12 @@ import xyz.angm.terra3d.client.actions.PlayerInteractions
 import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.SPRINT_FOV
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
-import xyz.angm.terra3d.common.ecs.*
-import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
+import xyz.angm.terra3d.common.ecs.localPlayer
+import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.world
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.NOTHING
-
-/** Sprinting speed multiplier. */
-const val SPRINT_SPEED_MULTIPLIER = 1.5f
 
 /** System responsible for handling player input.
  * Does not use Ashley's update system for the most part; input is event-driven.
@@ -32,7 +29,6 @@ class PlayerInputSystem(
     private val inputHandler: PlayerInputHandler
 ) : EntitySystem() {
 
-    private val tmpV = Vector3()
     private val localPlayerC = player[localPlayer]!!
     private val playerC = player[playerM]!!
 
@@ -61,7 +57,7 @@ class PlayerInputSystem(
 
             val block = playerC.inventory.heldItem ?: return
             if (block.properties.isBlock &&
-                screen.world.updateBlockRaycast(player[position]!!, player[direction]!!, block)
+                screen.world.updateBlockRaycast(screen.cam.position, screen.cam.direction, block)
             )
                 playerC.inventory.subtractFromHeldItem(1)
         }
@@ -70,13 +66,8 @@ class PlayerInputSystem(
     /** Causes the player to sprint or stop sprinting.
      * @param sprint If the player should sprint (else will stop sprinting) */
     fun sprint(sprint: Boolean) {
-        if (sprint) {
-            player[velocity]!!.speedModifier *= SPRINT_SPEED_MULTIPLIER
-            player[localPlayer]!!.fov = SPRINT_FOV
-        } else {
-            player[velocity]!!.speedModifier /= SPRINT_SPEED_MULTIPLIER
-            player[localPlayer]!!.fov = FOV
-        }
+        physicsSystem.sprinting = sprint
+        player[localPlayer]!!.fov = if (sprint) SPRINT_FOV else FOV
     }
 
     /** Causes the player to jump. */
@@ -88,7 +79,7 @@ class PlayerInputSystem(
 
     /** Causes the player to drop the item they are currently holding. */
     fun dropItem() {
-        ItemComponent.create(engine, playerC.inventory.heldItem ?: return, tmpV.set(player[position]!!), 4f)
+        ItemComponent.create(engine, playerC.inventory.heldItem ?: return, player[world]!!, 4f)
         playerC.inventory.subtractFromHeldItem(Int.MAX_VALUE)
     }
 }

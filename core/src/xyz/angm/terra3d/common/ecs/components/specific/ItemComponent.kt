@@ -2,12 +2,12 @@ package xyz.angm.terra3d.common.ecs.components.specific
 
 import com.badlogic.ashley.core.Component
 import com.badlogic.ashley.core.Engine
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import ktx.ashley.entity
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
-import xyz.angm.terra3d.common.ecs.components.PositionComponent
-import xyz.angm.terra3d.common.ecs.components.SizeComponent
 import xyz.angm.terra3d.common.ecs.components.VelocityComponent
+import xyz.angm.terra3d.common.ecs.components.WorldComponent
 import xyz.angm.terra3d.common.items.Item
 
 /** Component used for items dropped in the world, able to be picked up by players.
@@ -20,23 +20,20 @@ class ItemComponent : Component {
     var pickupTimeout = 0f
 
     companion object {
-        fun create(engine: Engine, item: Item, position: Vector3, pickupTime: Float = 0f) =
+        private val tmpM = Matrix4()
+
+        fun create(engine: Engine, item: Item, position: Matrix4, pickupTime: Float = 0f) =
             engine.entity {
-                with<PositionComponent> { set(position) }
-                with<VelocityComponent> {
-                    y = -0.05f
-                    gravity = false
-                }
-                with<SizeComponent> {
-                    x = 0.4f
-                    y = 0.4f
-                    z = 0.4f
-                }
+                with<WorldComponent> { set(position) }
+                with<VelocityComponent> { } // TODO: Give items an initial velocity
                 with<ItemComponent> {
                     this.item = item
                     pickupTimeout = pickupTime
                 }
                 with<NetworkSyncComponent>()
             }
+
+        fun create(engine: Engine, item: Item, position: Vector3, pickupTime: Float = 0f) =
+            create(engine, item, tmpM.setToTranslation(position), pickupTime)
     }
 }

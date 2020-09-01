@@ -57,14 +57,8 @@ class PlayerComponent : Component {
                     name = _name
                     clientUUID = uuid
                 }
-                with<PositionComponent> { set(defaultSpawnLocation) }
-                with<DirectionComponent>()
+                with<WorldComponent> { setToTranslation(defaultSpawnLocation) }
                 with<VelocityComponent>()
-                with<SizeComponent> {
-                    x = 0.4f
-                    y = 1.75f
-                    z = 0.4f
-                }
                 with<HealthComponent>()
                 with<NoPhysicsFlag>()
                 with<NetworkSyncComponent>()

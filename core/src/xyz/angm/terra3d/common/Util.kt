@@ -1,6 +1,9 @@
 package xyz.angm.terra3d.common
 
 import ch.qos.logback.classic.Level
+import com.badlogic.gdx.math.Matrix4
+import com.badlogic.gdx.math.Matrix4.*
+import com.badlogic.gdx.math.Vector3
 import mu.KLogger
 import mu.KotlinLogging
 
@@ -19,4 +22,18 @@ fun String.convertToLong(): Long {
     var long = 1L
     this.chars().forEach { long *= it }
     return long
+}
+
+fun Vector3.toStringFloor() = "(${x.toInt()} | ${y.toInt()} | ${z.toInt()})"
+
+/** Use this with constants in Matrix4 to allow things like world[M13] */
+operator fun Matrix4.get(i: Int) = `val`[i]
+
+/** Returns the distance between this and o's translation.
+ * Does not use sqrt for better performance, result is an approximation. */
+fun Matrix4.dist(o: Matrix4): Float {
+    val a = o[M03] - this[M03]
+    val b = o[M13] - this[M13]
+    val c = o[M23] - this[M23]
+    return a * a + b * b + c * c
 }

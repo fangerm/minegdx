@@ -1,148 +1,98 @@
 package xyz.angm.terra3d.server.ecs.systems
 
-import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.systems.IteratingSystem
-import com.badlogic.gdx.math.MathUtils
+import com.badlogic.ashley.core.EntitySystem
+import com.badlogic.gdx.graphics.g3d.ModelBatch
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
-import ktx.ashley.allOf
-import ktx.ashley.exclude
-import ktx.ashley.get
+import com.badlogic.gdx.physics.bullet.collision.*
+import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
+import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver
+import com.badlogic.gdx.physics.bullet.linearmath.btMotionState
+import com.badlogic.gdx.utils.Disposable
+import com.badlogic.gdx.utils.ObjectMap
+import ktx.collections.*
+import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.ecs.*
-import xyz.angm.terra3d.common.ecs.components.*
+import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
 import xyz.angm.terra3d.common.world.Block
 
-/** Used for movement, collision and gravity.
+/** The system for handling all player physics using Bullet! Do not touch, or else all hell will break loose.
  *
- * Called on all entities with Position, Direction and Velocity components.
+ * Note regarding class properties: All objects still needed need to be referenced somewhere. If they aren't,
+ * the GC will destroy them along with the corresponding C++ Bullet object, leading to a segfault in the JNI (SIGSEGV).
  *
- * @param getBlock Function for getting blocks from the world */
-class PhysicsSystem(
-    private val getBlock: (Vector3) -> Block?
-) : IteratingSystem(
-    allOf(
-        PositionComponent::class,
-        DirectionComponent::class,
-        VelocityComponent::class
-    ).exclude(NoPhysicsFlag::class).get()
-) {
+ * Regarding blocks: All blocks directly adjacent to the player are stored in the blocks array, which is (3 | 4 | 3) (x | y | z) big.
+ * The collision objects in this array are set to the blocks around the player instead of creating new ones for every block.
+ *
+ * @param blockExists A function returning if a block exists at the given position */
+class PhysicsSystem(private val blockExists: (IntVector3) -> Block?) : EntitySystem(), Disposable {
 
-    private val tmpIV = IntVector3()
     private val tmpV = Vector3()
     private val tmpV2 = Vector3()
-    private val blockBelow = Vector3()
-    private val blockAbove = Vector3()
+    private val tmpIV = IntVector3()
+    private val tmpIV2 = IntVector3()
+    private val chunkColliders = ObjectMap<IntVector3, GdxArray<btRigidBody>>(400)
 
-    /** Update the entities position based on a very inaccurate physics simulation. */
-    override fun processEntity(entity: Entity, delta: Float) {
-        val position = entity[position]!!
-        val velocity = entity[velocity]!!
-        val network = entity[network]
+    private val collisionConfig = btDefaultCollisionConfiguration()
+    private val dispatcher = btCollisionDispatcher(collisionConfig)
+    private val sweep = btAxisSweep3(Vector3(), Vector3(2000f, WORLD_HEIGHT_IN_CHUNKS * CHUNK_SIZE.toFloat(), 2000f))
+    private val ghostPairCallback = btGhostPairCallback()
+    private val constraintSolver = btSequentialImpulseConstraintSolver()
+    private val world = btDiscreteDynamicsWorld(dispatcher, sweep, constraintSolver, collisionConfig)
+    // private val debugDrawer = DebugDrawer()
 
-        checkFailsafes(entity)
-        applyGravity(velocity, delta)
-        position.set(getNextPosition(entity, delta))
-
-        blockBelow.set(position).sub(0f, (entity[size]?.y ?: 0f) + 0.001f, 0f)
-        blockAbove.set(position).add(0f, 0.1f, 0f)
-
-        if (getBlock(blockBelow) != null) {
-            applyFloorCollision(entity, position, velocity)
-            network?.needsSync = true
-        }
-        if (getBlock(blockAbove) != null) {
-            applyCeilingCollision(velocity)
-            network?.needsSync = true
-        }
-
-        if (velocity.x != 0f || velocity.z != 0f) {
-            for (x in -1..1)
-                for (z in -1..1)
-                    checkSideCollision(entity, delta, x, z)
-
-            network?.needsSync = true
-        }
+    init {
+        sweep.overlappingPairCache.setInternalGhostPairCallback(ghostPairCallback)
+        world.gravity = Vector3(0f, -9.78f, 0f)
+        // world.debugDrawer = debugDrawer
+        // debugDrawer.debugMode = DBG_MAX_DEBUG_DRAW_MODE
     }
 
-    private fun applyCeilingCollision(velocity: VelocityComponent) {
-        if (velocity.y > 0f) velocity.y = 0f
+    fun render(batch: ModelBatch) {
+        batch.flush()
+        // debugDrawer.begin(batch.camera)
+        world.debugDrawWorld()
+        // debugDrawer.end()
     }
 
-    private fun applyFloorCollision(entity: Entity, position: PositionComponent, velocity: VelocityComponent) {
-        if (velocity.y < fallDamageMinBound) applyFallDamage(entity)
-        position.y = MathUtils.floor(blockBelow.y).toFloat() + (entity[size]?.y ?: 0f) + 1f
-        velocity.y = 0f
+    /** Will update the player's position using the engine.
+     * @param delta Time since last call. */
+    override fun update(delta: Float) {
+        world.stepSimulation(delta, 2, 1f / 60f)
     }
 
-    private fun applyGravity(velocity: VelocityComponent, delta: Float) {
-        if (velocity.gravity) velocity.y -= gravity * delta
+    /** Free all Bullet objects */
+    override fun dispose() {
+        world.dispose()
+        chunkColliders.values().forEach { it.forEach { it.dispose() } }
+        collisionConfig.dispose()
+        dispatcher.dispose()
+        constraintSolver.dispose()
+        ghostPairCallback.dispose()
+        sweep.dispose()
     }
 
-    private val fallDamageMinBound = -5f
-    private val fallDamageMaxBound = -9.5f
+    private class MotionState(private val transform: Matrix4) : btMotionState() {
 
-    private fun applyFallDamage(entity: Entity) {
-        val health = entity[health] ?: return
-        var velocity = entity[velocity]!!.y
-        velocity -= fallDamageMinBound
-        health.health -= (velocity * (health.maxHealth / (fallDamageMaxBound - fallDamageMinBound))).toInt()
-    }
-
-    private fun checkSideCollision(entity: Entity, delta: Float, x: Int, z: Int) {
-        val nextPos = getNextPosition(entity, delta)
-        val position = entity[position]!!
-        val size = entity[size] ?: defaultSize
-
-        for (i in 0..size.y.toInt()) {
-            val block = getBlock(nextPos.sub(x.toFloat() * size.x, i.toFloat() + 0.5f, z.toFloat() * size.z))
-            if (block != null) {
-                val diff = tmpIV.set(position).minus(block.position)
-                when {
-                    diff.x < 0 -> position.x = block.position.x - size.x
-                    diff.x > 0 -> position.x = (block.position.x + 1) + size.x
-                    diff.z < 0 -> position.z = block.position.z - size.z
-                    diff.z > 0 -> position.z = (block.position.z + 1) + size.z
-                }
-            }
-        }
-    }
-
-    private fun checkFailsafes(entity: Entity) {
-        // Failsafe if the entity somehow ended up below the world; kill it then
-        if (entity[position]!!.y < -32f) {
-            entity[health]?.health?.unaryMinus()
-            entity[network]?.needsSync = true
-        }
-    }
-
-    /** Gets next position, taking the direction into account. Uses tmpV as return vector.
-     * @param entity The entity to apply to
-     * @param delta Time since last call */
-    private fun getNextPosition(entity: Entity, delta: Float): Vector3 {
-        tmpV.set(entity[position]!!)
-        tmpV.y += entity[velocity]!!.y * delta * (gravity / 2)
-
-        // Following code is abridged from libGDXs built-in FirstPersonCameraController
-        // (https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/graphics/g3d/utils/FirstPersonCameraController.java)
-        if (entity[velocity]!!.x != 0f) {
-            tmpV2.set(entity[direction]!!)
-            tmpV2.y = 0f
-            tmpV2.nor().scl(entity[velocity]!!.x * delta * entity[velocity]!!.speedModifier)
-            tmpV.add(tmpV2)
-        }
-        if (entity[velocity]!!.z != 0f) {
-            tmpV2.set(entity[direction]!!).crs(0f, 1f, 0f).nor().scl(entity[velocity]!!.z * delta * entity[velocity]!!.speedModifier)
-            tmpV.add(tmpV2)
+        override fun getWorldTransform(worldTrans: Matrix4) {
+            worldTrans.set(transform)
         }
 
-        return tmpV
+        override fun setWorldTransform(worldTrans: Matrix4) {
+            transform.set(worldTrans)
+        }
     }
 
     private companion object {
-        /** Used as a substitute for entities with no size. */
-        private val defaultSize = SizeComponent()
+        private val blockConstructionInfo = btRigidBody.btRigidBodyConstructionInfo(
+            0f, null, btBoxShape(Vector3(0.5f, 0.5f, 0.5f)), Vector3.Zero
+        )
 
-        /** The gravity multiplier for all entities. */
-        private const val gravity = 6f
+        fun createBlock(): btRigidBody {
+            val body = btRigidBody(blockConstructionInfo)
+            body.collisionFlags = (body.collisionFlags or btCollisionObject.CollisionFlags.CF_CUSTOM_MATERIAL_CALLBACK)
+            return body
+        }
     }
 }
