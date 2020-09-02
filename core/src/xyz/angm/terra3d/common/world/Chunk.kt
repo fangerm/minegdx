@@ -18,8 +18,10 @@ const val ALL = Int.MAX_VALUE
 /** Mask for getting a block's type. */
 const val TYPE = 0b00000000111111111111111111111111 // 0-24 bits
 
+const val ORIENTATION_SHIFT = 28
+
 /** The orientation of the block. Index in [Block.Orientation]. */
-const val ORIENTATION_MASK = 0b11100000000000000000000000000000 // 28-32
+const val ORIENTATION = 0b111 shl ORIENTATION_SHIFT
 
 /** A chunk is a 3D array of blocks of size [CHUNK_SIZE]. It should only be used by the world itself, and not exposed to other classes.
  * @property position The chunk's origin.
@@ -48,11 +50,11 @@ open class Chunk private constructor(
     /** Returns the block at the specified location, or null if there is none. */
     fun getBlock(p: IntVector3): Block? {
         return if (p.isInBounds(0, CHUNK_SIZE) && this[p.x, p.y, p.z, TYPE] != 0) {
-            Block(this[p.x, p.y, p.z, TYPE], p.cpy().add(position), blockMetadata[p])
+            Block(this[p.x, p.y, p.z, TYPE], p.cpy().add(position), blockMetadata[p], this[p.x, p.y, p.z, ORIENTATION] shr ORIENTATION_SHIFT)
         } else null
     }
 
-    /** Returns the block's collider. Used by the physics system for meshing. */
+    /** Returns the block's collider. Used by physics systems (TODO...). */
     fun getCollider(x: Int, y: Int, z: Int) = Item.Properties.fromType(blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)])?.block?.collider
         ?: PhysicsSystem.BlockCollider.NONE
 
@@ -66,7 +68,9 @@ open class Chunk private constructor(
      * @param position The position to place it at
      * @param block The block to place */
     fun setBlock(position: IntVector3, block: Block?) {
-        setBlock(position, block?.properties?.type ?: NOTHING)
+        val id = block?.properties?.type ?: NOTHING
+        val orient = (block?.orientation?.toId() ?: NOTHING) shl ORIENTATION_SHIFT
+        setBlock(position, id and orient)
         if (block?.metadata != null) blockMetadata[position] = block.metadata!!
     }
 

@@ -159,6 +159,7 @@ data class Item(
             val texBottom: String? = null,
 
             val collider: PhysicsSystem.BlockCollider = PhysicsSystem.BlockCollider.FULL,
+            val orientation: OrientationMode = OrientationMode.DISABLE,
 
             val placedSound: String = "step/stone1",
             val hitSound: String = "dig/stone1",
@@ -167,6 +168,23 @@ data class Item(
         ) {
             /** Returns the actual time required to break a block, given the tool's properties. */
             fun getBreakTime(tool: ToolProperties?) = breakTime * (if (tool != null && tool.type == prefTool) tool.multiplier else 1f)
+
+            /** All orientations this block can be placed. Any non-allowed ones get coerced. */
+            @Serializable
+            enum class OrientationMode {
+                DISABLE, // This block is not orientable. Always forces UP.
+                XZ, // This block can have any 'XZ' orientation (all but UP and DOWN)
+                ALL; // This block can have any orientation
+
+                /** Takes an orientation and adjusts it if needed. */
+                fun get(o: Block.Orientation): Block.Orientation {
+                    return when {
+                        this == DISABLE -> Block.Orientation.UP
+                        this == XZ && (o == Block.Orientation.UP || o == Block.Orientation.DOWN) -> Block.Orientation.NORTH
+                        else -> o
+                    }
+                }
+            }
         }
 
         /** Tool-specific info of a type.

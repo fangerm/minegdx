@@ -19,9 +19,10 @@ import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.world.ALL
 import xyz.angm.terra3d.common.world.Chunk
-import xyz.angm.terra3d.common.world.TYPE
 
+=
 /** A chunk capable of rendering itself. Constructed from a regular chunk sent by the server. */
 internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disposable {
 
@@ -161,7 +162,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         return blockA == blockB && blockB != 0 && faceVisible(world, currPos, direction, backFace)
     }
 
-    private fun getFromAIV3(pos: ArrIV3) = this[pos[0], pos[1], pos[2], TYPE]
+    private fun getFromAIV3(pos: ArrIV3) = this[pos[0], pos[1], pos[2], ALL]
 
     /** Returns if the chunk is meshed and visible to the given camera. */
     fun shouldRender(cam: Camera) = hasMesh && cam.frustum.boundsInFrustum(positionCentered, dimensions)

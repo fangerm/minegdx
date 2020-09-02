@@ -13,12 +13,14 @@ const val NOTHING = 0
 /** Represents a block.
  * @property type Block/Item type, can be 0 ('air' block) in some cases
  * @property position Position of the block; origin is the world origin
+ * @property orientation The orientation of the block. Not all blocks can be rotated.
  * @property metadata The blocks metadata, can contain information specific to the instance of the block
  * @property properties Properties of this item type */
 class Block(
     val type: ItemType = 0,
     val position: IntVector3 = IntVector3(),
-    var metadata: IMetadata? = null
+    var metadata: IMetadata? = null,
+    var orientation: Orientation = Orientation.UP,
 ) : Serializable {
 
     val properties get() = Item.Properties.fromType(type)
@@ -26,8 +28,22 @@ class Block(
     /** Alternative constructor for constructing from an item instead of values directly. */
     constructor(item: Item, position: IntVector3) : this(item.type, position, item.metadata)
 
+    constructor(type: ItemType, position: IntVector3, metadata: IMetadata?, orientation: Int)
+            : this(type, position, metadata, Orientation.fromId(orientation))
+
+    init {
+        orientation = properties!!.block!!.orientation.get(orientation)
+    }
+
     /** Orientation of a block. */
     enum class Orientation {
-        NORTH, EAST, SOUTH, WEST, UP, DOWN
+        UP, DOWN, NORTH, EAST, SOUTH, WEST;
+
+        fun toId() = list.indexOf(this)
+
+        companion object {
+            private val list = values()
+            fun fromId(id: Int) = list[id]
+        }
     }
 }
