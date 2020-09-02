@@ -8,6 +8,7 @@ import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.VelocityComponent
 import xyz.angm.terra3d.common.items.Item
+import kotlin.random.Random
 
 /** Component used for items dropped in the world, able to be picked up by players.
  * @property item The item 'carried' by the entity
@@ -19,12 +20,19 @@ class ItemComponent : Component {
     var pickupTimeout = 0f
 
     companion object {
+
+        private const val XZ_SPEED = 5.0
+
+        private val random = Random(System.currentTimeMillis())
+
         fun create(engine: Engine, item: Item, position: Vector3, pickupTime: Float = 0f) =
             engine.entity {
                 with<PositionComponent> { set(position) }
                 with<VelocityComponent> {
-                    y = -0.05f
-                    gravity = false
+                    x = random.nextDouble(-XZ_SPEED, XZ_SPEED).toFloat()
+                    y = random.nextDouble(1.0, 4.0).toFloat()
+                    z = random.nextDouble(-XZ_SPEED, XZ_SPEED).toFloat()
+                    accelerationRate = 0.8f
                 }
                 with<ItemComponent> {
                     this.item = item

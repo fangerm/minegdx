@@ -25,10 +25,12 @@ class DirectionComponent : VectoredComponent()
  * Usually, the velocity is set by some non-physics system. The physics system does not modify the velocity unless gravity is on,
  * but will not apply it when another entity would be in the way of the entity.
  * @property gravity If the entity will fall when not on solid ground. This modifies the y-coord.
- * @property speedModifier The modifier used when applying X/Z axis speed. */
+ * @property speedModifier The modifier used when applying X/Z axis speed.
+ * @property accelerationRate Velocity will be multiplied with this value every tick. (0-1 will result in deceleration) */
 class VelocityComponent : VectoredComponent() {
 
     var gravity = true
+    var accelerationRate = 1f
     var speedModifier = 4.5f
 }
 

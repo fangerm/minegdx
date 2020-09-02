@@ -24,7 +24,7 @@ import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.velocity
 
 /** The height of the player. Multiply by 2 to get full height. */
-const val PLAYER_HEIGHT = (1.85f / 2f)
+const val PLAYER_HEIGHT = (1.95f / 2f)
 
 /** The player's speed is postmultiplied with this value. */
 const val PLAYER_SPEED = 4.5f
@@ -67,15 +67,17 @@ class PlayerPhysicsSystem(
     private val tmpV2 = Vector3()
     private val tmpIV = IntVector3()
     private val tmpIV2 = IntVector3()
-    private val blocks = Array(10) {
-        Array(10) {
-            Array(10) {
+    private val blocks = Array(5) {
+        Array(5) {
+            Array(5) {
                 createBlock()
             }
         }
     }
 
     private val playerTransform = player[localPlayer]!!.transform
+    private var playerHeight = PLAYER_HEIGHT
+    private var lastPosition = player[position]!!.cpy() // The last position blocks were updated at
 
     private val collisionConfig = btDefaultCollisionConfiguration()
     private val dispatcher = btCollisionDispatcher(collisionConfig)
@@ -85,8 +87,8 @@ class PlayerPhysicsSystem(
     private val world = btDiscreteDynamicsWorld(dispatcher, sweep, constraintSolver, collisionConfig)
     private val debugDrawer = DebugDrawer()
 
-    private val playerShape = btBoxShape(Vector3(0.2f, 0.2f, PLAYER_HEIGHT))
-    private val playerSneakShape = btBoxShape(Vector3(0.2f, 0.2f, PLAYER_HEIGHT - SNEAK_SIZE_MODIFIER))
+    private val playerShape = btCapsuleShapeZ(0.3f, PLAYER_HEIGHT)
+    private val playerSneakShape = btCapsuleShapeZ(0.3f, PLAYER_HEIGHT - SNEAK_SIZE_MODIFIER)
     private val playerBody: btRigidBody
     private val playerGhostObj = btPairCachingGhostObject()
     private val playerController: btKinematicCharacterController
@@ -105,13 +107,6 @@ class PlayerPhysicsSystem(
 
         world.debugDrawer = debugDrawer
         debugDrawer.debugMode = DBG_MAX_DEBUG_DRAW_MODE
-    }
-
-    fun render(batch: ModelBatch) {
-        batch.flush()
-        debugDrawer.begin(batch.camera)
-        world.debugDrawWorld()
-        debugDrawer.end()
     }
 
     private fun createPlayerBody(): btRigidBody {
@@ -144,6 +139,13 @@ class PlayerPhysicsSystem(
         return playerController
     }
 
+    fun render(batch: ModelBatch) {
+        batch.flush()
+        debugDrawer.begin(batch.camera)
+        world.debugDrawWorld()
+        debugDrawer.end()
+    }
+
     /** Will update the player's position using the engine.
      * @param delta Time since last call. */
     override fun update(delta: Float) {
@@ -152,12 +154,25 @@ class PlayerPhysicsSystem(
         world.stepSimulation(delta, 2, 1f / 60f)
         playerGhostObj.getWorldTransform(playerTransform)
         player[position]!!.set(playerTransform.getTranslation(tmpV))
-        player[position]!!.y += PLAYER_HEIGHT
+        player[position]!!.y += playerHeight
+    }
+
+    /** Call when a block changed by a user.
+     * Done by registering a listener in GameScreen. */
+    fun blockChanged() {
+        lastPosition.set(Vector3.Zero)
+        updateBlockCollisionEntities()
     }
 
     private fun updateBlockCollisionEntities() {
-        tmpV.set(player[position]!!).sub(0f, PLAYER_HEIGHT, 0f)
-        tmpIV.set(tmpV).minus(1, 1, 1)
+        // Only update once the last update position
+        // is more than a block away
+        val dist = player[position]!!.dst2(lastPosition)
+        if (dist < 4f) return
+        lastPosition.set(player[position]!!)
+
+        tmpV.set(player[position]!!).sub(0f, playerHeight, 0f)
+        tmpIV.set(tmpV).minus(2, 2, 2)
 
         blocks.forEachIndexed { x, arrayX ->
             arrayX.forEachIndexed { y, arrayY ->
@@ -194,10 +209,12 @@ class PlayerPhysicsSystem(
             playerBody.collisionShape = playerSneakShape
             playerGhostObj.collisionShape = playerSneakShape
             playerController.fallSpeed = SNEAK_FALL_SPEED
+            playerHeight = PLAYER_HEIGHT - SNEAK_SIZE_MODIFIER
         } else {
             playerBody.collisionShape = playerShape
             playerGhostObj.collisionShape = playerShape
             playerController.fallSpeed = 55f // Bullet default
+            playerHeight = PLAYER_HEIGHT
         }
     }
 
@@ -208,6 +225,7 @@ class PlayerPhysicsSystem(
         playerBody.dispose()
         playerGhostObj.dispose()
         playerShape.dispose()
+        playerSneakShape.dispose()
         blocks.forEach { x -> x.forEach { y -> y.forEach { it.dispose() } } }
         collisionConfig.dispose()
         dispatcher.dispose()

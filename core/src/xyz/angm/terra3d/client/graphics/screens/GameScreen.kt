@@ -179,7 +179,13 @@ class GameScreen(
     private fun initSystems() {
         addLocalPlayerComponents()
         engine.addSystem(PlayerSystem(this, player))
-        engine.addSystem(PlayerPhysicsSystem(world::blockExists, player))
+
+        val physicsSystem = PlayerPhysicsSystem(world::blockExists, player)
+        engine.addSystem(physicsSystem)
+        client.addListener {
+            if (it is BlockUpdate) Gdx.app.postRunnable(physicsSystem::blockChanged)
+        }
+
         engine.addSystem(PlayerInputSystem(this, player, engine.getSystem(PlayerPhysicsSystem::class.java), inputHandler))
         engine.addSystem(RemoveSystem())
         val netSystem = NetworkSystem(client::send)

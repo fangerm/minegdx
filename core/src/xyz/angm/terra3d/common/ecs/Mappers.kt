@@ -27,7 +27,6 @@ val playerRender = mapperFor<PlayerRenderComponent>()
 val localPlayer = mapperFor<LocalPlayerComponent>()
 
 val network = mapperFor<NetworkSyncComponent>()
-val remove = mapperFor<RemoveFlag>()
 val ignoreSync = mapperFor<IgnoreSyncFlag>()
 
 val modelRender = mapperFor<ModelRenderComponent>()

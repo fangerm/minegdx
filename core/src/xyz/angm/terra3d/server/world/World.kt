@@ -94,8 +94,7 @@ class World(private val server: Server) : WorldInterface {
         return chunk?.getBlock(tmpIV.set(position).minus(chunk.position))
     }
 
-    /** @see getBlock */
-    fun getBlock(position: Vector3) = getBlock(tmpIV.set(position))
+    private fun getBlock(position: Vector3) = getBlock(tmpIV.set(position))
 
     /** Sets the block. Will automatically sync to clients and dispatch any other work required.
      * @param position The position to place it at
