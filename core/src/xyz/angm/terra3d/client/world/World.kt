@@ -12,6 +12,8 @@ import ktx.collections.*
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
+import xyz.angm.terra3d.common.ecs.components.VectoredComponent
+import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.networking.BlockUpdate
@@ -127,7 +129,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * @param direction Direction of the one looking
      * @param prev true returns block before the one being looked at (used for placing blocks, etc.)
      * @return Position of the block being looked at, or null if there is none */
-    fun getBlockRaycast(position: Vector3, direction: Vector3, prev: Boolean): IntVector3? {
+    fun getBlockRaycast(position: VectoredComponent, direction: VectoredComponent, prev: Boolean): IntVector3? {
         for (i in 1 until (RAYCAST_REACH / RAYCAST_STEP).toInt()) {
             val dist = i * RAYCAST_STEP
             tmpV1.set(direction).nor().scl(dist)
@@ -145,7 +147,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * @param direction Direction of the one looking
      * @param newBlock Block to be placed. Null will destroy the block instead
      * @return If there was a block to be placed/removed and the operation was successful */
-    fun updateBlockRaycast(position: Vector3, direction: Vector3, newBlock: Item?): Boolean {
+    fun updateBlockRaycast(position: VectoredComponent, direction: VectoredComponent, newBlock: Item?): Boolean {
         val blockPosition = getBlockRaycast(position, direction, newBlock != null) ?: return false
         setBlock(blockPosition, newBlock)
         return true

@@ -1,11 +1,13 @@
 package xyz.angm.terra3d.common
 
 import com.badlogic.ashley.core.Component
-import com.badlogic.gdx.math.Matrix4
+import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector3
 import com.charleskorn.kaml.Yaml
-import org.nustaq.serialization.FSTConfiguration
+import org.nustaq.serialization.*
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
+import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
+import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
 import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.*
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
@@ -31,11 +33,11 @@ val fst = createFST(
     LocalPlayerComponent::class, PlayerComponent::class,
     HealthComponent::class, ItemComponent::class,
     NetworkSyncComponent::class,
-    PositionComponent::class, VelocityComponent::class, DirectionComponent::class, WorldComponent::class,
+    PositionComponent::class, VelocityComponent::class, DirectionComponent::class, SizeComponent::class,
     NoPhysicsFlag::class, RemoveFlag::class,
 
     // Various
-    IntVector3::class, Vector3::class, Matrix4::class,
+    IntVector3::class, Vector3::class,
     Chunk::class, Block::class, Item::class,
     Inventory::class, PlayerComponent.PlayerInventory::class
 )

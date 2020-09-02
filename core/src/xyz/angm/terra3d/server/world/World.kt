@@ -8,6 +8,7 @@ import xyz.angm.terra3d.client.world.RENDER_DIST_CHUNKS
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
+import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.items.Item
@@ -67,7 +68,7 @@ class World(private val server: Server) : WorldInterface {
 
     /** Returns all chunks in render distance for the given position.
      * Used for initial world sync with clients. */
-    fun getInitData(position: Vector3): Array<Chunk> {
+    fun getInitData(position: VectoredComponent): Array<Chunk> {
         val across = (RENDER_DIST_CHUNKS * 2) + 1
         val out = GdxArray<Chunk>(false, across * across * WORLD_HEIGHT_IN_CHUNKS, Chunk::class.java)
         val dist = RENDER_DIST_CHUNKS * CHUNK_SIZE * 2

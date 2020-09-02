@@ -2,7 +2,6 @@ package xyz.angm.terra3d.client.ecs.systems
 
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.EntitySystem
-import com.badlogic.gdx.math.Matrix4.M13
 import com.badlogic.gdx.math.Vector3
 import ktx.ashley.allOf
 import ktx.ashley.exclude
@@ -12,9 +11,9 @@ import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.dist
 import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
+import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 
 /** Frequency of sending the player entity to the server for updating. */
@@ -23,9 +22,6 @@ private const val NETWORK_SYNC_TIME = 0.1f
 /** Base multiplier of the player's hunger. */
 private const val HUNGER_TIME_MULTI = 0.05f
 
-/** The height of the player's camera/'eyes'. Calculated from their center. */
-const val PLAYER_EYE_HEIGHT = 0.9f
-
 /** A system used for updating state of the local player.
  * Handles all various small tasks not covered by other systems. */
 class PlayerSystem(
@@ -33,7 +29,8 @@ class PlayerSystem(
     private val player: Entity
 ) : EntitySystem() {
 
-    private val pWorld = player[world]!!
+    private val pPosition = player[position]!!
+    private val pDirection = player[direction]!!
     private val localPlayerC = player[localPlayer]!!
     private val playerC = player[playerM]!!
     private val pRender = player[playerRender]!!
@@ -60,21 +57,24 @@ class PlayerSystem(
     }
 
     private fun updatePositions(delta: Float) {
+        // Update player position
+        pDirection.set(screen.cam.direction)
+
         // Update position of the block looked at
-        localPlayerC.blockLookingAt = screen.world.getBlockRaycast(screen.cam.position, screen.cam.direction, false) ?: defaultSelectorPosition
+        localPlayerC.blockLookingAt = screen.world.getBlockRaycast(pPosition, pDirection, false) ?: defaultSelectorPosition
         ResourceManager.models.updateDamageModelPosition(localPlayerC.blockLookingAt.toV3(tmpV), localPlayerC.blockHitPercent)
 
         // Update camera position
-        pWorld.getTranslation(screen.cam.position).add(0f, PLAYER_EYE_HEIGHT, 0f)
+        screen.cam.position.set(pPosition)
         screen.cam.update()
 
         // Update camera FOV
         screen.cam.fieldOfView -= (screen.cam.fieldOfView - player[localPlayer]!!.fov) * 10f * delta
 
         // Update rendering-related positions
-        pRender.skybox.transform.setToTranslation(pWorld.getTranslation(tmpV))
+        pRender.skybox.transform.setToTranslation(tmpV.set(pPosition))
         pRender.blockSelector.transform.setToTranslation(localPlayerC.blockLookingAt.toV3(tmpV).add(0.5f))
-        soundPlayer.updateListenerPosition(screen.cam.position, screen.cam.direction)
+        soundPlayer.updateListenerPosition(pPosition, pDirection)
     }
 
     private fun updateHunger(delta: Float) {
@@ -96,7 +96,7 @@ class PlayerSystem(
 
     private fun checkPickedUpItems() {
         engine.getEntitiesFor(allDroppedItems).forEach {
-            if (it[item]!!.pickupTimeout <= 0f && it[world]!!.dist(pWorld) < 3f) {
+            if (it[item]!!.pickupTimeout <= 0f && tmpV.set(it[position]!!).dst(tmpV2.set(player[position]!!)) < 2f) {
                 playerC.inventory += it[item]!!.item
                 RemoveFlag.flag(it)
             }
@@ -104,7 +104,7 @@ class PlayerSystem(
     }
 
     private fun checkBelowWorld() {
-        if (pWorld[M13] < 0f) {
+        if (pPosition.y < 0f) {
             player[health]!!.health--
         }
     }

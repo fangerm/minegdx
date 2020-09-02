@@ -17,8 +17,7 @@ import xyz.angm.terra3d.server.ecs.components.BlockComponent
 val position = mapperFor<PositionComponent>()
 val direction = mapperFor<DirectionComponent>()
 val velocity = mapperFor<VelocityComponent>()
-val world = mapperFor<WorldComponent>()
-val worldM = world // Prevent naming collisions in some files...
+val size = mapperFor<SizeComponent>()
 val health = mapperFor<HealthComponent>()
 
 val item = mapperFor<ItemComponent>()

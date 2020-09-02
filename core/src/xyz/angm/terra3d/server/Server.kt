@@ -7,14 +7,14 @@ import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.collections.*
 import xyz.angm.terra3d.common.TICK_RATE
-import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.network
+import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
-import xyz.angm.terra3d.common.ecs.worldM
 import xyz.angm.terra3d.common.log
 import xyz.angm.terra3d.common.networking.*
 import xyz.angm.terra3d.common.world.WorldSaveManager
@@ -111,7 +111,7 @@ class Server(
         val playerEntity = save.getPlayer(engine, packet)
         players[connection.id] = playerEntity
 
-        send(connection, InitPacket(EntityData.from(playerEntity), entities, world.getInitData(playerEntity[worldM]!!.pos()), world.seed))
+        send(connection, InitPacket(EntityData.from(playerEntity), entities, world.getInitData(playerEntity[position]!!), world.seed))
         playerEntity[network]!!.needsSync = true // Ensure player gets synced next tick
     }
 

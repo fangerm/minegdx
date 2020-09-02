@@ -4,13 +4,11 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.Quaternion
-import com.badlogic.gdx.math.Vector3
 import ktx.ashley.get
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.configuration
+import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.playerM
-import xyz.angm.terra3d.common.ecs.world
 
 /** Mouse sensitivity, will be multiplied with [configuration.sensitivity]. */
 private const val SENSITIVITY = 0.1f
@@ -71,9 +69,6 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
         active = false
     }
 
-    private val tmpQ = Quaternion()
-    private val tmpV = Vector3()
-
     /** Moves the camera according to the mouse. */
     override fun mouseMoved(xPos: Int, yPos: Int): Boolean {
         // Math code is copied from https://learnopengl.com/Getting-started/Camera, with some changes to fit libGDX
@@ -101,9 +96,8 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
             MathUtils.sin(yaw * DEG_TO_RAD) * MathUtils.cos(pitch * DEG_TO_RAD)
         ).nor()
         screen.cam.up.set(0f, 1f, 0f)
-        tmpQ.setEulerAngles(yaw, pitch, 0f)
-        screen.player[world]!!.getTranslation(tmpV)
-        screen.player[world]!!.set(tmpV, tmpQ)
+        screen.cam.update()
+        screen.player[localPlayer]!!.transform.setFromEulerAngles(yaw, pitch, 0f)
         return true
     }
 
