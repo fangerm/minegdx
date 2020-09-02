@@ -67,7 +67,7 @@ class TerrainGenerator(val world: WorldInterface) {
             for (z in 0 until CHUNK_SIZE) {
                 generateTerrain(chunk, heightMap[x][z], biomeMap[x][z], x, z)
                 generateStructures(
-                    chunk, tmpIV.set(x, heightMap[x][z] - chunk.position.y, z),
+                    chunk, tmpIV.set(chunk.position.x + x, heightMap[x][z], chunk.position.z + z),
                     heightMap[x][z], biomeMap[x][z], random
                 )
             }
