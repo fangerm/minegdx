@@ -60,7 +60,7 @@ object WorldSaveManager {
                 val entity = (fst.asObject(player.readBytes()) as EntityData).toEntity()
                 engine.addEntity(entity)
                 entity
-            } else PlayerComponent.create(engine, name, info.uuid)
+            } else PlayerComponent.create(engine, info.name, info.uuid)
 
             entity.remove(RemoveFlag::class.java) // Unsure why but this is here?
             return entity
