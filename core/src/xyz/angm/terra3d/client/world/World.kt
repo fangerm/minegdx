@@ -63,7 +63,11 @@ class World(private val client: Client, override val seed: String) : Disposable,
                 is BlockUpdate -> {
                     val chunk = getChunk(packet.position) ?: return@addListener
                     chunk.setBlock(packet.position.minus(chunk.position), packet)
-                    queueForRender(chunk)
+
+                    // Do this immediately instead of queueing to prevent other
+                    // chunks holding up the queue and the user noticing a delay
+                    Gdx.app.postRunnable { chunk.mesh(this) }
+                    queueNeighbors(chunk)
                 }
                 is ChunksLine -> addChunks(packet.chunks)
             }
@@ -166,11 +170,16 @@ class World(private val client: Client, override val seed: String) : Disposable,
         return chunk?.blockExists(tmpIV3.set(position).minus(chunk.position)) ?: default
     }
 
+    /** Queue a chunk and all adjacent chunks for rendering. */
     private fun queueForRender(chunk: RenderableChunk) {
         if (chunk.isQueued) return
         chunk.isQueued = true
         chunksWaitingForRender.addFirst(chunk)
+        queueNeighbors(chunk)
+    }
 
+    /** Queues all neighboring chunks for rerender. */
+    private fun queueNeighbors(chunk: Chunk) {
         // TODO: don't do this
         queueRerender(getChunk(tmpIV3.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
         queueRerender(getChunk(tmpIV3.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
