@@ -25,4 +25,9 @@ class Block(
 
     /** Alternative constructor for constructing from an item instead of values directly. */
     constructor(item: Item, position: IntVector3) : this(item.type, position, item.metadata)
+
+    /** Orientation of a block. */
+    enum class Orientation {
+        NORTH, EAST, SOUTH, WEST, UP, DOWN
+    }
 }

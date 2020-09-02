@@ -13,7 +13,6 @@ import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
-import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.networking.BlockUpdate

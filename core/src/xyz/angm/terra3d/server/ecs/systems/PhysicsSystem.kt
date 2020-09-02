@@ -9,7 +9,10 @@ import ktx.ashley.exclude
 import ktx.ashley.get
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.*
-import xyz.angm.terra3d.common.ecs.components.*
+import xyz.angm.terra3d.common.ecs.components.DirectionComponent
+import xyz.angm.terra3d.common.ecs.components.NoPhysicsFlag
+import xyz.angm.terra3d.common.ecs.components.PositionComponent
+import xyz.angm.terra3d.common.ecs.components.VelocityComponent
 import xyz.angm.terra3d.common.world.Block
 
 /** Used for movement, collision and gravity.
@@ -43,7 +46,7 @@ class PhysicsSystem(
         applyGravity(velocity, delta)
         position.set(getNextPosition(entity, delta))
 
-        blockBelow.set(position).sub(0f, (entity[size]?.y ?: 0f) + 0.001f, 0f)
+        blockBelow.set(position).sub(0f, (entity.size.y) + 0.001f, 0f)
         blockAbove.set(position).add(0f, 0.1f, 0f)
 
         if (getBlock(blockBelow) != null) {
@@ -70,7 +73,7 @@ class PhysicsSystem(
 
     private fun applyFloorCollision(entity: Entity, position: PositionComponent, velocity: VelocityComponent) {
         if (velocity.y < fallDamageMinBound) applyFallDamage(entity)
-        position.y = MathUtils.floor(blockBelow.y).toFloat() + (entity[size]?.y ?: 0f) + 1f
+        position.y = MathUtils.floor(blockBelow.y).toFloat() + (entity.size.y) + 1f
         velocity.y = 0f
     }
 
@@ -91,7 +94,7 @@ class PhysicsSystem(
     private fun checkSideCollision(entity: Entity, delta: Float, x: Int, z: Int) {
         val nextPos = getNextPosition(entity, delta)
         val position = entity[position]!!
-        val size = entity[size] ?: defaultSize
+        val size = entity.size
 
         for (i in 0..size.y.toInt()) {
             val block = getBlock(nextPos.sub(x.toFloat() * size.x, i.toFloat() + 0.5f, z.toFloat() * size.z))
@@ -138,11 +141,23 @@ class PhysicsSystem(
         return tmpV
     }
 
+    enum class BlockCollider {
+        FULL, HALF_LOWER, HALF_UPPER, NONE;
+    }
+
     private companion object {
-        /** Used as a substitute for entities with no size. */
-        private val defaultSize = SizeComponent()
 
         /** The gravity multiplier for all entities. */
         private const val gravity = 6f
+
+        private val itemSize = Vector3(0.4f, 0.4f, 0.4f)
+        private val humanoidSize = Vector3(0.4f, 1.85f, 0.4f)
+
+        private val Entity.size
+            get() =
+                when {
+                    this[item] != null -> itemSize
+                    else -> humanoidSize
+                }
     }
 }

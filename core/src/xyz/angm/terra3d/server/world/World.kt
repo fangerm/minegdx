@@ -19,6 +19,7 @@ import xyz.angm.terra3d.common.world.WorldInterface
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
 import xyz.angm.terra3d.server.ecs.systems.BlockEntitySystem
+import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 import java.util.concurrent.TimeUnit
 
 /** Server-side representation of a World containing all blocks.
@@ -26,18 +27,21 @@ import java.util.concurrent.TimeUnit
  * @property seed The world seed used for generating the terrain. */
 class World(private val server: Server) : WorldInterface {
 
+    private val tmpV = Vector3()
+    private val tmpIV = IntVector3()
+    private val tmpIV2 = IntVector3()
+
     override val seed = server.save.seed
     private val database = WorldDatabase(server)
     private val generator = TerrainGenerator(this)
     private val blockEntitySystem = BlockEntitySystem(this)
-    private val tmpV = Vector3()
-    private val tmpIV = IntVector3()
-    private val tmpIV2 = IntVector3()
+    private val physics = PhysicsSystem(this::getBlock)
 
     init {
         server.executor.scheduleAtFixedRate(database::flushChunks, 60, 60, TimeUnit.SECONDS)
         database.generateChunks(IntVector3(1000, 0, 1000), generator)
         server.engine.addSystem(blockEntitySystem)
+        server.engine.addSystem(physics)
     }
 
     /** Updates pre-generated chunks around the player.

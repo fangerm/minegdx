@@ -7,22 +7,7 @@ import com.badlogic.gdx.math.Vector3
  * @property x The first/X axis.
  * @property y The second/Y axis.
  * @property z The third/Z axis. */
-abstract class VectoredComponent : Component {
-
-    var x = 0f
-    var y = 0f
-    var z = 0f
-
-    /** Sets itself from a libGDX vector.
-     * @param v The vector to set itself to.
-     * @return Itself for chaining. */
-    fun set(v: Vector3): VectoredComponent {
-        x = v.x
-        y = v.y
-        z = v.z
-        return this
-    }
-
+abstract class VectoredComponent : Vector3(), Component {
     override fun toString() = "($x | $y | $z)"
     fun toStringFloor() = "(${x.toInt()} | ${y.toInt()} | ${z.toInt()})"
 }
@@ -52,12 +37,3 @@ class VelocityComponent : VectoredComponent() {
  * Mainly used by physics systems.
  * Entities without this will often be represented by a (0|0|0) size. */
 class SizeComponent : VectoredComponent()
-
-
-/** Simple helper to apply a vectored component to a libGDX vector. */
-fun Vector3.set(v: VectoredComponent): Vector3 {
-    x = v.x
-    y = v.y
-    z = v.z
-    return this
-}

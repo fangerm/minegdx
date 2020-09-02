@@ -6,16 +6,27 @@ import org.nustaq.serialization.FSTObjectInput
 import org.nustaq.serialization.FSTObjectOutput
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
+import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.IMetadata
+import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 import java.io.Serializable
+
+/** Simple convenience mask. */
+const val ALL = Int.MAX_VALUE
+
+/** Mask for getting a block's type. */
+const val TYPE = 0b00000000111111111111111111111111 // 0-24 bits
+
+/** The orientation of the block. Index in [Block.Orientation]. */
+const val ORIENTATION_MASK = 0b11100000000000000000000000000000 // 28-32
 
 /** A chunk is a 3D array of blocks of size [CHUNK_SIZE]. It should only be used by the world itself, and not exposed to other classes.
  * @property position The chunk's origin.
- * @property blockTypes Array of all blocks in the chunk; XYZ
+ * @property blockData Array of all blocks in the chunk; XYZ. Lower 16 bits are type, higher are status bits - see above
  * @property blockMetadata Metadata for blocks. Blocks without metadata are not is this map. */
 open class Chunk private constructor(
-    protected val blockTypes: IntArray = IntArray(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE),
+    protected val blockData: IntArray = IntArray(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE),
     protected val blockMetadata: HashMap<IntVector3, IMetadata> = HashMap(),
     val position: IntVector3 = IntVector3()
 ) : Serializable {
@@ -24,28 +35,32 @@ open class Chunk private constructor(
     constructor(chunkPosition: IntVector3 = IntVector3()) : this(position = chunkPosition)
 
     /** Construct a chunk from a preexisting chunk. */
-    protected constructor(fromChunk: Chunk) : this(fromChunk.blockTypes, fromChunk.blockMetadata, fromChunk.position)
+    protected constructor(fromChunk: Chunk) : this(fromChunk.blockData, fromChunk.blockMetadata, fromChunk.position)
 
     @Suppress("NOTHING_TO_INLINE")
-    protected inline operator fun get(x: Int, y: Int, z: Int) = blockTypes[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)]
+    protected inline operator fun get(x: Int, y: Int, z: Int, mask: Int) = blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)] and mask
 
     @Suppress("NOTHING_TO_INLINE")
     protected inline operator fun set(x: Int, y: Int, z: Int, value: Int) {
-        blockTypes[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)] = value
+        blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)] = value
     }
 
     /** Returns the block at the specified location, or null if there is none. */
     fun getBlock(p: IntVector3): Block? {
-        return if (p.isInBounds(0, CHUNK_SIZE) && this[p.x, p.y, p.z] != 0) {
-            Block(this[p.x, p.y, p.z], p.cpy().add(position), blockMetadata[p])
+        return if (p.isInBounds(0, CHUNK_SIZE) && this[p.x, p.y, p.z, TYPE] != 0) {
+            Block(this[p.x, p.y, p.z, TYPE], p.cpy().add(position), blockMetadata[p])
         } else null
     }
+
+    /** Returns the block's collider. Used by the physics system for meshing. */
+    fun getCollider(x: Int, y: Int, z: Int) = Item.Properties.fromType(blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)])?.block?.collider
+        ?: PhysicsSystem.BlockCollider.NONE
 
     /** @return If a block at the given position exists */
     fun blockExists(p: IntVector3) = p.isInBounds(0, CHUNK_SIZE) && blockExists(p.x, p.y, p.z)
 
     /** @see blockExists */
-    private fun blockExists(x: Int, y: Int, z: Int) = this[x, y, z] != 0
+    private fun blockExists(x: Int, y: Int, z: Int) = this[x, y, z, TYPE] != 0
 
     /** Sets the block.
      * @param position The position to place it at
@@ -74,7 +89,7 @@ open class Chunk private constructor(
             out.writeInt(chunk.position.y)
             out.writeInt(chunk.position.z)
             out.writeObject(chunk.blockMetadata)
-            writeBlockTypes(out, chunk.blockTypes)
+            writeBlockTypes(out, chunk.blockData)
         }
 
         /** Creates the chunk, also reads it during instance creation */
@@ -83,7 +98,7 @@ open class Chunk private constructor(
             return Chunk(
                 position = IntVector3(input.readInt(), input.readInt(), input.readInt()),
                 blockMetadata = input.readObject(HashMap::class.java) as HashMap<IntVector3, IMetadata>,
-                blockTypes = readBlockTypes(input)
+                blockData = readBlockTypes(input)
             )
         }
 

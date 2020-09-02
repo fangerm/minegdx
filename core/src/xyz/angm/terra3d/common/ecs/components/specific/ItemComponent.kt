@@ -6,7 +6,6 @@ import com.badlogic.gdx.math.Vector3
 import ktx.ashley.entity
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
-import xyz.angm.terra3d.common.ecs.components.SizeComponent
 import xyz.angm.terra3d.common.ecs.components.VelocityComponent
 import xyz.angm.terra3d.common.items.Item
 
@@ -26,11 +25,6 @@ class ItemComponent : Component {
                 with<VelocityComponent> {
                     y = -0.05f
                     gravity = false
-                }
-                with<SizeComponent> {
-                    x = 0.4f
-                    y = 0.4f
-                    z = 0.4f
                 }
                 with<ItemComponent> {
                     this.item = item

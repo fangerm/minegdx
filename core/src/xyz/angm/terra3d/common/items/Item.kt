@@ -12,6 +12,7 @@ import xyz.angm.terra3d.common.items.Item.Properties
 import xyz.angm.terra3d.common.items.metadata.IMetadata
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.yaml
+import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 import java.util.*
 
 /** An alias for item types, which are simple ints.
@@ -141,6 +142,8 @@ data class Item(
          * @property texSide Optional: Block side texture. [Properties.texture] will be used instead if null.
          * @property texBottom Optional: Block bottom texture. [Properties.texture] will be used instead if null.
          *
+         * @property collider: The collider of this block used by the physics system.
+         *
          * @property placedSound Sound played when the block is placed by a player.
          * @property hitSound Sound played when the block is hit by a player.
          * @property destroySound Sound played when a block is broken by a player.
@@ -154,6 +157,8 @@ data class Item(
 
             val texSide: String? = null,
             val texBottom: String? = null,
+
+            val collider: PhysicsSystem.BlockCollider = PhysicsSystem.BlockCollider.FULL,
 
             val placedSound: String = "step/stone1",
             val hitSound: String = "dig/stone1",

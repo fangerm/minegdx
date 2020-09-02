@@ -7,10 +7,10 @@ import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.collections.*
 import xyz.angm.terra3d.common.TICK_RATE
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
-import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.network
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
@@ -18,9 +18,7 @@ import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.log
 import xyz.angm.terra3d.common.networking.*
 import xyz.angm.terra3d.common.world.WorldSaveManager
-import xyz.angm.terra3d.server.ecs.systems.BlockEntitySystem
 import xyz.angm.terra3d.server.ecs.systems.ItemSystem
-import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 import xyz.angm.terra3d.server.networking.Connection
 import xyz.angm.terra3d.server.networking.LocalServerSocket
 import xyz.angm.terra3d.server.networking.NettyServerSocket
@@ -55,9 +53,7 @@ class Server(
         executor.scheduleAtFixedRate({ world.updateLoadedChunksByPlayers(engine.getEntitiesFor(playerFamily)) }, 30, 30, TimeUnit.SECONDS)
 
         engine.addSystem(ItemSystem())
-        engine.addSystem(PhysicsSystem(world::getBlock))
         engine.addSystem(RemoveSystem())
-        engine.addSystem(BlockEntitySystem(world))
 
         val netSystem = NetworkSystem(::sendToAll)
         engine.addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)

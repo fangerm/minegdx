@@ -2,20 +2,22 @@ package xyz.angm.terra3d.client.ecs.systems
 
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.EntitySystem
+import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.physics.bullet.DebugDrawer
 import com.badlogic.gdx.physics.bullet.collision.*
 import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld
 import com.badlogic.gdx.physics.bullet.dynamics.btKinematicCharacterController
 import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody
 import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver
+import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState
 import com.badlogic.gdx.utils.Disposable
 import ktx.ashley.get
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
-import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.ecs.direction
 import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.position
@@ -23,6 +25,12 @@ import xyz.angm.terra3d.common.ecs.velocity
 
 /** The height of the player. Multiply by 2 to get full height. */
 const val PLAYER_HEIGHT = (1.85f / 2f)
+
+/** The player's speed is postmultiplied with this value. */
+const val PLAYER_SPEED = 4.5f
+
+/** Same as above, but while sprinting. */
+const val SPRINT_SPEED = PLAYER_SPEED * 1.5f
 
 /** The amount the player shrinks when sneaking. */
 const val SNEAK_SIZE_MODIFIER = 0.05f
@@ -59,9 +67,9 @@ class PlayerPhysicsSystem(
     private val tmpV2 = Vector3()
     private val tmpIV = IntVector3()
     private val tmpIV2 = IntVector3()
-    private val blocks = Array(3) {
-        Array(4) {
-            Array(3) {
+    private val blocks = Array(10) {
+        Array(10) {
+            Array(10) {
                 createBlock()
             }
         }
@@ -75,6 +83,7 @@ class PlayerPhysicsSystem(
     private val ghostPairCallback = btGhostPairCallback()
     private val constraintSolver = btSequentialImpulseConstraintSolver()
     private val world = btDiscreteDynamicsWorld(dispatcher, sweep, constraintSolver, collisionConfig)
+    private val debugDrawer = DebugDrawer()
 
     private val playerShape = btBoxShape(Vector3(0.2f, 0.2f, PLAYER_HEIGHT))
     private val playerSneakShape = btBoxShape(Vector3(0.2f, 0.2f, PLAYER_HEIGHT - SNEAK_SIZE_MODIFIER))
@@ -92,8 +101,17 @@ class PlayerPhysicsSystem(
         world.gravity = Vector3(0f, -9.78f, 0f)
 
         blocks.forEach { x -> x.forEach { y -> y.forEach { world.addRigidBody(it) } } }
-
         playerTransform.setToTranslation(tmpV2.set(player[position]!!))
+
+        world.debugDrawer = debugDrawer
+        debugDrawer.debugMode = DBG_MAX_DEBUG_DRAW_MODE
+    }
+
+    fun render(batch: ModelBatch) {
+        batch.flush()
+        debugDrawer.begin(batch.camera)
+        world.debugDrawWorld()
+        debugDrawer.end()
     }
 
     private fun createPlayerBody(): btRigidBody {
@@ -164,6 +182,7 @@ class PlayerPhysicsSystem(
         }
     }
 
+    var sprinting = false
     private var sneaking = false
     private var glideSpeed = GLIDE_START_SPEED
 
@@ -172,12 +191,10 @@ class PlayerPhysicsSystem(
         sneaking = force
         glideSpeed = GLIDE_START_SPEED
         if (sneaking) {
-            player[velocity]!!.speedModifier *= SNEAK_SPEED_MODIFIER
             playerBody.collisionShape = playerSneakShape
             playerGhostObj.collisionShape = playerSneakShape
             playerController.fallSpeed = SNEAK_FALL_SPEED
         } else {
-            player[velocity]!!.speedModifier /= SNEAK_SPEED_MODIFIER
             playerBody.collisionShape = playerShape
             playerGhostObj.collisionShape = playerShape
             playerController.fallSpeed = 55f // Bullet default
@@ -204,23 +221,28 @@ class PlayerPhysicsSystem(
     private fun getWalkDirection(delta: Float): Vector3 {
         val velocity = player[velocity]!!
         val direction = player[direction]!!
-        tmpV.set(0f, 0f, 0f)
+        tmpV.setZero()
 
         // Multiply speed if the player is currently sneaking in the air (gliding)
-        val modifier = if (!playerController.canJump() && sneaking) {
-            glideSpeed *= 1.02f
-            glideSpeed = glideSpeed.coerceAtMost(GLIDE_MAX_SPEED)
-            delta * glideSpeed
-        } else delta
+        var modifier = when {
+            !playerController.canJump() && sneaking -> {
+                glideSpeed *= 1.02f
+                glideSpeed = glideSpeed.coerceAtMost(GLIDE_MAX_SPEED)
+                delta * glideSpeed
+            }
+            sneaking -> delta * SNEAK_SPEED_MODIFIER
+            else -> delta
+        }
+        modifier *= if (sprinting) SPRINT_SPEED else PLAYER_SPEED
 
         if (velocity.x != 0f) {
             tmpV2.set(direction)
             tmpV2.y = 0f
-            tmpV2.nor().scl(velocity.x * modifier * velocity.speedModifier)
+            tmpV2.nor().scl(velocity.x * modifier)
             tmpV.add(tmpV2)
         }
         if (velocity.z != 0f) {
-            tmpV2.set(direction).crs(0f, 1f, 0f).nor().scl(velocity.z * modifier * velocity.speedModifier)
+            tmpV2.set(direction).crs(0f, 1f, 0f).nor().scl(velocity.z * modifier)
             tmpV.add(tmpV2)
         }
 
@@ -240,7 +262,7 @@ class PlayerPhysicsSystem(
 
     private companion object {
         private val blockConstructionInfo = btRigidBody.btRigidBodyConstructionInfo(
-            0f, null, btBoxShape(Vector3(0.52f, 0.52f, 0.52f)), Vector3.Zero
+            0f, null, btBoxShape(Vector3(0.5f, 0.5f, 0.5f)), Vector3.Zero
         )
 
         fun createBlock(): btRigidBody {

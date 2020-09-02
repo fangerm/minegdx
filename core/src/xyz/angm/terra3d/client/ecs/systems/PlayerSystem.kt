@@ -13,7 +13,6 @@ import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
-import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 
 /** Frequency of sending the player entity to the server for updating. */

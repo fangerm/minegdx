@@ -10,9 +10,11 @@ import xyz.angm.terra3d.client.actions.PlayerInteractions
 import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.SPRINT_FOV
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
-import xyz.angm.terra3d.common.ecs.*
-import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
+import xyz.angm.terra3d.common.ecs.direction
+import xyz.angm.terra3d.common.ecs.localPlayer
+import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.NOTHING
 
@@ -70,13 +72,8 @@ class PlayerInputSystem(
     /** Causes the player to sprint or stop sprinting.
      * @param sprint If the player should sprint (else will stop sprinting) */
     fun sprint(sprint: Boolean) {
-        if (sprint) {
-            player[velocity]!!.speedModifier *= SPRINT_SPEED_MULTIPLIER
-            player[localPlayer]!!.fov = SPRINT_FOV
-        } else {
-            player[velocity]!!.speedModifier /= SPRINT_SPEED_MULTIPLIER
-            player[localPlayer]!!.fov = FOV
-        }
+        physicsSystem.sprinting = sprint
+        player[localPlayer]!!.fov = if (sprint) SPRINT_FOV else FOV
     }
 
     /** Causes the player to jump. */

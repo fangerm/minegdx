@@ -38,19 +38,15 @@ import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.client.world.World
-import xyz.angm.terra3d.common.ecs.EntityData
+import xyz.angm.terra3d.common.IntVector3
+import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.IgnoreSyncFlag
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
-import xyz.angm.terra3d.common.ecs.modelRender
-import xyz.angm.terra3d.common.ecs.playerM
-import xyz.angm.terra3d.common.ecs.playerRender
-import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.networking.BlockUpdate
 import xyz.angm.terra3d.common.networking.ChatMessagePacket
 import xyz.angm.terra3d.common.networking.InitPacket
-import xyz.angm.terra3d.common.IntVector3
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -133,6 +129,8 @@ class GameScreen(
         world.render(modelBatch, cam, environment)
         player[playerRender]!!.render(modelBatch, environment)
         engine.getEntitiesFor(renderableEntities).forEach { it[modelRender]!!.render(modelBatch, environment) }
+        // Uncomment to enable player physics debug rendering
+        // engine.getSystem(PlayerPhysicsSystem::class.java).render(modelBatch)
         modelBatch.end()
 
         stage.act()

@@ -10,7 +10,6 @@ import ktx.ashley.get
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
-import xyz.angm.terra3d.common.ecs.components.set
 import xyz.angm.terra3d.common.ecs.modelRender
 import xyz.angm.terra3d.common.ecs.position
 
