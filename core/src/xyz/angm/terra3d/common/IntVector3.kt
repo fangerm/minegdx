@@ -8,8 +8,6 @@ import org.nustaq.serialization.FSTClazzInfo
 import org.nustaq.serialization.FSTObjectInput
 import org.nustaq.serialization.FSTObjectOutput
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
-import xyz.angm.terra3d.common.items.metadata.IMetadata
-import xyz.angm.terra3d.common.world.Chunk
 import java.io.Serializable
 
 /** A 3D vector using integers as values.
@@ -18,7 +16,7 @@ import java.io.Serializable
  * @param y The Y coordinate
  * @param z The Z coordinate */
 @kotlinx.serialization.Serializable
-data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializable {
+open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializable {
 
     /** Constructs a vector from a libGDX float vector. Values are floored.
      * @param vector3 The float vector to be floored */
@@ -133,6 +131,15 @@ data class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
 
     /** String representation of all 3 axes */
     override fun toString() = "($x | $y | $z)"
+
+    override fun equals(other: Any?) = other is IntVector3 && other.x == x && other.y == y && other.z == z
+
+    override fun hashCode(): Int {
+        var result = x
+        result = 31 * result + y
+        result = 31 * result + z
+        return result
+    }
 
     companion object {
         private val tmpV = Vector3()

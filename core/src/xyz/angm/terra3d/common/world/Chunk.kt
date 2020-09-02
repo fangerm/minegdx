@@ -66,7 +66,7 @@ open class Chunk private constructor(
      * @param position The position to place it at
      * @param block The block to place */
     fun setBlock(position: IntVector3, block: Block?) {
-        setBlock(position, block?.properties?.type ?: 0)
+        setBlock(position, block?.properties?.type ?: NOTHING)
         if (block?.metadata != null) blockMetadata[position] = block.metadata!!
     }
 
