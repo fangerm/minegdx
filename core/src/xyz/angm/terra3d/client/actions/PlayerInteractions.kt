@@ -30,7 +30,7 @@ object PlayerInteractions {
             ctx.screen.pushPanel(FurnacePanel(ctx.screen, ctx.block!!))
         }
 
-        setListener("furnace", Event.BLOCK_CLICKED) { ctx ->
+        setListener("chest", Event.BLOCK_CLICKED) { ctx ->
             ctx.screen.pushPanel(ChestPanel(ctx.screen, ctx.block!!))
         }
 

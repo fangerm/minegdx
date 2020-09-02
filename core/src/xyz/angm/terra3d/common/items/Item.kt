@@ -57,7 +57,7 @@ data class Item(
                 && amount == other.amount
 
     /** @return Type and amount, formatted */
-    override fun toString() = "${amount}x ${I18N["item-${properties.ident}"]}"
+    override fun toString() = "${amount}x ${properties.name}"
 
     /** Properties of an item type.
      * @property ident An internal identifier of the block used for getting locale names.
