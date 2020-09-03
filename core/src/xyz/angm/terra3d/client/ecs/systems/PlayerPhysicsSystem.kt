@@ -77,7 +77,7 @@ class PlayerPhysicsSystem(
 
     private val playerTransform = player[localPlayer]!!.transform
     private var playerHeight = PLAYER_HEIGHT
-    private var lastPosition = player[position]!!.cpy() // The last position blocks were updated at
+    private var lastPosition = Vector3(0f, -1000f, 0f) // The last position blocks were updated at
 
     private val collisionConfig = btDefaultCollisionConfiguration()
     private val dispatcher = btCollisionDispatcher(collisionConfig)
