@@ -1,14 +1,15 @@
 package xyz.angm.terra3d.client.graphics.panels.game.inventory
 
-import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.Align
+import ktx.actors.KtxInputListener
 import ktx.actors.onKeyDown
 import xyz.angm.terra3d.client.graphics.actors.ItemActor
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.actors.ItemTooltip
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
-import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.items.Item
 
@@ -25,6 +26,7 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
     private var heldItemActor = ItemActor(heldItem)
     private val tooltip = ItemTooltip(this)
     private val holdingItem get() = heldItem != null
+    private val listener: KtxInputListener
 
     init {
         heldItemActor.isVisible = false
@@ -35,6 +37,14 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
         // for this is unregistered while GUIs are open
         onKeyDown { keycode ->
             if (keycode == configuration.keybinds["openInventory"]) screen.popPanel()
+        }
+
+        listener = object : KtxInputListener() {
+            override fun mouseMoved(event: InputEvent, x: Float, y: Float): Boolean {
+                heldItemActor.setPosition(x + heldItemOffsetX, y + heldItemOffsetY)
+                tooltip.setPosition(x + tooltipOffsetX, y + tooltipOffsetY, Align.topLeft)
+                return false
+            }
         }
     }
 
@@ -124,9 +134,9 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
     /** When a slot is no longer hovered */
     fun itemLeft() = tooltip.update(item = null)
 
-    override fun act(delta: Float) {
-        super.act(delta)
-        heldItemActor.setPosition(Gdx.input.x + heldItemOffsetX, (WORLD_HEIGHT - Gdx.input.y) + heldItemOffsetY)
-        tooltip.setPosition(Gdx.input.x + tooltipOffsetX, (WORLD_HEIGHT - Gdx.input.y) + tooltipOffsetY, Align.topLeft)
+    override fun setStage(stage: Stage?) {
+        stage?.removeListener(listener)
+        super.setStage(stage)
+        stage?.addListener(listener)
     }
 }
