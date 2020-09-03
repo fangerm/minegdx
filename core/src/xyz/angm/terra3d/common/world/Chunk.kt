@@ -70,7 +70,7 @@ open class Chunk private constructor(
     fun setBlock(position: IntVector3, block: Block?) {
         val id = block?.properties?.type ?: NOTHING
         val orient = (block?.orientation?.toId() ?: NOTHING) shl ORIENTATION_SHIFT
-        setBlock(position, id and orient)
+        setBlock(position, id or orient)
         if (block?.metadata != null) blockMetadata[position] = block.metadata!!
     }
 

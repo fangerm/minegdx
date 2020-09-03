@@ -22,7 +22,7 @@ import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.ALL
 import xyz.angm.terra3d.common.world.Chunk
 
-=
+
 /** A chunk capable of rendering itself. Constructed from a regular chunk sent by the server. */
 internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disposable {
 

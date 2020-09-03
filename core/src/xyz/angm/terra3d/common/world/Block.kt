@@ -32,7 +32,7 @@ class Block(
             : this(type, position, metadata, Orientation.fromId(orientation))
 
     init {
-        orientation = properties!!.block!!.orientation.get(orientation)
+        orientation = properties?.block?.orientation?.get(orientation) ?: orientation
     }
 
     /** Orientation of a block. */
