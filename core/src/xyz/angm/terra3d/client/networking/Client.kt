@@ -1,6 +1,7 @@
 package xyz.angm.terra3d.client.networking
 
 import com.badlogic.gdx.utils.Array
+import ktx.collections.*
 import xyz.angm.terra3d.common.log
 
 /** A client used for sending and receiving packages from a server.
@@ -9,7 +10,11 @@ import xyz.angm.terra3d.common.log
 class Client() {
 
     private var client: ClientSocketInterface = LocalClientSocket.getSocket(this)
-    private val listeners = Array<(Any) -> Unit>()
+    private val listeners = GdxArray<(Any) -> Unit>()
+
+    // Required since receiving multiple packets at once on different threads
+    // would otherwise crash since GdxArrays cannot be iterated multiple times at once
+    private val listenersIter = ThreadLocal.withInitial { Array.ArrayIterator(listeners) }
     var disconnectListener: () -> Unit = {}
 
     init {
@@ -37,7 +42,7 @@ class Client() {
         log.debug { "[CLIENT] Sent packet of class ${packet.javaClass.name}" }
     }
 
-    internal fun receive(packet: Any) = listeners.forEach { it(packet) }
+    internal fun receive(packet: Any) = listenersIter.get().forEach { it(packet) }
 
     internal fun disconnected() = disconnectListener()
 
