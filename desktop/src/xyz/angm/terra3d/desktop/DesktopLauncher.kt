@@ -32,7 +32,8 @@ private fun handleException(thread: Thread, throwable: Throwable) {
     Gdx.app?.exit()
 
     log.error { "Whoops. This shouldn't have happened..." }
-    log.error(throwable) { "Exception in thread ${thread.name}:\n" }
+    log.error { "Exception in thread ${thread.name}:\n" }
+    throwable.printStackTrace()
     log.error { "Client is exiting." }
 
     val builder = StringBuilder()
