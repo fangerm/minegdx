@@ -9,7 +9,9 @@ package xyz.angm.terra3d.client.graphics.panels.game
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.utils.Align
@@ -33,6 +35,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
 
     private val hotbar = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 0, 364, 44))
     private val hotbarSelected = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 44, 48, 48))
+    private val blockLabel = Label("", skin, "default-24pt")
     private val blockTooltip = ItemTooltip(this)
     private val debugLabel = Label("", skin["monospace", Label.LabelStyle::class.java])
     private val chat = Chat(skin, screen.client)
@@ -54,6 +57,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
 
         addActor(hotbar)
         addActor(hotbarSelected)
+        addActor(blockLabel)
         addActor(blockTooltip)
         addActor(debugLabel)
         addActor(hotbarItems)
@@ -93,6 +97,15 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
      * @param position It's new position */
     fun updateHotbarSelector(position: Int) {
         hotbarSelected.x = hotbar.x - 2 + (position * 40)
+        blockLabel.clearActions()
+        blockLabel.isVisible = true
+        blockLabel.color.a = 1f
+        blockLabel.setText(screen.playerInventory[position]?.properties?.name ?: "")
+        blockLabel.addAction(Actions.sequence(
+            Actions.fadeOut(3f, Interpolation.pow2),
+            Actions.visible(false),
+        ))
+        blockLabel.setPosition(hotbarSelected.x, 120f, Align.center)
     }
 
     /** Displays the chat, without it fading. */
