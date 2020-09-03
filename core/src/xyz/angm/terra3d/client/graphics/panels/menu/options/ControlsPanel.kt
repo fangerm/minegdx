@@ -27,7 +27,7 @@ class ControlsPanel(private var screen: Screen) : Panel(screen) {
 
     private var current: Pair<Int, PlayerAction>? = null
     private var currentBtn: TextButton? = null
-    private lateinit var table: Table
+    private var table: Table
 
     init {
         this += scene2d.visTable {
