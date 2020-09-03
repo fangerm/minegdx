@@ -3,49 +3,35 @@ package xyz.angm.terra3d.client.graphics.actors
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.scenes.scene2d.Actor
-import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import xyz.angm.terra3d.client.graphics.panels.game.inventory.InventoryPanel
+import com.kotcrab.vis.ui.widget.VisTable
 import xyz.angm.terra3d.common.items.Inventory
 
-/** Displays a group of items.
- * @param panel The currently active panel
+/** Displays a group of items in a draggable window.
+ * @param window The window this group belongs to
  * @param inventory The inventory to display
  * @param startOffset The offset of the inventory
- * @param itemOffsetX The offset between every item, X axis
- * @param itemOffsetY The offset between every item, Y axis
- * @param rows The amount of rows
- * @param columns The amount of columns
+ * @param row The amount of rows
+ * @param column The amount of columns
  * @param mutable If the items of the group can be set, or only taken out (used for crafting interfaces) */
 class ItemGroup(
-    private val panel: InventoryPanel?,
+    private val window: InventoryWindow?,
     val inventory: Inventory,
-    private val startOffset: Int = 0,
-    private val itemOffsetX: Int = 36,
-    private val itemOffsetY: Int = 36,
-    val rows: Int,
-    val columns: Int,
-    val mutable: Boolean = true
-) : Group() {
+    val mutable: Boolean = true,
+    startOffset: Int = 0,
+    padding: Float = 4f,
+    row: Int,
+    column: Int,
+) : VisTable() {
 
     init {
-        width = columns * itemOffsetX.toFloat()
-        height = rows * itemOffsetY.toFloat()
-        redraw()
-    }
-
-    private fun redraw() {
-        clearChildren()
-
-        var index = startOffset
-        for (yOffset in 0 until rows)
-            for (xOffset in 0 until columns) {
-                val actor = GroupedItemActor(this, index)
-                actor.setPosition(itemOffsetX * xOffset.toFloat(), itemOffsetY * yOffset.toFloat())
-                addActor(actor)
-                index++
-            }
+        for (index in startOffset until (row * column) + startOffset) {
+            val actor = GroupedItemActor(this, index)
+            add(actor).pad(padding)
+            if (index != 0 && index % column == column - 1) row()
+        }
+        pack()
     }
 
     /** An actor for an item inside an [ItemGroup].
@@ -65,23 +51,21 @@ class ItemGroup(
                 override fun clicked(event: InputEvent, x: Float, y: Float) {
                     when (event.button) {
                         Input.Buttons.LEFT -> {
-                            if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) group.panel?.itemShiftClicked(this@GroupedItemActor)
-                            else group.panel?.itemLeftClicked(this@GroupedItemActor)
+                            if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) group.window?.itemShiftClicked(this@GroupedItemActor)
+                            else group.window?.itemLeftClicked(this@GroupedItemActor)
                         }
-                        Input.Buttons.RIGHT -> group.panel?.itemRightClicked(this@GroupedItemActor)
-                        else -> return // Prevent redraw when no change happened
+                        Input.Buttons.RIGHT -> group.window?.itemRightClicked(this@GroupedItemActor)
                     }
-                    group.redraw()
                 }
 
                 override fun enter(event: InputEvent?, x: Float, y: Float, pointer: Int, fromActor: Actor?) {
                     mouseOver = true
-                    group.panel?.itemHovered(this@GroupedItemActor)
+                    group.window?.itemHovered(this@GroupedItemActor)
                 }
 
                 override fun exit(event: InputEvent?, x: Float, y: Float, pointer: Int, toActor: Actor?) {
                     mouseOver = false
-                    group.panel?.itemLeft()
+                    group.window?.itemLeft()
                 }
             })
         }

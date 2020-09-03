@@ -21,12 +21,13 @@ private const val tooltipOffsetY = -5f
 @Suppress("LeakingThis")
 abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
 
-    private var heldItem: Item? = null
+    var heldItem: Item? = null
     private var heldItemActor = ItemActor(heldItem)
     private val tooltip = ItemTooltip(this)
     private val holdingItem get() = heldItem != null
 
     init {
+        heldItemActor.isVisible = false
         addActor(heldItemActor)
         addActor(tooltip)
 
@@ -65,8 +66,8 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
             // If the actor is mutable..
             if (actor.empty) {
                 // and does not have an item, put 1 from the held item in it's place
-                heldItem!!.amount--
-                actor.item = heldItem!!.copy(amount = 1)
+                heldItem?.amount = (heldItem?.amount ?: 1) - 1
+                actor.item = heldItem?.copy(amount = 1)
             } else if (actor.item!! stacksWith heldItem && !actor.full) {
                 // and stacks with the held item, add 1 from the held item to it
                 heldItem!!.amount--
@@ -113,7 +114,7 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
     }
 
     /** When a slot in an inventory is shift clicked */
-    abstract fun itemShiftClicked(actor: ItemGroup.GroupedItemActor)
+    open fun itemShiftClicked(actor: ItemGroup.GroupedItemActor) {}
 
     /** When a slot is hovered */
     fun itemHovered(actor: ItemGroup.GroupedItemActor) {

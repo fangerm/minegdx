@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.kotcrab.vis.ui.VisUI
+import com.kotcrab.vis.ui.widget.VisTextButton
 import ktx.assets.file
 import ktx.scene2d.Scene2DSkin
 import ktx.style.*
@@ -81,6 +82,8 @@ object Skin {
             add("button-disabled", ResourceManager.getTextureRegion(guiWidgets, 0, 92, 400, 40))
             add("logo", ResourceManager.get("textures/gui/title/terra3d.png"))
 
+
+            add("vis-default", it.get<VisTextButton.VisTextButtonStyle>())
             visTextButton {
                 font = it["default-32pt"]
                 up = it["button-default"]

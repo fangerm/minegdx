@@ -9,7 +9,7 @@ import xyz.angm.terra3d.common.world.Block
  * Usually, the inventory resides in the block's metadata.
  *
  * @param block The block to update on inventory change. */
-abstract class NetworkInventoryPanel(private val screen: GameScreen, private val block: Block) : PlayerInventoryPanel(screen) {
+abstract class NetworkInventoryPanel(private val screen: GameScreen, private val block: Block) : InventoryPanel(screen) {
 
     /** Called before the block is synced with the server, use it to change the inventories as needed. */
     abstract fun updateNetInventory()

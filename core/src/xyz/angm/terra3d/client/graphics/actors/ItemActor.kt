@@ -1,8 +1,12 @@
 package xyz.angm.terra3d.client.graphics.actors
 
-import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable
+import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable
+import com.kotcrab.vis.ui.VisUI
+import com.kotcrab.vis.ui.widget.VisTextButton
 import ktx.scene2d.Scene2DSkin
 import xyz.angm.terra3d.common.items.Item
 
@@ -24,6 +28,8 @@ open class ItemActor(open var item: Item? = null) : Actor() {
 
     /** @see com.badlogic.gdx.scenes.scene2d.Actor.draw */
     override fun draw(batch: Batch, parentAlpha: Float) {
+        baseTexture.draw(batch, x, y, width, height)
+
         val item = item
         if (item != null) {
             batch.draw(item.texture, x, y, width, height)
@@ -34,14 +40,20 @@ open class ItemActor(open var item: Item? = null) : Actor() {
                 y + fontOffsetY
             )
         }
-        if (mouseOver) batch.draw(selectorTexture, x, y)
+        if (mouseOver) selectorTexture.draw(batch, x, y, width, height)
     }
 
     private companion object {
         private const val fontOffsetX = 14
-        private const val fontOffsetY = 12
+        private const val fontOffsetY = 14
 
         private val font = Scene2DSkin.defaultSkin.getFont("default-16pt")
-        private val selectorTexture = Scene2DSkin.defaultSkin.get("item-selector", Texture::class.java)
+        private val selectorTexture: Drawable
+        private val baseTexture = VisUI.getSkin().get("vis-default", VisTextButton.VisTextButtonStyle::class.java).up
+
+        init {
+            val text = VisUI.getSkin().get("vis-default", VisTextButton.VisTextButtonStyle::class.java).over
+            selectorTexture = (text as NinePatchDrawable).tint(Color(1f, 1f, 1f, 0.5f))
+        }
     }
 }

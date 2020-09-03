@@ -42,7 +42,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
 
     init {
         val icons = "textures/gui/icons.png"
-        val hotbarItems = ItemGroup(null, screen.playerInventory, rows = 1, columns = 9, itemOffsetX = 40)
+        val hotbarItems = ItemGroup(null, screen.playerInventory, row = 1, column = 9)
         val crosshair = Image(ResourceManager.getTextureRegion(icons, 0, 0, 32, 32))
         val healthBar = IconGroup(
             ResourceManager.getTextureRegion(icons, 32, 0, 18, 18),
@@ -73,7 +73,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         hotbar.setPosition(WORLD_WIDTH / 2, hotbar.height / 2, Align.center)
         hotbarSelected.setPosition(0f, hotbar.height / 2, Align.center)
         blockTooltip.setPosition(0f, WORLD_HEIGHT, Align.topLeft)
-        hotbarItems.setPosition(hotbar.x + 6, hotbar.y + 6)
+        hotbarItems.setPosition(hotbar.x + 2f, hotbar.y + 2f)
         crosshair.setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, Align.center)
         debugLabel.setPosition(5f, WORLD_HEIGHT - 175, Align.topLeft)
         healthBar.setPosition(hotbar.x, hotbar.height + 6, Align.bottomLeft)
