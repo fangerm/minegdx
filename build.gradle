@@ -111,8 +111,10 @@ project(":core") {
         api "de.ruedigermoeller:fst:2.56"
         api "io.netty:netty-all:4.1.36.Final"
 
-        api "org.jetbrains.exposed:exposed:0.11.2"
-        api "org.xerial:sqlite-jdbc:3.21.0.1"
+        api "org.jetbrains.exposed:exposed-core:0.24.1"
+	api "org.jetbrains.exposed:exposed-dao:0.24.1"
+        api "org.jetbrains.exposed:exposed-jdbc:0.24.1"
+        api "org.xerial:sqlite-jdbc:3.30.1"
         api "org.zeroturnaround:zt-zip:1.13"
     }
 }

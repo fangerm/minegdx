@@ -5,8 +5,8 @@ import ch.qos.logback.classic.Logger
 import com.badlogic.gdx.utils.ObjectMap
 import com.badlogic.gdx.utils.OrderedMap
 import ktx.collections.*
-import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
 import xyz.angm.terra3d.common.CHUNK_SIZE
@@ -19,7 +19,6 @@ import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
 import java.sql.Connection
-import javax.sql.rowset.serial.SerialBlob
 
 internal class WorldDatabase(private val server: Server) {
 
@@ -73,7 +72,7 @@ internal class WorldDatabase(private val server: Server) {
         if (cacheChunk != null) return cacheChunk
 
         val dbChunk = getDBChunk(position)
-        val chunk = if (dbChunk != null) fst.asObject(dbChunk[Chunks.data].binaryStream.readBytes()) as Chunk
+        val chunk = if (dbChunk != null) fst.asObject(dbChunk[Chunks.data].bytes) as Chunk
         else if (!generate) return null
         else {
             server.world.generator.generateChunks(tmpIV)
@@ -92,7 +91,7 @@ internal class WorldDatabase(private val server: Server) {
         for (chunk in dbChunks) {
             // Already got this one in cache if true
             if (out.any { it.position.x == chunk[Chunks.x] && it.position.y == chunk[Chunks.y] && it.position.z == chunk[Chunks.z] }) continue
-            val ch = fst.asObject(chunk[Chunks.data].binaryStream.readBytes()) as Chunk
+            val ch = fst.asObject(chunk[Chunks.data].bytes) as Chunk
             out.add(ch)
             unchangedChunks[ch.position] = ch
         }
@@ -136,12 +135,12 @@ internal class WorldDatabase(private val server: Server) {
                     it[x] = chunk.key.x
                     it[y] = chunk.key.y
                     it[z] = chunk.key.z
-                    it[data] = SerialBlob(fst.asByteArray(chunk.value))
+                    it[data] = ExposedBlob(fst.asByteArray(chunk.value))
                 }
             }
             changedChunks.filter { !newChunks.keys().contains(it.key) }.forEach { chunk ->
                 Chunks.update({ (Chunks.x eq chunk.key.x) and (Chunks.y eq chunk.key.y) and (Chunks.z eq chunk.key.z) }) {
-                    it[data] = SerialBlob(fst.asByteArray(chunk.value))
+                    it[data] = ExposedBlob(fst.asByteArray(chunk.value))
                 }
             }
         }
@@ -163,16 +162,18 @@ internal class WorldDatabase(private val server: Server) {
 }
 
 /** Chunk DB table. All axes are primary keys for SELECT performance */
-private object Chunks : IntIdTable() {
+private object Chunks : Table() {
     /** Position X axis */
-    val x = integer("x").primaryKey()
+    val x = integer("x")
 
     /** Position Y axis */
-    val y = integer("y").primaryKey()
+    val y = integer("y")
 
     /** Position Z axis */
-    val z = integer("z").primaryKey()
+    val z = integer("z")
 
     /** The chunk object, serialized with FST */
     val data = blob("data")
+
+    override val primaryKey = PrimaryKey(x, y, z)
 }
