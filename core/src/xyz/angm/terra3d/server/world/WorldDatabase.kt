@@ -65,13 +65,22 @@ internal class WorldDatabase(private val server: Server) {
         newChunks[newChunk.position] = newChunk
     }
 
-    /** Returns chunk or null if it is not in the DB */
-    internal fun getChunk(position: IntVector3): Chunk? {
+    /** Returns chunk or null if it is not in the DB
+     * @param generate If the chunk should be generated if missing. Does not return null if true. */
+    internal fun getChunk(position: IntVector3, generate: Boolean = true): Chunk? {
         tmpIV.set(position).norm(CHUNK_SIZE)
         val cacheChunk = getCachedChunk(tmpIV)
         if (cacheChunk != null) return cacheChunk
-        val dbChunk = getDBChunk(position) ?: return null
-        val chunk = fst.asObject(dbChunk[Chunks.data].binaryStream.readBytes()) as Chunk
+
+        val dbChunk = getDBChunk(position)
+        val chunk = if (dbChunk != null) fst.asObject(dbChunk[Chunks.data].binaryStream.readBytes()) as Chunk
+        else if (!generate) return null
+        else {
+            server.world.generator.generateChunks(tmpIV)
+            server.world.generator.finalizeGen()
+            getCachedChunk(tmpIV.set(position).norm(CHUNK_SIZE))!!
+        }
+
         unchangedChunks[chunk.position] = chunk
         return chunk
     }
@@ -110,7 +119,7 @@ internal class WorldDatabase(private val server: Server) {
      * Better performance than the method above; mainly used for batching block operations ([World.setBlockRaw]).
      * Does not consider a chunk that the block was placed in to be changed. */
     internal fun setBlockRaw(position: IntVector3, type: ItemType): Boolean {
-        val chunk = getChunk(position) ?: return false
+        val chunk = getChunk(position, false) ?: return false
         tmpIV.set(position).minus(chunk.position)
 
         chunk.setBlock(tmpIV, type)

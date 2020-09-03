@@ -42,7 +42,10 @@ class Client() {
         log.debug { "[CLIENT] Sent packet of class ${packet.javaClass.name}" }
     }
 
-    internal fun receive(packet: Any) = listenersIter.get().forEach { it(packet) }
+    internal fun receive(packet: Any) {
+        listenersIter.get().reset()
+        listenersIter.get().forEach { it(packet) }
+    }
 
     internal fun disconnected() = disconnectListener()
 

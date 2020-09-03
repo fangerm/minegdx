@@ -33,7 +33,7 @@ class World(private val server: Server) : WorldInterface {
 
     override val seed = server.save.seed
     private val database = WorldDatabase(server)
-    private val generator = TerrainGenerator(this)
+    internal val generator = TerrainGenerator(this)
     private val blockEntitySystem = BlockEntitySystem(this)
     private val physics = PhysicsSystem(this::getBlock)
 
