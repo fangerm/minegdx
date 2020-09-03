@@ -11,8 +11,14 @@ import com.kotcrab.vis.ui.widget.file.FileChooserAdapter
 import com.kotcrab.vis.ui.widget.file.FileTypeFilter
 import ktx.actors.centerPosition
 import ktx.actors.onClick
-import ktx.actors.plus
-import ktx.scene2d.*
+import ktx.actors.plusAssign
+import ktx.scene2d.KButton
+import ktx.scene2d.button
+import ktx.scene2d.scene2d
+import ktx.scene2d.scrollPane
+import ktx.scene2d.vis.visLabel
+import ktx.scene2d.vis.visTable
+import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
@@ -33,16 +39,16 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
         buttons.setMaxCheckCount(1)
         buttons.uncheckAll()
 
-        this + table {
+        this += scene2d.visTable {
             focusedActor = scrollPane {
-                table {
+                scene2d.visTable {
                     ResourceManager.availablePacks.forEach { pack ->
                         buttons.add(button {
                             background = skin.getDrawable("black-transparent")
 
-                            label(pack.name) { it.pad(5f).colspan(2).expandX().left().row() }
+                            visLabel(pack.name) { it.pad(5f).colspan(2).expandX().left().row() }
 
-                            label(pack.description, style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
+                            visLabel(pack.description, style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
 
                             onClick { selectedPack = pack }
 
@@ -57,7 +63,7 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
 
             backButton(this, screen)
 
-            textButton(I18N["apply"]) {
+            visTextButton(I18N["apply"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick {
                     if (ResourceManager.pack != selectedPack) {
@@ -69,7 +75,7 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
                 }
             }
 
-            textButton(I18N["res.import"]) {
+            visTextButton(I18N["res.import"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick { importDialog() }
             }

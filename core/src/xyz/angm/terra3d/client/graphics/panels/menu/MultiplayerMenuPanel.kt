@@ -2,8 +2,13 @@ package xyz.angm.terra3d.client.graphics.panels.menu
 
 import ktx.actors.onClick
 import ktx.actors.onClickEvent
-import ktx.actors.plus
-import ktx.scene2d.*
+import ktx.actors.plusAssign
+import ktx.scene2d.button
+import ktx.scene2d.scene2d
+import ktx.scene2d.scrollPane
+import ktx.scene2d.vis.visLabel
+import ktx.scene2d.vis.visTable
+import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
@@ -19,18 +24,17 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
 
     internal fun reload(screen: MenuScreen) {
         clearChildren()
-        this + table {
+        this += scene2d.visTable {
             focusedActor = scrollPane {
-                table {
+                visTable {
                     configuration.servers.forEach { server ->
                         button {
                             background = skin.getDrawable("black-transparent")
 
-                            label(server.key) { it.pad(5f).colspan(2).expandX().left().row() }
+                            visLabel(server.key) { it.pad(5f).colspan(2).expandX().left().row() }
+                            visLabel("IP: ${server.value}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
 
-                            label("IP: ${server.value}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
-
-                            val deleteBtn = textButton(I18N["multi.delete"], style = "server-delete") {
+                            val deleteBtn = visTextButton(I18N["multi.delete"], style = "server-delete") {
                                 it.right().row()
                                 onClick {
                                     screen.pushPanel(ConfirmationPanel(screen) {
@@ -44,7 +48,7 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                                 }
                             }
 
-                            onClickEvent { event, _ ->
+                            onClickEvent { event ->
                                 if (event.target.parent == deleteBtn) return@onClickEvent
                                 screen.connectToServer(server.value)
                             }
@@ -58,12 +62,12 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
 
             backButton(this, screen)
 
-            textButton(I18N["multi.add"]) {
+            visTextButton(I18N["multi.add"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick { screen.pushPanel(MultiplayerServerAddPanel(screen, this@MultiplayerMenuPanel)) }
             }
 
-            textButton(I18N["multi.direct"]) {
+            visTextButton(I18N["multi.direct"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick {
                     screen.pushPanel(GetUserInputPanel(screen, "Enter Server IP:", "Connect") {

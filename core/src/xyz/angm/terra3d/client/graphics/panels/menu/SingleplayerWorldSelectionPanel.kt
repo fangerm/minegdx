@@ -2,8 +2,13 @@ package xyz.angm.terra3d.client.graphics.panels.menu
 
 import ktx.actors.onClick
 import ktx.actors.onClickEvent
-import ktx.actors.plus
-import ktx.scene2d.*
+import ktx.actors.plusAssign
+import ktx.scene2d.button
+import ktx.scene2d.scene2d
+import ktx.scene2d.scrollPane
+import ktx.scene2d.vis.visLabel
+import ktx.scene2d.vis.visTable
+import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
@@ -19,18 +24,17 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
 
     internal fun reload(screen: MenuScreen) {
         clearChildren()
-        this + table {
+        this += scene2d.visTable {
             focusedActor = scrollPane {
-                table {
+                visTable {
                     WorldSaveManager.getWorlds().forEach { save ->
                         button {
                             background = skin.getDrawable("black-transparent")
 
-                            label(save.name) { it.pad(5f).colspan(2).expandX().left().row() }
+                            visLabel(save.name) { it.pad(5f).colspan(2).expandX().left().row() }
+                            visLabel("${I18N["single.seed"]} ${save.seed}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
 
-                            label("${I18N["single.seed"]} ${save.seed}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
-
-                            val deleteBtn = textButton(I18N["single.delete"], style = "server-delete") {
+                            val deleteBtn = visTextButton(I18N["single.delete"], style = "server-delete") {
                                 it.right().row()
                                 onClick {
                                     screen.pushPanel(ConfirmationPanel(screen) {
@@ -44,7 +48,7 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
                                 }
                             }
 
-                            onClickEvent { event, _ ->
+                            onClickEvent { event ->
                                 if (event.target.parent == deleteBtn) return@onClickEvent
                                 screen.localServer(save)
                             }
@@ -58,7 +62,7 @@ class SingleplayerWorldSelectionPanel(screen: MenuScreen) : Panel(screen) {
 
             backButton(this, screen)
 
-            textButton(I18N["single.create"]) {
+            visTextButton(I18N["single.create"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
                 onClick { screen.pushPanel(SingleplayerWorldCreatePanel(screen, this@SingleplayerWorldSelectionPanel)) }
             }

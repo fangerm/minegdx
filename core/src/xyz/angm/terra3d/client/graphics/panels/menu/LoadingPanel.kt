@@ -1,7 +1,7 @@
 package xyz.angm.terra3d.client.graphics.panels.menu
 
-import com.badlogic.gdx.scenes.scene2d.ui.Label
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar
+import com.kotcrab.vis.ui.widget.VisLabel
+import com.kotcrab.vis.ui.widget.VisProgressBar
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.client.resources.I18N
@@ -10,9 +10,9 @@ import xyz.angm.terra3d.client.resources.ResourceManager
 /** Loading panel shown on boot. */
 class LoadingPanel(private val screen: MenuScreen) : Panel(screen) {
 
-    private val loadingLabel = Label(I18N["loading-assets"], skin)
-    private val loadingPercentLabel = Label("0%", skin)
-    private val loadingBar = ProgressBar(0f, 1f, 0.01f, false, skin)
+    private val loadingLabel = VisLabel(I18N["loading-assets"])
+    private val loadingPercentLabel = VisLabel("0%")
+    private val loadingBar = VisProgressBar(0f, 1f, 0.01f, false)
 
     private var done = false
 

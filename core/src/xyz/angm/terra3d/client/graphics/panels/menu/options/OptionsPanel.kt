@@ -3,8 +3,9 @@ package xyz.angm.terra3d.client.graphics.panels.menu.options
 import ktx.actors.onChange
 import ktx.actors.onClick
 import ktx.actors.onKey
-import ktx.actors.plus
-import ktx.scene2d.*
+import ktx.actors.plusAssign
+import ktx.scene2d.scene2d
+import ktx.scene2d.vis.*
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.panels.menu.MainMenuPanel
@@ -22,20 +23,15 @@ class OptionsPanel(screen: Screen, parent: MainMenuPanel? = null) : Panel(screen
 
     private fun reload(screen: Screen, parent: MainMenuPanel?) {
         clearChildren()
-        this + table {
+        this += scene2d.visTable {
             // Only show certain options on menu screen
             if (screen is MenuScreen) {
-                textButton(I18N["options.video"]) {
-                    it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
-                    onClick { screen.pushPanel(VideoOptionsPanel(screen)) }
-                }
-
-                textButton(I18N["options.resourcepack"]) {
+                visTextButton(I18N["options.resourcepack"]) {
                     it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
                     onClick { screen.pushPanel(ResourcePackPanel(screen)) }
                 }
 
-                val box = selectBoxOf(I18N.languages())
+                val box = visSelectBoxOf(I18N.languages())
                 box.selected = configuration.language
                 box.onChange {
                     I18N.setLanguage(box.selected)
@@ -47,21 +43,21 @@ class OptionsPanel(screen: Screen, parent: MainMenuPanel? = null) : Panel(screen
                 row()
             }
 
-            textButton(I18N["options.controls"]) {
+            visTextButton(I18N["options.controls"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
                 onClick { screen.pushPanel(ControlsPanel(screen)) }
             }
 
-            label(I18N["options.playername"], style = "default-24pt") {
+            visLabel(I18N["options.playername"]) {
                 it.pad(10f)
             }
 
-            textField(configuration.playerName) {
+            visTextField(configuration.playerName) {
                 it.width(400f).pad(20f).row()
                 onKey { configuration.playerName = text }
             }
 
-            textButton(I18N["back"]) {
+            visTextButton(I18N["back"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2)
                 onClick { screen.popPanel() }
             }

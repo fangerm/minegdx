@@ -36,7 +36,7 @@ allprojects {
         gdxVersion = "1.9.11"
         ashleyVersion = "1.7.3"
         aiVersion = "1.8.2"
-        ktxVersion = "1.9.8-b5"
+        ktxVersion = "1.9.11-b1"
         assetsDir = new File("../assets")
     }
 
@@ -103,6 +103,8 @@ project(":core") {
         api "io.github.libktx:ktx-collections:$ktxVersion"
         api "io.github.libktx:ktx-style:$ktxVersion"
         api "io.github.libktx:ktx-scene2d:$ktxVersion"
+        api "io.github.libktx:ktx-vis-style:$ktxVersion"
+        api "io.github.libktx:ktx-vis:$ktxVersion"
         api "com.kotcrab.vis:vis-ui:1.4.6"
 
         api "com.github.fangerm:ashley:1.7.4"

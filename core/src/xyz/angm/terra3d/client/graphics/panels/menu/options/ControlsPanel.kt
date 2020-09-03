@@ -8,8 +8,13 @@ import com.badlogic.gdx.utils.Align
 import ktx.actors.onClick
 import ktx.actors.onKey
 import ktx.actors.onKeyDown
-import ktx.actors.plus
-import ktx.scene2d.*
+import ktx.actors.plusAssign
+import ktx.scene2d.scene2d
+import ktx.scene2d.scrollPane
+import ktx.scene2d.textField
+import ktx.scene2d.vis.visLabel
+import ktx.scene2d.vis.visTable
+import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.actions.PlayerAction
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
@@ -25,13 +30,13 @@ class ControlsPanel(private var screen: Screen) : Panel(screen) {
     private lateinit var table: Table
 
     init {
-        this + table {
-            textButton(I18N["back"]) {
+        this += scene2d.visTable {
+            visTextButton(I18N["back"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2)
                 onClick { screen.popPanel() }
             }
 
-            label(I18N["options.sensitivity"], style = "default-24pt") {
+            visLabel(I18N["options.sensitivity"]) {
                 it.pad(10f).align(Align.right)
             }
 
@@ -41,7 +46,7 @@ class ControlsPanel(private var screen: Screen) : Panel(screen) {
             }
 
             focusedActor = scrollPane {
-                table = table {}
+                table = visTable {}
 
                 onKeyDown { keycode ->
                     if (current == null && keycode == Input.Keys.ESCAPE) {

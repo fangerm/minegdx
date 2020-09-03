@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Component
 import com.badlogic.ashley.core.Engine
 import com.badlogic.gdx.math.Vector3
 import ktx.ashley.entity
+import ktx.ashley.with
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.VelocityComponent

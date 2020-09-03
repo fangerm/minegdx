@@ -1,6 +1,6 @@
 package xyz.angm.terra3d.client.graphics.panels.game
 
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.kotcrab.vis.ui.widget.VisTextButton
 import ktx.actors.onClick
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
@@ -12,19 +12,17 @@ import xyz.angm.terra3d.client.resources.I18N
 class PausePanel(screen: GameScreen) : Panel(screen) {
 
     init {
-        val continueButton = TextButton(I18N["pause.continue"], skin)
+        val continueButton = VisTextButton(I18N["pause.continue"])
         add(continueButton).height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
 
-        val optionsButton = TextButton(I18N["pause.options"], skin)
+        val optionsButton = VisTextButton(I18N["pause.options"])
         add(optionsButton).height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
 
-        val exitButton = TextButton(I18N["pause.exit"], skin)
+        val exitButton = VisTextButton(I18N["pause.exit"])
         add(exitButton).height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
 
         continueButton.onClick { screen.popPanel() }
-
         optionsButton.onClick { screen.pushPanel(OptionsPanel(screen)) }
-
         exitButton.onClick { screen.returnToMenu() }
     }
 }

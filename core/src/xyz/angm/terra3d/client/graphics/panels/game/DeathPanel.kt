@@ -1,11 +1,12 @@
 package xyz.angm.terra3d.client.graphics.panels.game
 
 import ktx.actors.onClick
-import ktx.actors.plus
+import ktx.actors.plusAssign
 import ktx.ashley.get
-import ktx.scene2d.label
-import ktx.scene2d.table
-import ktx.scene2d.textButton
+import ktx.scene2d.scene2d
+import ktx.scene2d.vis.visLabel
+import ktx.scene2d.vis.visTable
+import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
@@ -20,10 +21,10 @@ class DeathPanel(screen: GameScreen) : Panel(screen) {
     init {
         background = skin.getDrawable("red-transparent")
 
-        this + table {
-            label(I18N["death.message"], style = "default-48pt") { it.pad(75f).row() }
+        this += scene2d.visTable {
+            visLabel(I18N["death.message"], style = "default-48pt") { it.pad(75f).row() }
 
-            textButton(I18N["death.respawn"]) {
+            visTextButton(I18N["death.respawn"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).row()
                 onClick {
                     screen.player[position]!!.set(screen.player[playerM]!!.spawnPosition)

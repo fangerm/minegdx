@@ -33,7 +33,7 @@ class ServerSyncPanel(screen: MenuScreen) : Panel(screen) {
             if (++dots > 3) dots = 0
         }
 
-        // Update label
+        // Update visLabel
         if (world != null) {
             loadingMsg.setText(I18N["world-meshing-msg"] + ".".repeat(dots))
             chunksLeft.setText("${world!!.waitingForRender} ${I18N["world-meshing-remaining"]}")

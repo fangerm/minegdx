@@ -3,11 +3,12 @@ package xyz.angm.terra3d.client.graphics.panels.menu
 import com.badlogic.gdx.Input
 import ktx.actors.onClick
 import ktx.actors.onKeyDown
-import ktx.actors.plus
-import ktx.scene2d.label
-import ktx.scene2d.table
-import ktx.scene2d.textButton
+import ktx.actors.plusAssign
+import ktx.scene2d.scene2d
 import ktx.scene2d.textField
+import ktx.scene2d.vis.visLabel
+import ktx.scene2d.vis.visTable
+import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
@@ -17,23 +18,23 @@ import xyz.angm.terra3d.client.resources.I18N
  * Does not automatically remove itself once user inputs something!
  * @param screen Active menu screen
  * @param callback The method called once the user has confirmed their input
- * @param labelText The text for the label above the input field
+ * @param visLabelText The text for the visLabel above the input field
  * @param confirmText The text of the confirmation button */
-class GetUserInputPanel(screen: MenuScreen, labelText: String, confirmText: String, callback: (String?) -> Unit) : Panel(screen) {
+class GetUserInputPanel(screen: MenuScreen, visLabelText: String, confirmText: String, callback: (String?) -> Unit) : Panel(screen) {
 
     init {
-        this + table {
-            label(labelText) { it.pad(20f).row() }
+        this += scene2d.visTable {
+            visLabel(visLabelText) { it.pad(20f).row() }
 
             val inputField = textField { it.width(400f).pad(20f).padBottom(40f).row() }
             focusedActor = inputField
 
-            textButton(confirmText) {
+            visTextButton(confirmText) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
                 onClick { callback(inputField.text) }
             }
 
-            textButton(I18N["back"]) {
+            visTextButton(I18N["back"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
                 onClick { callback(null) }
             }

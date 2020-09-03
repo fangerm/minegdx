@@ -9,10 +9,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import ktx.actors.onClick
 import ktx.actors.onKeyDown
-import ktx.scene2d.KTableWidget
-import ktx.scene2d.KTextButton
 import ktx.scene2d.Scene2DSkin
-import ktx.scene2d.textButton
+import ktx.scene2d.vis.KVisTable
+import ktx.scene2d.vis.KVisTextButton
+import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.screens.Screen
 import xyz.angm.terra3d.client.resources.I18N
@@ -44,8 +44,8 @@ abstract class Panel(screen: Screen) : Table(Scene2DSkin.defaultSkin) {
 
     /** A function that will add a back button to a panel constructed with KTX,
      * see most panels in menu for an example. */
-    internal fun backButton(local: KTableWidget, screen: Screen): KTextButton {
-        return local.textButton(I18N["back"]) {
+    internal fun backButton(local: KVisTable, screen: Screen): KVisTextButton {
+        return local.visTextButton(I18N["back"]) {
             it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)
             onClick { screen.popPanel() }
         }

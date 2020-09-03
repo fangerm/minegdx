@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
+import com.kotcrab.vis.ui.VisUI
 import ktx.assets.file
 import ktx.scene2d.Scene2DSkin
 import ktx.style.*
@@ -43,7 +44,8 @@ object Skin {
         val parameter = FreeTypeFontGenerator.FreeTypeFontParameter()
         parameter.shadowColor = Color(0.4f, 0.4f, 0.4f, 0.8f)
 
-        Scene2DSkin.defaultSkin = skin {
+        val it = VisUI.getSkin()
+        Scene2DSkin.defaultSkin = VisUI.getSkin().apply {
             fontSizes.forEach { size ->
                 parameter.size = size
                 parameter.shadowOffsetX = size / 10
@@ -79,13 +81,13 @@ object Skin {
             add("button-disabled", ResourceManager.getTextureRegion(guiWidgets, 0, 92, 400, 40))
             add("logo", ResourceManager.get("textures/gui/title/terra3d.png"))
 
-            textButton {
+            visTextButton {
                 font = it["default-32pt"]
                 up = it["button-default"]
                 over = it["button-hover"]
             }
 
-            textButton("server-delete") {
+            visTextButton("server-delete") {
                 font = it["default-16pt"]
                 over = it["dark-grey"]
                 checked = it["black"]
@@ -93,12 +95,6 @@ object Skin {
 
             getAll(BitmapFont::class.java).forEach { skinFont ->
                 label(skinFont.key) { font = skinFont.value }
-            }
-
-            label("pack-loading") {
-                font = it["default-48pt"]
-                fontColor = Color.ORANGE
-                background = it["black-transparent"]
             }
 
             label("debug") {
@@ -120,7 +116,7 @@ object Skin {
                 selection = it["dark-grey"]
             }
 
-            textField("chat-input") {
+            visTextField("chat-input") {
                 font = it["default-24pt"]
                 fontColor = Color.WHITE
                 background = it["black-transparent"]
@@ -134,30 +130,7 @@ object Skin {
                 checked = it["dark-green"]
             }
 
-            list {
-                font = it["default-32pt"]
-                fontColorSelected = Color.WHITE
-                fontColorUnselected = Color.LIGHT_GRAY
-                background = it["black"]
-                selection = it["light-grey"]
-            }
-
             scrollPane {}
-
-            selectBox {
-                font = it["default-32pt"]
-                fontColor = Color.WHITE
-                background = it["black"]
-                backgroundOver = it["dark-grey"]
-                listStyle = it["default"]
-                scrollStyle = it["default"]
-            }
-
-            checkBox {
-                checkboxOff = it["red"]
-                checkboxOn = it["green"]
-                font = it["default-32pt"]
-            }
         }
 
         regularGenerator.dispose()

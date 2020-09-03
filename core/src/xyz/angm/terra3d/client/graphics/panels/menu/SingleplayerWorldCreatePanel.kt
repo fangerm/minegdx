@@ -3,11 +3,12 @@ package xyz.angm.terra3d.client.graphics.panels.menu
 import com.badlogic.gdx.Input
 import ktx.actors.onClick
 import ktx.actors.onKeyDown
-import ktx.actors.plus
-import ktx.scene2d.label
-import ktx.scene2d.table
-import ktx.scene2d.textButton
+import ktx.actors.plusAssign
+import ktx.scene2d.scene2d
 import ktx.scene2d.textField
+import ktx.scene2d.vis.visLabel
+import ktx.scene2d.vis.visTable
+import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
@@ -19,15 +20,15 @@ class SingleplayerWorldCreatePanel(screen: MenuScreen, parent: SingleplayerWorld
 
 
     init {
-        this + table {
-            label(I18N["single-add.name"]) { it.pad(20f).row() }
+        this += scene2d.visTable {
+            visLabel(I18N["single-add.name"]) { it.pad(20f).row() }
             val nameField = textField { it.width(400f).pad(20f).row() }
             focusedActor = nameField
 
-            label(I18N["single-add.seed"]) { it.pad(20f).row() }
+            visLabel(I18N["single-add.seed"]) { it.pad(20f).row() }
             val seedField = textField(System.currentTimeMillis().toString()) { it.width(400f).pad(20f).padBottom(40f).row() }
 
-            textButton(I18N["single-add.button"]) {
+            visTextButton(I18N["single-add.button"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
                 onClick {
                     WorldSaveManager.addWorld(nameField.text, seedField.text)
