@@ -56,13 +56,10 @@ object PlayerInteractions {
     }
 
     /** Returns the listener registered. */
-    fun getListener(item: Item, event: Event): ((EventContext) -> Unit)? = listeners[Pair(item.properties.type, event)]
+    fun get(item: Item, event: Event): ((EventContext) -> Unit)? = listeners[Pair(item.properties.type, event)]
 
     /** Returns the listener registered. */
-    fun getListener(block: Block, event: Event): ((EventContext) -> Unit)? = listeners[Pair(block.properties!!.type, event)]
-
-    /** Returns the listener registered. */
-    private fun getListener(type: String, event: Event) = listeners[Pair(Item.Properties.fromIdentifier(type).type, event)]
+    fun get(block: Block, event: Event): ((EventContext) -> Unit)? = listeners[Pair(block.properties!!.type, event)]
 }
 
 /** All events that can be listened to. */

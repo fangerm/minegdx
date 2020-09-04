@@ -152,6 +152,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * @param newBlock Block to be placed. Null will destroy the block instead
      * @return If there was a block to be placed/removed and the operation was successful */
     fun updateBlockRaycast(position: VectoredComponent, direction: VectoredComponent, newBlock: Item?): Boolean {
+        if (newBlock?.properties?.isBlock == false) return false
         val blockPosition = getBlockRaycast(position, direction, newBlock != null) ?: return false
         setBlock(blockPosition, newBlock)
         return true

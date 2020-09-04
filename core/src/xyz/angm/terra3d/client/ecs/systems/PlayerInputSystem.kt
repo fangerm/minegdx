@@ -56,17 +56,18 @@ class PlayerInputSystem(
         val blockLookedAt = screen.world.getBlock(localPlayerC.blockLookingAt)
         val context = EventContext(screen = screen, item = playerC.inventory.heldItem, block = blockLookedAt)
 
-        if (blockLookedAt == null)
-            PlayerInteractions.getListener(playerC.inventory.heldItem ?: return, Event.ITEM_CLICKED)?.invoke(context)
-        else {
-            if (PlayerInteractions.getListener(blockLookedAt, Event.BLOCK_CLICKED)?.invoke(context) != null) return
+        if (blockLookedAt != null) {
+            val blockE = PlayerInteractions.get(blockLookedAt, Event.BLOCK_CLICKED)
+            if (blockE?.invoke(context) != null) return // Block event triggered, done here
 
+            // Try placing a block
             val block = playerC.inventory.heldItem ?: return
-            if (block.properties.isBlock &&
-                screen.world.updateBlockRaycast(player[position]!!, player[direction]!!, block)
-            )
+            if (screen.world.updateBlockRaycast(player[position]!!, player[direction]!!, block))
                 playerC.inventory.subtractFromHeldItem(1)
         }
+
+        // Only option left is ITEM_CLICKED, try that
+        PlayerInteractions.get(playerC.inventory.heldItem ?: return, Event.ITEM_CLICKED)?.invoke(context)
     }
 
     /** Causes the player to sprint or stop sprinting.
