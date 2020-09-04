@@ -83,4 +83,10 @@ class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : Inventor
         metadata.baking = burntItem.inventory[0]
         metadata.result = resultItem.inventory[0]
     }
+
+    fun refresh(metadata: FurnaceMetadata) {
+        fuelItem.inventory[0] = metadata.fuel
+        burntItem.inventory[0] = metadata.baking
+        resultItem.inventory[0] = metadata.result
+    }
 }

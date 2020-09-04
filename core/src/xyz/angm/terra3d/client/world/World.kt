@@ -63,6 +63,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
                 is BlockUpdate -> {
                     val chunk = getChunk(packet.position) ?: return@addListener
                     chunk.setBlock(packet.position.minus(chunk.position), packet)
+                    packet.position.add(chunk.position) // Restore state, listeners should not modify
 
                     // Do this immediately instead of queueing to prevent other
                     // chunks holding up the queue and the user noticing a delay

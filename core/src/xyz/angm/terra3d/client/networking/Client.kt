@@ -10,7 +10,7 @@ import xyz.angm.terra3d.common.log
 class Client() {
 
     private var client: ClientSocketInterface = LocalClientSocket.getSocket(this)
-    private val listeners = GdxArray<(Any) -> Unit>()
+    private val listeners = GdxArray<(Any) -> Unit>(false, 10)
 
     // Required since receiving multiple packets at once on different threads
     // would otherwise crash since GdxArrays cannot be iterated multiple times at once
@@ -29,8 +29,13 @@ class Client() {
     }
 
     /** Add a listener for received packets */
-    fun addListener(listener: (packet: Any) -> Unit) {
+    fun addListener(listener: (Any) -> Unit) {
         listeners.add(listener)
+    }
+
+    /** Removes given listener. */
+    fun removeListener(listener: (Any) -> Unit) {
+        listeners.removeValue(listener, true)
     }
 
     /** Remove all currently registered listeners. */
