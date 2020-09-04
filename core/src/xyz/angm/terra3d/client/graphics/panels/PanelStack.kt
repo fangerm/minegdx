@@ -24,12 +24,14 @@ class PanelStack : Actor(), Disposable {
     /** Pops the top panel off the stack. Will automatically display the next panel. */
     fun popPanel(direction: Int = 1): Panel {
         val panel = panels.pop()!!
-        panel.addAction(Actions.sequence(
-            Actions.moveTo(WORLD_WIDTH * direction, 0f, TRANSITION_DURATION, TRANSITION),
-            Actions.visible(false),
-            Actions.removeActor(),
-            Actions.run { panel.dispose() }
-        ))
+        panel.addAction(
+            Actions.sequence(
+                Actions.moveTo(WORLD_WIDTH * direction, 0f, TRANSITION_DURATION, TRANSITION),
+                Actions.visible(false),
+                Actions.run { panel.dispose() },
+                Actions.removeActor()
+            )
+        )
 
         if (!panels.isEmpty) transitionIn(panels.peek(), -1)
         return panel
