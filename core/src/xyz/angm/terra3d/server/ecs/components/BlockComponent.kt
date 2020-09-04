@@ -10,7 +10,7 @@ import xyz.angm.terra3d.server.world.World
  * Define a block entity for a block type in [xyz.angm.terra3d.server.world.BlockEvents];
  * position will be overridden to match the actual blocks when it is applied.
  *
- * @property tickInterval The interval between ticks
+ * @property tickInterval The interval between ticks, in ticks. (1 = every tick, 20 = every second)
  * @property blockPosition Position of the block that ticks. Leave at default when defining a new BlocEntity.
  * @property runner The function executed on block tick */
 data class BlockComponent(

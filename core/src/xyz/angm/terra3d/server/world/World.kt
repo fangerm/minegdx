@@ -123,6 +123,13 @@ class World(private val server: Server) : WorldInterface {
         return true
     }
 
+    /** Call when a block's metadata changed. Will mark
+     * the chunk changed to ensure saving to disk and sync clients. */
+    fun metadataChanged(block: Block) {
+        database.markChanged(block)
+        server.sendToAll(block)
+    }
+
     override fun setBlockRaw(position: IntVector3, type: ItemType) = database.setBlockRaw(position, type)
 
     /** Called on server close; saves to disk */

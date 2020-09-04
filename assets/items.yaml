@@ -198,3 +198,55 @@ translocator:
 
 configurator:
   texture: textures/blocks/glass_red.png
+
+iron_ore:
+  block:
+    breakTime: 20
+    prefTool: pickaxe
+    minToolLevel: 1
+    drop: cobblestone
+
+coal_ore:
+  block:
+    breakTime: 20
+    prefTool: pickaxe
+    minToolLevel: 1
+    drop: cobblestone
+
+gold_ore:
+  block:
+    breakTime: 20
+    prefTool: pickaxe
+    minToolLevel: 1
+    drop: cobblestone
+
+diamond_ore:
+  block:
+    breakTime: 20
+    prefTool: pickaxe
+    minToolLevel: 1
+    drop: cobblestone
+
+stone_miner:
+  block:
+    breakTime: 6
+    prefTool: pickaxe
+    minToolLevel: 1
+
+iron_miner:
+  block:
+    breakTime: 6
+    prefTool: pickaxe
+    minToolLevel: 2
+
+gold_miner:
+  block:
+    breakTime: 6
+    prefTool: pickaxe
+    minToolLevel: 3
+
+diamond_miner:
+  block:
+    breakTime: 6
+    prefTool: pickaxe
+    minToolLevel: 4

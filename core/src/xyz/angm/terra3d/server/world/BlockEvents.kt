@@ -43,13 +43,28 @@ object BlockEvents {
                 meta.progress = 0
             }
 
-            world.setBlock(block.position, block)
+            world.metadataChanged(block)
         })
 
         // ##### Chest #####
-        setListener("chest", Event.BLOCK_PLACED) { _, blockPlaced ->
+        setListener("chest", Event.BLOCK_PLACED) { world, blockPlaced ->
             blockPlaced.metadata = ChestMetadata()
+            world.metadataChanged(blockPlaced)
         }
+
+        // #### Miners ####
+        val component = BlockComponent(tickInterval = 100) { world, block ->
+            val ore = world.getBlock(block.position.minus(0, 1, 0)) // Ore below
+            if (!ORES.contains(ore?.properties?.ident ?: "")) return@BlockComponent
+            val chest = world.getBlock(block.position.add(0, 2, 0)) // Chest above
+            val meta = chest?.metadata as? ChestMetadata ?: return@BlockComponent
+            meta.inventory += Item(ore ?: return@BlockComponent)
+            world.metadataChanged(chest)
+        }
+        addBlockEntity("stone_miner", component)
+        addBlockEntity("iron_miner", component.copy(tickInterval = 50))
+        addBlockEntity("gold_miner", component.copy(tickInterval = 20))
+        addBlockEntity("diamond_miner", component.copy(tickInterval = 5))
     }
 
     /** Sets the listener executed when a certain event happens.
@@ -70,7 +85,7 @@ object BlockEvents {
     /** Returns the block entity for the given block. Position is set correctly automatically. */
     fun getBlockEntity(block: Block) = blockEntities[block.type]?.copy(blockPosition = block.position)
 
-
+    private val ORES = arrayOf("coal_ore", "iron_ore", "gold_ore", "diamond_ore")
 }
 
 /** All events that can be listened to. */

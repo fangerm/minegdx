@@ -114,6 +114,14 @@ internal class WorldDatabase(private val server: Server) {
         return oldBlock
     }
 
+    /** Sets and marks the chunk the given block is in as changed. */
+    internal fun markChanged(block: Block) {
+        val chunk = getChunk(block.position) ?: return
+        tmpIV.set(block.position).minus(chunk.position)
+        chunk.setBlock(tmpIV, block)
+        changedChunks[chunk.position] = chunk
+    }
+
     /** Same as above, but takes type instead of block. Also returns chunk instead of old block.
      * Better performance than the method above; mainly used for batching block operations ([World.setBlockRaw]).
      * Does not consider a chunk that the block was placed in to be changed. */
