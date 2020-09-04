@@ -95,7 +95,7 @@ class PlayerSystem(
 
     private fun checkPickedUpItems() {
         engine.getEntitiesFor(allDroppedItems).forEach {
-            if (it[item]!!.pickupTimeout <= 0f && tmpV.set(it[position]!!).dst(tmpV2.set(player[position]!!)) < 2f) {
+            if (it[item]!!.pickupTimeout <= 0f && tmpV.set(it[position]!!).dst2(tmpV2.set(player[position]!!)) < 4f) {
                 playerC.inventory += it[item]!!.item
                 RemoveFlag.flag(it)
             }

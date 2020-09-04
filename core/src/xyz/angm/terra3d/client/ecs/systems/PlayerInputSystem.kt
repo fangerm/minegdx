@@ -86,7 +86,7 @@ class PlayerInputSystem(
 
     /** Causes the player to drop the item they are currently holding. */
     fun dropItem() {
-        ItemComponent.create(engine, playerC.inventory.heldItem ?: return, tmpV.set(player[position]!!), 4f)
+        ItemComponent.create(engine, playerC.inventory.heldItem?.copy() ?: return, tmpV.set(player[position]!!), 4f)
         playerC.inventory.subtractFromHeldItem(Int.MAX_VALUE)
     }
 }
