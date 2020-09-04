@@ -49,7 +49,7 @@ class Server(
     private val networkedFamily = allOf(NetworkSyncComponent::class).get()
 
     init {
-        executor.scheduleAtFixedRate(TickThread(this), 1000 / TICK_RATE, 1000 / TICK_RATE, TimeUnit.MILLISECONDS)
+        executor.scheduleAtFixedRate(TickThread(this), 2000, 1000 / TICK_RATE, TimeUnit.MILLISECONDS)
         executor.scheduleAtFixedRate({ world.updateLoadedChunksByPlayers(engine.getEntitiesFor(playerFamily)) }, 30, 30, TimeUnit.SECONDS)
 
         engine.addSystem(ItemSystem())
