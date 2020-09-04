@@ -71,7 +71,7 @@ open class Chunk private constructor(
         val id = block?.properties?.type ?: NOTHING
         val orient = (block?.orientation?.toId() ?: NOTHING) shl ORIENTATION_SHIFT
         setBlock(position, id or orient)
-        if (block?.metadata != null) blockMetadata[position] = block.metadata!!
+        if (block?.metadata != null) blockMetadata[position.cpy()] = block.metadata!!
     }
 
     /** Same as [setBlock], but constructs a new block from specified type. */
