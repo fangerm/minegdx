@@ -4,6 +4,7 @@ import com.badlogic.gdx.Input
 import com.kotcrab.vis.ui.widget.VisTextField
 import ktx.actors.onKeyDown
 import ktx.ashley.get
+import xyz.angm.terra3d.client.actions.CommandHandler
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.ecs.playerM
@@ -28,7 +29,8 @@ class ChatPanel(private val screen: GameScreen) : Panel(screen) {
     }
 
     private fun onEnter(message: String) {
-        screen.client.send(ChatMessagePacket(formatMessage(message)))
+        if (message.startsWith(">")) screen.gameplayPanel.addChatMessage(CommandHandler.execute(message.substringAfter(">"), screen))
+        else screen.client.send(ChatMessagePacket(formatMessage(message)))
         screen.popPanel()
     }
 

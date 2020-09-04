@@ -11,9 +11,10 @@ import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.I18N
+import xyz.angm.terra3d.common.ecs.components.specific.MAX_HUNGER
 import xyz.angm.terra3d.common.ecs.health
+import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.playerM
-import xyz.angm.terra3d.common.ecs.position
 
 /** Shown when the player dies. */
 class DeathPanel(screen: GameScreen) : Panel(screen) {
@@ -27,10 +28,10 @@ class DeathPanel(screen: GameScreen) : Panel(screen) {
             visTextButton(I18N["death.respawn"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).row()
                 onClick {
-                    screen.player[position]!!.set(screen.player[playerM]!!.spawnPosition)
+                    screen.player[localPlayer]!!.teleport(screen.player[playerM]!!.spawnPosition)
                     screen.player[health]!!.restore()
                     screen.player[playerM]!!.isDead = false
-                    screen.player[playerM]!!.hunger = 20
+                    screen.player[playerM]!!.hunger = MAX_HUNGER
                     screen.popAllPanels()
                 }
             }

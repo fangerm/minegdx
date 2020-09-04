@@ -2,6 +2,7 @@ package xyz.angm.terra3d.client.ecs.components
 
 import com.badlogic.ashley.core.Component
 import com.badlogic.gdx.math.Matrix4
+import com.badlogic.gdx.math.Vector3
 import xyz.angm.terra3d.common.IntVector3
 
 const val FOV = 75f
@@ -27,4 +28,10 @@ class LocalPlayerComponent : Component {
             blockHitTime = 0f
             blockHitPercent = 0f
         }
+
+    fun teleport(pos: Vector3) {
+        transform.setTranslation(pos)
+        // This is a special value checked by the physics engine.
+        transform.`val`[Matrix4.M33] = 10f
+    }
 }

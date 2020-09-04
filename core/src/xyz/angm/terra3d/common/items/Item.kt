@@ -110,6 +110,8 @@ data class Item(
             /** Get properties by identifier. */
             fun fromIdentifier(type: String) = items[type]!!
 
+            fun tryFromIdentifier(type: String): Item.Properties? = items[type]
+
             /** Get properties by type. */
             fun fromType(type: ItemType) = if (type == 0) null else items[items.orderedKeys()[type - 1]]
 

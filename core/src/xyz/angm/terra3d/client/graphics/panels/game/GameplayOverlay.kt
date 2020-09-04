@@ -140,6 +140,9 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
 
     private fun Float.format(digits: Int) = "%.${digits}f".format(this)
 
+    /** Add a chat message and display the chat. */
+    fun addChatMessage(message: String) = chat.addMessage(message)
+
     // A bar displayed as an array of sprites. Every sprite can be empty/half/full.
     // The getter is required, since primitive types (kotlin.Int compiles to JVM primitive int) get passed by value, not reference
     private class IconGroup(

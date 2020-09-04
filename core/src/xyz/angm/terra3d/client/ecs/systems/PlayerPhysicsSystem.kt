@@ -4,6 +4,7 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.math.Matrix4
+import com.badlogic.gdx.math.Matrix4.M33
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.physics.bullet.DebugDrawer
 import com.badlogic.gdx.physics.bullet.collision.*
@@ -151,6 +152,13 @@ class PlayerPhysicsSystem(
     override fun update(delta: Float) {
         updateBlockCollisionEntities()
         playerController.setWalkDirection(getWalkDirection(delta))
+
+        // See LocalPlayerComponent.teleport
+        if (playerTransform.`val`[M33] == 10f) {
+            playerTransform.`val`[M33] = 0f
+            playerGhostObj.worldTransform = playerTransform
+        }
+
         world.stepSimulation(delta, 2, 1f / 60f)
         playerGhostObj.getWorldTransform(playerTransform)
         player[position]!!.set(playerTransform.getTranslation(tmpV))
