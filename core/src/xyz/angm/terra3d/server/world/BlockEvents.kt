@@ -48,7 +48,7 @@ object BlockEvents {
 
         // ##### Chest #####
         setListener("chest", Event.BLOCK_PLACED) { world, blockPlaced ->
-            blockPlaced.metadata = ChestMetadata()
+            blockPlaced.metadata = blockPlaced.metadata ?: ChestMetadata()
             world.metadataChanged(blockPlaced)
         }
 
