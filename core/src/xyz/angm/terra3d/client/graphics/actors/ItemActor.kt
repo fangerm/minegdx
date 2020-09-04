@@ -3,6 +3,8 @@ package xyz.angm.terra3d.client.graphics.actors
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.InputEvent
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable
 import com.kotcrab.vis.ui.VisUI
@@ -12,7 +14,7 @@ import xyz.angm.terra3d.common.items.Item
 
 /** An actor showing a single item.
  * @param item The item to display. */
-open class ItemActor(open var item: Item? = null) : Actor() {
+open class ItemActor(open var item: Item? = null, window: InventoryWindow?) : Actor() {
 
     // If the mouse is currently over this actor.
     protected var mouseOver = false
@@ -22,6 +24,18 @@ open class ItemActor(open var item: Item? = null) : Actor() {
     init {
         width = 32f
         height = 32f
+
+        addListener(object : ClickListener(-1) {
+            override fun enter(event: InputEvent?, x: Float, y: Float, pointer: Int, fromActor: Actor?) {
+                mouseOver = true
+                window?.itemHovered(this@ItemActor)
+            }
+
+            override fun exit(event: InputEvent?, x: Float, y: Float, pointer: Int, toActor: Actor?) {
+                mouseOver = false
+                window?.itemLeft()
+            }
+        })
     }
 
     infix fun stacksWith(other: Item?) = item?.stacksWith(other) == true

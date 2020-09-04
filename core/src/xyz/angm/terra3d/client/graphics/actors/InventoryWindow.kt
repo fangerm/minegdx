@@ -9,7 +9,6 @@ import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
-import xyz.angm.terra3d.common.recipes.CraftingRecipe
 
 
 abstract class InventoryWindow(protected val panel: InventoryPanel, name: String) : VisWindow(I18N[name]) {
@@ -24,7 +23,7 @@ abstract class InventoryWindow(protected val panel: InventoryPanel, name: String
     open fun itemShiftClicked(actor: ItemGroup.GroupedItemActor) = panel.itemShiftClicked(actor)
 
     /** When a slot is hovered */
-    open fun itemHovered(actor: ItemGroup.GroupedItemActor) = panel.itemHovered(actor)
+    open fun itemHovered(actor: ItemActor) = panel.itemHovered(actor)
 
     /** When a slot is no longer hovered */
     open fun itemLeft() = panel.itemLeft()
@@ -48,7 +47,7 @@ class PlayerInventoryWindow(panel: InventoryPanel, private val playerInv: Invent
     init {
         val inventoryItems = ItemGroup(this, playerInv, row = 3, column = 9, startOffset = 9)
         val hotbarItems = ItemGroup(this, playerInv, row = 1, column = 9)
-        add(inventoryItems).padBottom(30f).row()
+        add(inventoryItems).padBottom(15f).row()
         add(hotbarItems)
         pack()
         setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 3, Align.center)
@@ -63,54 +62,6 @@ class PlayerInventoryWindow(panel: InventoryPanel, private val playerInv: Invent
     }
 }
 
-
-/** Window containing a crafting grid. */
-class CraftingWindow(panel: InventoryPanel, size: Int) : InventoryWindow(panel, "crafting") {
-
-    private val craftingGrid = ItemGroup(this, Inventory(size * size), row = size, column = size)
-    private val craftingResult = ItemGroup(this, Inventory(1), row = 1, column = 1, mutable = false)
-
-    init {
-        add(craftingGrid).padRight(50f)
-        add(craftingResult)
-        pack()
-        setPosition((WORLD_WIDTH / 4) * 3, WORLD_HEIGHT / 2, Align.center)
-    }
-
-    override fun itemLeftClicked(actor: ItemGroup.GroupedItemActor) {
-        if (actor.group == craftingResult && craftingResult.inventory[0] != null) {
-            for (i in 0 until craftingGrid.inventory.size) craftingGrid.inventory.subtractFromSlot(i, 1)
-        }
-        super.itemLeftClicked(actor)
-        updateCraftingGrid()
-    }
-
-    override fun itemRightClicked(actor: ItemGroup.GroupedItemActor) {
-        if (actor.group == craftingResult) itemLeftClicked(actor)
-        super.itemRightClicked(actor)
-        updateCraftingGrid()
-    }
-
-    override fun itemShiftClicked(actor: ItemGroup.GroupedItemActor) {
-        if (actor.group == craftingResult && panel.heldItem == null) {
-            var match = CraftingRecipe.matchAll(craftingGrid.inventory) ?: return
-            var amount = 0
-            while (true) {
-                for (i in 0 until craftingGrid.inventory.size) craftingGrid.inventory.subtractFromSlot(i, 1)
-                amount++
-                if (match != CraftingRecipe.matchAll(craftingGrid.inventory)) break
-            }
-            panel.heldItem = match
-            panel.heldItem!!.amount *= amount
-        }
-        super.itemShiftClicked(actor)
-        updateCraftingGrid()
-    }
-
-    private fun updateCraftingGrid() {
-        craftingResult.inventory[0] = CraftingRecipe.matchAll(craftingGrid.inventory)
-    }
-}
 
 class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : InventoryWindow(panel, Item.Properties.fromIdentifier("furnace").name) {
 

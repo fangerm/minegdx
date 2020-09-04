@@ -1,40 +1,37 @@
-- items: [oak_wood]
+- items:
+    oak_wood: 1
   result: planks_oak
   amount: 4
-  isShaped: false
 
-- items: [planks_oak, null, planks_oak, null]
+- items:
+    planks_oak: 2
   result: stick
   amount: 4
-  isShaped: true
 
-- items: [null, planks_oak, null, planks_oak]
-  result: stick
-  amount: 4
-  isShaped: true
-
-- items: [planks_oak, planks_oak, planks_oak, planks_oak]
+- items:
+    planks_oak: 4
+    oak_wood: 1
   result: crafting_table
   amount: 1
-  isShaped: true
 
-- items: [null, stick, null, null, stick, null, planks_oak, planks_oak, planks_oak]
+- items:
+    stick: 1
+    planks_oak: 3
   result: wood_pickaxe
   amount: 1
-  isShaped: true
 
-- items: [null, stick, null, null, stick, null, cobblestone, cobblestone, cobblestone]
+- items:
+    stick: 1
+    cobblestone: 3
   result: stone_pickaxe
   amount: 1
-  isShaped: true
 
-- items: [cobblestone, cobblestone, cobblestone, cobblestone, null, cobblestone, cobblestone, cobblestone, cobblestone]
+- items:
+    cobblestone: 20
   result: furnace
   amount: 1
-  isShaped: true
 
-- items:  [planks_oak, planks_oak, planks_oak, planks_oak, null, planks_oak, planks_oak, planks_oak, planks_oak]
+- items:
+    planks_oak: 25
   result: chest
   amount: 1
-  isShaped: true
- 

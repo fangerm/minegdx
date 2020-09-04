@@ -1,6 +1,5 @@
 package xyz.angm.terra3d.common.items
 
-import xyz.angm.terra3d.common.world.NOTHING
 import java.io.Serializable
 
 /** An inventory, capable of holding and modifying a specified amount of items.
@@ -23,6 +22,10 @@ open class Inventory(size: Int = 0) : Serializable {
     /** Add item to inventory, taking already existing stacks into account.
      * @param newItem Item to add. */
     operator fun plusAssign(newItem: Item) = addToRange(newItem, 0 until size)
+
+    /** Add item to inventory, taking already existing stacks into account.
+     * @param newItem Item to add. */
+    operator fun minusAssign(newItem: Item) = removeFromRange(newItem, 0 until size)
 
     /** Add item to inventory, taking already existing stacks into account. Allows specifying range of slots allowed to add to.
      * @param newItem Item to add.
@@ -52,6 +55,20 @@ open class Inventory(size: Int = 0) : Serializable {
         }
     }
 
+    /** Removes a given item type and amount from the inventory.
+     * Does not report on failure, check yourself. */
+    private fun removeFromRange(removeItem: Item, range: IntRange) {
+        var left = removeItem.amount
+        for (i in range) {
+            val item = this[i] ?: continue
+            if (removeItem stacksWith item) {
+                subtractFromSlot(i, left)
+                if (left - item.amount <= 0) return
+                else left -= item.amount
+            }
+        }
+    }
+
     /** Removes amount specified from slot. Empties slot if items left <= 0.
      * @param slot The slot to remove from.
      * @param amount The amount to remove. */
@@ -73,18 +90,6 @@ open class Inventory(size: Int = 0) : Serializable {
                 amountLeft -= it.amount
                 if (amountLeft < 0) return true
             }
-        }
-        return false
-    }
-
-    /** Returns if inventory contains specified item type.
-     * @param type The item type to search for.
-     * @param amount The amount needed; item.amount used when not specified. */
-    fun contains(type: ItemType, amount: Int = 1): Boolean {
-        if (type == NOTHING) return true
-        for (i in 0 until size) {
-            val it = items[i] ?: continue
-            if (it.type == type && it.amount >= amount) return true
         }
         return false
     }

@@ -77,7 +77,7 @@ data class Item(
         var name = ""
         var texture = ""
         val tool: ToolProperties? = null
-        val stackSize = if (tool != null) 1 else 64
+        val stackSize = if (tool != null) 1 else 999
         val burnTime = 0
         val hunger = 0
 

@@ -2,7 +2,6 @@ package xyz.angm.terra3d.client.graphics.actors
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
-import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.kotcrab.vis.ui.widget.VisTable
@@ -40,7 +39,7 @@ class ItemGroup(
     class GroupedItemActor(
         val group: ItemGroup,
         val slot: Int
-    ) : ItemActor() {
+    ) : ItemActor(window = group.window) {
 
         override var item
             get() = group.inventory[slot]
@@ -56,16 +55,6 @@ class ItemGroup(
                         }
                         Input.Buttons.RIGHT -> group.window?.itemRightClicked(this@GroupedItemActor)
                     }
-                }
-
-                override fun enter(event: InputEvent?, x: Float, y: Float, pointer: Int, fromActor: Actor?) {
-                    mouseOver = true
-                    group.window?.itemHovered(this@GroupedItemActor)
-                }
-
-                override fun exit(event: InputEvent?, x: Float, y: Float, pointer: Int, toActor: Actor?) {
-                    mouseOver = false
-                    group.window?.itemLeft()
                 }
             })
         }

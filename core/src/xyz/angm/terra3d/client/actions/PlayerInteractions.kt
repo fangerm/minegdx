@@ -4,7 +4,6 @@ import com.badlogic.gdx.utils.ObjectMap
 import ktx.ashley.get
 import ktx.collections.*
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.ChestPanel
-import xyz.angm.terra3d.client.graphics.panels.game.inventory.CraftingGridPanel
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.FurnacePanel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.ecs.components.specific.MAX_HUNGER
@@ -20,12 +19,6 @@ object PlayerInteractions {
     private val listeners = ObjectMap<Pair<ItemType, Event>, (EventContext) -> Unit>()
 
     init {
-        setListener("crafting_table", Event.BLOCK_CLICKED) { (screen) ->
-            screen.pushPanel(CraftingGridPanel(screen))
-        }
-        setListener("crafting_table", Event.ITEM_CLICKED, getListener("crafting_table", Event.BLOCK_CLICKED)!!)
-
-
         setListener("furnace", Event.BLOCK_CLICKED) { ctx ->
             ctx.screen.pushPanel(FurnacePanel(ctx.screen, ctx.block!!))
         }

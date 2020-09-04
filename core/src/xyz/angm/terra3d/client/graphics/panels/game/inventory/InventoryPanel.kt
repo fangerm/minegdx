@@ -23,7 +23,7 @@ private const val tooltipOffsetY = -5f
 abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
 
     var heldItem: Item? = null
-    private var heldItemActor = ItemActor(heldItem)
+    private var heldItemActor = ItemActor(heldItem, null)
     private val tooltip = ItemTooltip(this)
     private val holdingItem get() = heldItem != null
     private val listener: KtxInputListener
@@ -127,7 +127,7 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
     open fun itemShiftClicked(actor: ItemGroup.GroupedItemActor) {}
 
     /** When a slot is hovered */
-    fun itemHovered(actor: ItemGroup.GroupedItemActor) {
+    fun itemHovered(actor: ItemActor) {
         if (!holdingItem) tooltip.update(actor.item)
     }
 

@@ -8,14 +8,14 @@ stone:
 grass_block:
   texture: textures/blocks/grass_top.png
   block:
-    breakTime: 3.5
+    breakTime: 2.5
     prefTool: shovel
     texSide: textures/blocks/grass_side.png
     texBottom: textures/blocks/dirt.png
 
 dirt:
   block:
-    breakTime: 2.5
+    breakTime: 2.0
     prefTool: shovel
 
 cobblestone:
@@ -39,14 +39,14 @@ oak_wood:
   burnTime: 600
   texture: textures/blocks/log_oak_top.png
   block:
-    breakTime: 4
+    breakTime: 3
     prefTool: axe
     texSide: textures/blocks/log_oak.png
 
 leaves_oak:
   burnTime: 100
   block:
-    breakTime: 3
+    breakTime: 1
     prefTool: shears
     drop: apple
 
@@ -104,7 +104,7 @@ furnace:
 chest:
   texture: textures/blocks/log_oak_top.png
   block:
-    breakTime: 10
+    breakTime: 7.5
     prefTool: axe
 
 wood_pickaxe:

@@ -29,6 +29,7 @@ object Skin {
         Pair("red-transparent", Color(0.3f, 0f, 0f, 0.5f)),
         Pair("black", Color.BLACK),
         Pair("dark-grey", Color.DARK_GRAY),
+        Pair("transparent", Color(0f, 0f, 0f, 0f)),
         Pair("dark-green", Color(0.3f, 0.4f, 0.3f, 1f))
     )
     private val colors32 = mapOf(
@@ -130,6 +131,12 @@ object Skin {
             button {
                 up = it["black"]
                 over = it["dark-grey"]
+                checked = it["dark-green"]
+            }
+
+            button("craft") {
+                up = it["dark-grey"]
+                over = it["transparent"]
                 checked = it["dark-green"]
             }
 

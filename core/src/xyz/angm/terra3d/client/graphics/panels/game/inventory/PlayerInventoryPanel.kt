@@ -13,6 +13,6 @@ import xyz.angm.terra3d.common.ecs.playerM
 class PlayerInventoryPanel(screen: GameScreen) : InventoryPanel(screen) {
     init {
         addActor(PlayerInventoryWindow(this, screen.player[playerM]!!.inventory).apply { setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, Align.center) })
-        addActor(CraftingWindow(this, 2))
+        addActor(CraftingWindow(this))
     }
 }
