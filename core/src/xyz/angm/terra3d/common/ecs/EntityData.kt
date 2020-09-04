@@ -3,7 +3,7 @@ package xyz.angm.terra3d.common.ecs
 import com.badlogic.ashley.core.Component
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.utils.ImmutableArray
-import ktx.collections.GdxArray
+import ktx.collections.*
 import org.nustaq.serialization.FSTBasicObjectSerializer
 import org.nustaq.serialization.FSTClazzInfo
 import org.nustaq.serialization.FSTObjectInput
@@ -89,7 +89,7 @@ class EntityData(
                 else if (ignore.contains(component::class)) continue
                 array.add(component)
             }
-            return EntityData(network!!, array.items)
+            return EntityData(network, array.items)
         }
 
         fun from(entities: ImmutableArray<Entity>): Array<EntityData> {
