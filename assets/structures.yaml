@@ -1,16 +1,16 @@
 small_oak_tree:
   - box:
-      start: [0, 2, 0]
-      end: [4, 3, 4]
+      start: [0, 3, 0]
+      end: [4, 4, 4]
       block: leaves_oak
   - box:
-      start: [1, 4, 1]
-      end: [3, 4, 3]
+      start: [1, 5, 1]
+      end: [3, 5, 3]
       block: leaves_oak
   - point:
-      start: [2, 5, 2]
+      start: [2, 6, 2]
       block: leaves_oak
   - box:
       start: [2, 0, 2]
-      end: [2, 4, 2]
+      end: [2, 5, 2]
       block: oak_wood
