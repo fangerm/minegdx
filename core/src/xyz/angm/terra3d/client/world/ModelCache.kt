@@ -89,8 +89,8 @@ class ModelCache(private val resourceManager: ResourceManager) {
         val modelIndex = min((timePercent / 10f).toInt(), 9)
         val modelInstance = blockDamageModels[modelIndex]
         modelInstance.transform
-            .setToTranslation(transform.sub(0.005f, 0.005f, 0.005f))
-            .scale(1.01f, 1.01f, 1.01f) // Ensure breakTime is drawn over the block
+            .setToTranslation(transform.sub(0.015f, 0.015f, 0.015f))
+            .scale(1.03f, 1.03f, 1.03f) // Ensure breakTime is drawn over the block
         activeDamageModel = modelInstance
     }
 

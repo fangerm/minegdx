@@ -238,8 +238,8 @@ class GameScreen(
         ResourceManager.models.init()
 
         // Camera
-        cam.near = 0.1f
-        cam.far = 300f
+        cam.near = 0.15f
+        cam.far = 150f
         cam.update()
 
         // 2D / Stage
