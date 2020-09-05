@@ -75,7 +75,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         blockTooltip.setPosition(0f, WORLD_HEIGHT, Align.topLeft)
         hotbarItems.setPosition(hotbar.x + 2f, hotbar.y + 2f)
         crosshair.setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, Align.center)
-        debugLabel.setPosition(5f, WORLD_HEIGHT - 175, Align.topLeft)
+        debugLabel.setPosition(5f, WORLD_HEIGHT - 200, Align.topLeft)
         healthBar.setPosition(hotbar.x, hotbar.height + 6, Align.bottomLeft)
         hungerBar.setPosition(hotbar.x + hotbar.width + 16, hotbar.height + 6, Align.bottomRight)
         chat.setPosition(10f, 90f)

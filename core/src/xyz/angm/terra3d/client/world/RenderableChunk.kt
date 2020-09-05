@@ -4,17 +4,18 @@ import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.VertexAttributes
-import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.ModelCache
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.graphics.g3d.model.Node
 import com.badlogic.gdx.graphics.g3d.model.NodePart
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.ObjectMap
+import ktx.collections.*
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
@@ -237,10 +238,10 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
         object Builder {
 
-            private val regions = ObjectMap<String, TextureRegion>()
             private val builder = MeshBuilder()
             private var model = Model()
             private var node = Node()
+            private var materials = ObjectMap<String, Material>(50)
 
             fun begin() {
                 model = Model()
@@ -256,15 +257,20 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 return model
             }
 
+            private val vertTmp1 = VertexInfo()
+            private val vertTmp2 = VertexInfo()
+            private val vertTmp3 = VertexInfo()
+            private val vertTmp4 = VertexInfo()
+
             /** Draw a rectangle, using the positions inside corner1-4. */
             fun drawRect(texture: String, width: Float, height: Float, backFace: Boolean, xFace: Boolean) {
-                val region = getRegion(texture)
-                // X faces need -90deg rotation, so account for that by inverting w/h
-                if (xFace) region.setRegion(0f, 0f, height, width)
-                else region.setRegion(0f, 0f, width, height)
-
                 val meshPart = builder.part("c", GL20.GL_TRIANGLES)
-                node.parts.add(NodePart(meshPart, Material(TextureAttribute.createDiffuse(region))))
+                val material = materials[texture]
+                if (material == null) {
+                    materials[texture] = Material(TextureAttribute.createDiffuse(getTex(texture)))
+                }
+                node.parts.add(NodePart(meshPart, materials[texture]!!))
+
 
                 // Back faces need their corners to be CCW, regular faces CW.
                 // This is per OpenGL spec to ensure OGL correctly assumes front faces.
@@ -276,19 +282,25 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 // Additionally, faces that are orthogonal to the X axis need
                 // their points rotated by -90 degrees.
                 if (xFace) {
-                    if (backFace) builder.rect(corner1, corner4, corner3, corner2, normal)
-                    else builder.rect(corner4, corner1, corner2, corner3, normal)
+                    if (backFace) rect(corner1, corner4, corner3, corner2, normal, height, width)
+                    else rect(corner4, corner1, corner2, corner3, normal, height, width)
                 } else {
-                    if (backFace) builder.rect(corner2, corner1, corner4, corner3, normal)
-                    else builder.rect(corner1, corner2, corner3, corner4, normal)
+                    if (backFace) rect(corner2, corner1, corner4, corner3, normal, width, height)
+                    else rect(corner1, corner2, corner3, corner4, normal, width, height)
                 }
             }
 
-            private fun getRegion(texture: String): TextureRegion {
-                if (regions[texture] != null) return regions[texture]
+            private fun rect(corner00: Vector3, corner10: Vector3, corner11: Vector3, corner01: Vector3, normal: Vector3, width: Float, height: Float) {
+                builder.rect(
+                    vertTmp1.set(corner00, normal, null, null).setUV(0f, height), vertTmp2.set(corner10, normal, null, null).setUV(width, height),
+                    vertTmp3.set(corner11, normal, null, null).setUV(width, 0f), vertTmp4.set(corner01, normal, null, null).setUV(0f, 0f)
+                )
+            }
+
+            private fun getTex(texture: String): Texture {
                 val tex = ResourceManager.get<Texture>(texture)
                 tex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
-                return TextureRegion(tex)
+                return tex
             }
         }
     }
