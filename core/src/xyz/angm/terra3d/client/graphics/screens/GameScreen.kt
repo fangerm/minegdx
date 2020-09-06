@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight
+import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.PerformanceCounter
@@ -24,6 +25,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport
 import ktx.ashley.allOf
 import ktx.ashley.exclude
 import ktx.ashley.get
+import ktx.assets.file
 import xyz.angm.terra3d.client.Terra3D
 import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
@@ -94,7 +96,7 @@ class GameScreen(
     // 3D Graphics
     val cam = PerspectiveCamera(FOV, WORLD_WIDTH, WORLD_HEIGHT)
     private val inputHandler = PlayerInputHandler(this)
-    private val modelBatch = ModelBatch()
+    private val modelBatch = ModelBatch(DefaultShaderProvider(file("shader/vertex.glsl"), file("shader/fragment.glsl")))
     private val environment = Environment()
     private val renderableEntities = allOf(ModelRenderComponent::class).get()
     private val shadowLight = DirectionalShadowLight(SHADOW_FBO_SIZE, SHADOW_FBO_SIZE, 300f, 300f, -50f, 350f)

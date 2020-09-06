@@ -1,9 +1,6 @@
 package xyz.angm.terra3d.client.world
 
-import com.badlogic.gdx.graphics.Camera
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.VertexAttributes
+import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.ModelCache
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
@@ -175,8 +172,11 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
         private val dimensions = Vector3(CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat())
 
-        private const val attributes = VertexAttributes.Usage.Position.toLong() or
-                VertexAttributes.Usage.Normal.toLong() or VertexAttributes.Usage.TextureCoordinates.toLong()
+        private const val attributes =
+                    VertexAttributes.Usage.Position.toLong() or
+                    VertexAttributes.Usage.Normal.toLong() or
+                    VertexAttributes.Usage.TextureCoordinates.toLong() or
+                    VertexAttributes.Usage.ColorPacked.toLong()
 
         private val corner1 = Vector3()
         private val corner2 = Vector3()
@@ -290,10 +290,12 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 }
             }
 
+            val color = Color(0f, 0f, 0f, 1f)
+
             private fun rect(corner00: Vector3, corner10: Vector3, corner11: Vector3, corner01: Vector3, normal: Vector3, width: Float, height: Float) {
                 builder.rect(
-                    vertTmp1.set(corner00, normal, null, null).setUV(0f, height), vertTmp2.set(corner10, normal, null, null).setUV(width, height),
-                    vertTmp3.set(corner11, normal, null, null).setUV(width, 0f), vertTmp4.set(corner01, normal, null, null).setUV(0f, 0f)
+                    vertTmp1.set(corner00, normal, color, null).setUV(0f, height), vertTmp2.set(corner10, normal, color, null).setUV(width, height),
+                    vertTmp3.set(corner11, normal, color, null).setUV(width, 0f), vertTmp4.set(corner01, normal, color, null).setUV(0f, 0f)
                 )
             }
 
