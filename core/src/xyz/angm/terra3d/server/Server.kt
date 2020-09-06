@@ -92,7 +92,9 @@ class Server(
     }
 
     internal fun onConnected(connection: Connection) {
-        log.info { "[SERVER] Player connected. IP: ${connection.ip}. Awaiting join info..." }
+        log.info { "[SERVER] Player connected. IP: ${connection.ip}. Sending server info..." }
+        send(connection, ServerInfo(configuration.maxPlayers, serverSocket.connections.size - 1, configuration.motd))
+
         if (serverSocket.connections.size > configuration.maxPlayers) {
             serverSocket.closeConnection(connection)
             log.info { "[SERVER] Player disconnected: Server is full!" }

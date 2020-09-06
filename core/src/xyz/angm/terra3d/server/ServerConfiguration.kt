@@ -13,11 +13,13 @@ import kotlinx.serialization.Serializable
  * TODO: This used to be a simple data class, but this for some reason causes an internal compiler error.
  *
  * @property isLocalServer If the server is running in singleplayer mode. Will cause it to communicate with the client without networking.
- * @property maxPlayers The maximum amount of players allowed to join the server. */
+ * @property maxPlayers The maximum amount of players allowed to join the server.
+ * @property motd The MOTD shown to users on the multiplayer tab. */
 @Serializable
 class ServerConfiguration() {
     var isLocalServer = false
     val maxPlayers = if (isLocalServer) 1 else 5
+    val motd = "A Terra3D Server"
 
     constructor(isLocalServer: Boolean) : this() {
         this.isLocalServer = isLocalServer

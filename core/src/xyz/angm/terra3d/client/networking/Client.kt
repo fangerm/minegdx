@@ -28,6 +28,16 @@ class Client() {
         client.connect(ip)
     }
 
+    /** Constructs a client for a remote server using netty,
+     * with a listener already added before connecting.
+     * @param ip The IP to connect to.
+     * @param listener The listener to add before connection. */
+    constructor(ip: String, listener: (Any) -> Unit) : this() {
+        listeners.add(listener)
+        client = NettyClientSocket(this)
+        client.connect(ip)
+    }
+
     /** Add a listener for received packets */
     fun addListener(listener: (Any) -> Unit) {
         listeners.add(listener)
@@ -55,5 +65,8 @@ class Client() {
     internal fun disconnected() = disconnectListener()
 
     /** Dispose of the client. Object is unusable after this. */
-    fun close() = client.close()
+    fun close() {
+        clearListeners()
+        client.close()
+    }
 }

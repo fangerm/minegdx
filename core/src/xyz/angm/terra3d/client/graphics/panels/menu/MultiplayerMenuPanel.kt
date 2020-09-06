@@ -12,8 +12,11 @@ import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
+import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.configuration
+import xyz.angm.terra3d.common.networking.ServerInfo
+import java.io.IOException
 
 /** Multiplayer server selection. */
 class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
@@ -31,8 +34,9 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                         button {
                             background = skin.getDrawable("black-transparent")
 
-                            visLabel(server.key) { it.pad(5f).colspan(2).expandX().left().row() }
-                            visLabel("IP: ${server.value}", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
+                            visLabel(server.key) { it.pad(5f).expandX().left() }
+                            val players = visLabel("?? / ?? Online") { it.pad(5f).right().row() }
+                            val motd = visLabel("Loading...", style = "italic-16pt") { it.pad(5f, 5f, 10f, 5f).left() }
 
                             val deleteBtn = visTextButton(I18N["multi.delete"], style = "server-delete") {
                                 it.right().row()
@@ -52,6 +56,21 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                                 if (event.target.parent == deleteBtn) return@onClickEvent
                                 screen.connectToServer(server.value)
                             }
+
+                            Thread {
+                                try {
+                                    var client: Client? = null
+                                    client = Client(server.value) {
+                                        if (it is ServerInfo) {
+                                            players.setText("${it.onlinePlayers} / ${it.maxPlayers} Online")
+                                            motd.setText("MOTD: ${it.motd}")
+                                        }
+                                        client!!.close()
+                                    }
+                                } catch (e: IOException) {
+                                    motd.setText(I18N["multi.offline"])
+                                }
+                            }.start()
 
                             it.width(700f).pad(20f, 0f, 20f, 0f).row()
                         }

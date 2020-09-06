@@ -11,10 +11,10 @@ import java.io.Serializable
 interface Packet : Serializable
 
 
-// Sent by client
 /** A request for the server to send chunks. See [ChunksLine]
  * @property position The position of the chunks requested */
 class ChunkRequest(val position: IntVector3 = IntVector3()) : Packet
+
 
 /** Sent when the client joins the server.
  * @property uuid The UUID of the client connecting.
@@ -22,16 +22,18 @@ class ChunkRequest(val position: IntVector3 = IntVector3()) : Packet
 class JoinPacket(val name: String = "Player", val uuid: Int = 0) : Packet
 
 
-// Sent by server
-/** Contains chunks. Sent after a [ChunkRequest].
+/** Contains chunks. Sent after a [ChunkRequest]. Only contains chunks that were
+ * changed by players since world generation.
  * @property position The position of the line
  * @property chunks The chunks requested */
 class ChunksLine(val position: IntVector3, val chunks: Array<Chunk> = emptyArray()) : Packet
+
 
 /** Contains info of a single block change.
  * Note that this is one of the few cases where [Block.type] can be 0 (if the block was removed).
  * This can be sent by either client or server; server should echo to all clients. */
 typealias BlockUpdate = Block
+
 
 /** A packet sent on first connect as a response to [JoinPacket].
  * Contains all data required by the client to begin init and world loading. */
@@ -43,7 +45,15 @@ class InitPacket(
 ) : Packet
 
 
-// Sent by both
 /** Contains a chat message. Client sends it to server; server sends it to all clients.
  * @param message The message to send */
 class ChatMessagePacket(val message: String = "") : Packet
+
+
+/** Packet containing info about the server. Sent by the server
+ * and shown by the client in the multiplayer select. */
+class ServerInfo(
+    val maxPlayers: Int = 0,
+    val onlinePlayers: Int = 0,
+    val motd: String = ""
+) : Packet

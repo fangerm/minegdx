@@ -28,5 +28,8 @@ resourcePack:
   path: "resourcepacks/default"
   description: "Pack shipped with MineGDX."
   sizeMod: 1.0
+servers:
+  "angm.xyz": "angm.xyz"
+  "Local": "127.0.0.1"
 language: "English"
 sensitivity: 1.0
