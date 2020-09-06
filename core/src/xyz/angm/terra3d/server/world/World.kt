@@ -4,7 +4,6 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector3
 import ktx.ashley.get
 import ktx.collections.*
-import xyz.angm.terra3d.client.world.RENDER_DIST_CHUNKS
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
@@ -21,6 +20,9 @@ import xyz.angm.terra3d.server.Server
 import xyz.angm.terra3d.server.ecs.systems.BlockEntitySystem
 import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 import java.util.concurrent.TimeUnit
+
+/** The render distance to use when sending a newly connecting client init data. */
+const val INIT_DIST_CHUNKS = 2
 
 /** Server-side representation of a World containing all blocks.
  * @param server The server this world is running under.
@@ -73,9 +75,9 @@ class World(private val server: Server) : WorldInterface {
     /** Returns all chunks in render distance for the given position.
      * Used for initial world sync with clients. */
     fun getInitData(position: VectoredComponent): Array<Chunk> {
-        val across = (RENDER_DIST_CHUNKS * 2) + 1
+        val across = (INIT_DIST_CHUNKS * 2) + 1
         val out = GdxArray<Chunk>(false, across * across * WORLD_HEIGHT_IN_CHUNKS, Chunk::class.java)
-        val dist = RENDER_DIST_CHUNKS * CHUNK_SIZE * 2
+        val dist = INIT_DIST_CHUNKS * CHUNK_SIZE * 2
         tmpIV.set(position).norm(CHUNK_SIZE).minus(dist, 0, dist)
 
         for (x in tmpIV.x until (position.x + dist + CHUNK_SIZE).toInt() step CHUNK_SIZE)

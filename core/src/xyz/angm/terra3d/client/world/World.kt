@@ -23,7 +23,7 @@ import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.WorldInterface
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 
-const val RENDER_DIST_CHUNKS = 2
+const val RENDER_DIST_CHUNKS = 3
 
 /** How far a block raycast goes - The max distance a player can change blocks from. */
 private const val RAYCAST_REACH = 5f
@@ -38,7 +38,7 @@ private const val RENDER_TIME = 4
 const val RENDER_TIME_LOAD = 10
 
 /** The maximum distance a chunk can have to the player before being discarded, squared. */
-private const val MAX_CHUNK_DIST = 150 * 150
+private const val MAX_CHUNK_DIST = 250 * 250
 
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
