@@ -16,6 +16,8 @@ import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight
+import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.PerformanceCounter
 import com.badlogic.gdx.utils.viewport.FitViewport
@@ -50,6 +52,12 @@ import xyz.angm.terra3d.common.networking.InitPacket
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+
+private const val SHADOW_FBO_SIZE = 8192 * 2
+private const val SUN_OFFSET_X = 1f
+private const val SUN_OFFSET_Y = 0.7f
+private const val SUN_OFFSET_Z = 0.6f
+private const val SUN_MUL = 150
 
 /** The game screen. Active during gameplay. Uses 2 panels; 1 for hotbar and a stack for the other panels required by the Screen interface.
  *
@@ -89,6 +97,8 @@ class GameScreen(
     private val modelBatch = ModelBatch()
     private val environment = Environment()
     private val renderableEntities = allOf(ModelRenderComponent::class).get()
+    private val shadowLight = DirectionalShadowLight(SHADOW_FBO_SIZE, SHADOW_FBO_SIZE, 300f, 300f, -50f, 350f)
+    private val shadowBatch = ModelBatch(DepthShaderProvider());
 
     // Entities
     private val engine = Engine()
@@ -125,6 +135,7 @@ class GameScreen(
         world.update()
         engine.update(delta)
 
+        renderShadows()
         modelBatch.begin(cam)
         world.render(modelBatch, cam, environment)
         player[playerRender]!!.render(modelBatch, environment)
@@ -137,6 +148,21 @@ class GameScreen(
         stage.draw()
 
         // bench.stop()
+    }
+
+    private fun renderShadows() {
+        shadowLight.camera.position.set(
+            cam.position.x + SUN_OFFSET_X * SUN_MUL,
+            cam.position.y + SUN_OFFSET_Y * SUN_MUL,
+            cam.position.z + SUN_OFFSET_Z * SUN_MUL
+        )
+        shadowLight.camera.lookAt(cam.position)
+        shadowLight.camera.update()
+        shadowLight.begin()
+        shadowBatch.begin(shadowLight.camera)
+        world.render(shadowBatch, shadowLight.camera, null)
+        shadowBatch.end()
+        shadowLight.end()
     }
 
     override fun pushPanel(panel: Panel) {
@@ -248,7 +274,10 @@ class GameScreen(
 
         // Lighting
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
-        environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f))
+        environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -SUN_OFFSET_X, -SUN_OFFSET_Y, -SUN_OFFSET_Z))
+        shadowLight.set(0.8f, 0.8f, 0.8f, -SUN_OFFSET_X, -SUN_OFFSET_Y, -SUN_OFFSET_Z)
+        environment.add(shadowLight)
+        environment.shadowMap = shadowLight
 
         // Sound
         client.addListener {

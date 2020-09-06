@@ -1,7 +1,7 @@
 package xyz.angm.terra3d.client.world
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.PerspectiveCamera
+import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.math.Vector3
@@ -121,7 +121,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * @param modelBatch A ModelBatch. begin() should already be called.
      * @param cam The camera used for frustum culling.
      * @param environment The environment to render with. */
-    fun render(modelBatch: ModelBatch, cam: PerspectiveCamera, environment: Environment) {
+    fun render(modelBatch: ModelBatch, cam: Camera, environment: Environment?) {
         chunks.values().forEach { if (it.shouldRender(cam)) it.render(modelBatch, environment) }
     }
 

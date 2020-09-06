@@ -41,7 +41,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     internal var isQueued = false
 
     /** Renders itself. */
-    fun render(modelBatch: ModelBatch, environment: Environment) = modelBatch.render(model, environment)
+    fun render(modelBatch: ModelBatch, environment: Environment?) = modelBatch.render(model, environment)
 
     override fun dispose() = model.dispose()
 
@@ -118,7 +118,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                         n.apply(corner4).add(corner1) // corner4 = c1 + n
 
                         // Normal is always orthogonal to the quad
-                        tmpAIV.reset()[direction] += 1
+                        tmpAIV.reset()[direction] += if (isBackFace) -1 else 1
                         tmpAIV.apply(normal)
 
                         val tex = Item.Properties.fromType(block)!!.texture
