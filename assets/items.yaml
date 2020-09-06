@@ -250,3 +250,28 @@ diamond_miner:
     breakTime: 6
     prefTool: pickaxe
     minToolLevel: 4
+
+red_lamp:
+  texture: textures/blocks/glass_red.png
+  block:
+    emitsLight: true
+    redLight: 15
+
+green_lamp:
+  texture: textures/blocks/glass_green.png
+  block:
+    emitsLight: true
+    greenLight: 15
+
+blue_lamp:
+  texture: textures/blocks/glass_blue.png
+  block:
+    emitsLight: true
+    blueLight: 15
+
+orange_lamp:
+  texture: textures/blocks/glass_orange.png
+  block:
+    emitsLight: true
+    redLight: 15
+    greenLight: 9

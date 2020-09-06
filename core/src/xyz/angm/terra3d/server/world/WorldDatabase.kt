@@ -115,10 +115,15 @@ internal class WorldDatabase(private val server: Server) {
     }
 
     /** Sets and marks the chunk the given block is in as changed. */
-    internal fun markChanged(block: Block) {
+    internal fun markBlockChanged(block: Block) {
         val chunk = getChunk(block.position) ?: return
         tmpIV.set(block.position).minus(chunk.position)
         chunk.setBlock(tmpIV, block)
+        changedChunks[chunk.position] = chunk
+    }
+
+    /** Marks the given chunk as changed. */
+    internal fun markChunkChanged(chunk: Chunk) {
         changedChunks[chunk.position] = chunk
     }
 

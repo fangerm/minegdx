@@ -80,10 +80,7 @@ class Server(
         log.debug { "[SERVER] Received object of class ${packet.javaClass.name}" }
 
         when (packet) {
-            is BlockUpdate -> {
-                world.setBlock(packet.position, packet)
-                sendToAll(packet)
-            }
+            is BlockUpdate -> world.setBlock(packet.position, packet)
             is ChunkRequest -> send(connection, ChunksLine(packet.position, world.getChunkLine(packet.position)))
             is ChatMessagePacket -> sendToAll(packet)
             is JoinPacket -> registerPlayer(connection, packet)

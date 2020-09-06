@@ -9,6 +9,7 @@ import ktx.assets.file
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.items.Item.Properties
+import xyz.angm.terra3d.common.items.Item.Properties.BlockProperties.OrientationMode
 import xyz.angm.terra3d.common.items.metadata.IMetadata
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.yaml
@@ -145,6 +146,12 @@ data class Item(
          * @property texBottom Optional: Block bottom texture. [Properties.texture] will be used instead if null.
          *
          * @property collider: The collider of this block used by the physics system.
+         * @property orientation The possible orientations of this block. See [OrientationMode] for more.
+         *
+         * @property emitsLight If this block produces light, ex. like a torch.
+         * @property redLight Red light strength, 0-15; only matters if `emitsLight == true`
+         * @property greenLight Green light strength, 0-15; only matters if `emitsLight == true`
+         * @property blueLight Blue light strength, 0-15; only matters if `emitsLight == true`
          *
          * @property placedSound Sound played when the block is placed by a player.
          * @property hitSound Sound played when the block is hit by a player.
@@ -162,6 +169,11 @@ data class Item(
 
             val collider: PhysicsSystem.BlockCollider = PhysicsSystem.BlockCollider.FULL,
             val orientation: OrientationMode = OrientationMode.DISABLE,
+
+            val emitsLight: Boolean = false,
+            val redLight: Int = 0,
+            val greenLight: Int = 0,
+            val blueLight: Int = 0,
 
             val placedSound: String = "step/stone1",
             val hitSound: String = "dig/stone1",

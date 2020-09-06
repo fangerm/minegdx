@@ -12,6 +12,7 @@ import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
+import xyz.angm.terra3d.common.world.BfsLight
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.WorldInterface
@@ -38,6 +39,7 @@ class World(private val server: Server) : WorldInterface {
     internal val generator = TerrainGenerator(this)
     private val blockEntitySystem = BlockEntitySystem(this)
     private val physics = PhysicsSystem(this::getBlock)
+    private val lighting = BfsLight(this)
 
     init {
         server.executor.scheduleAtFixedRate(database::flushChunks, 60, 60, TimeUnit.SECONDS)
@@ -120,6 +122,7 @@ class World(private val server: Server) : WorldInterface {
             if (blockEntity != null) blockEntitySystem.createBlockEntity(server.engine, blockEntity)
         }
 
+        lighting.blockSet(block, oldBlock)
         server.sendToAll(block)
 
         return true
@@ -128,11 +131,27 @@ class World(private val server: Server) : WorldInterface {
     /** Call when a block's metadata changed. Will mark
      * the chunk changed to ensure saving to disk and sync clients. */
     fun metadataChanged(block: Block) {
-        database.markChanged(block)
+        database.markBlockChanged(block)
         server.sendToAll(block)
     }
 
     override fun setBlockRaw(position: IntVector3, type: ItemType) = database.setBlockRaw(position, type)
+
+    /** @return Local light at the given block.
+     * THE VECTOR RETURNED IS REUSED FOR EVERY CALL. Copy it if you need it to persist. */
+    override fun getLocalLight(position: IntVector3): IntVector3? {
+        val chunk = database.getChunk(position)
+        tmpIV.set(position).minus(chunk?.position ?: return null)
+        return chunk.getLocalLight(tmpIV.x, tmpIV.y, tmpIV.z)
+    }
+
+    /** Sets local light at the given block. */
+    override fun setLocalLight(position: IntVector3, light: IntVector3) {
+        val chunk = database.getChunk(position)
+        tmpIV.set(position).minus(chunk?.position ?: return)
+        database.markChunkChanged(chunk)
+        return chunk.setLocalLight(tmpIV.x, tmpIV.y, tmpIV.z, light)
+    }
 
     /** Called on server close; saves to disk */
     fun close() = database.flushChunks()

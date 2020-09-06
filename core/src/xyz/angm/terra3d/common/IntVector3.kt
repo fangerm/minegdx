@@ -22,15 +22,14 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
      * @param vector3 The float vector to be floored */
     constructor(vector3: Vector3) : this(MathUtils.floor(vector3.x), MathUtils.floor(vector3.y), MathUtils.floor(vector3.z))
 
-    /** Constructs a vector from a vectored component. Values are floored.
-     * @param vC The VectoredComponent. */
-    constructor(vC: VectoredComponent) : this(MathUtils.floor(vC.x), MathUtils.floor(vC.y), MathUtils.floor(vC.z))
-
     /** Constructs a vector from the translation of a libGDX Matrix4. */
     constructor(matrix4: Matrix4) : this(matrix4.getTranslation(tmpV))
 
     /** Constructs from an integer array that must have at least 3 values. */
     constructor(arr: IntArray) : this(arr[0], arr[1], arr[2])
+
+    /** Creates a clone of given vector. */
+    constructor(intVec: IntVector3) : this(intVec.x, intVec.y, intVec.z)
 
     /** @return A copy of itself; allows for calculations without affecting original. */
     fun cpy() = IntVector3(x, y, z)
@@ -129,6 +128,17 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
         return a * a + c * c
     }
 
+    /** Makes this vector into a single scalar int for use with indexing or compression
+     * @param mul The multiplier, determines max value of each axis */
+    fun linearize(mul: Int) = x + (y * mul) + (z * mul * mul)
+
+    /** Does the opposite to linearize, setting itself to `value`. */
+    fun delinearize(value: Int, mul: Int) {
+        x = value % mul
+        y = (value % (mul * mul)) / mul
+        z = value / (mul * mul)
+    }
+
     /** String representation of all 3 axes */
     override fun toString() = "($x | $y | $z)"
 
@@ -143,6 +153,8 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
 
     companion object {
         private val tmpV = Vector3()
+
+        val ZERO = IntVector3()
 
         /** @return If all 3 directions are in bounds */
         fun isInBounds(x: Int, y: Int, z: Int, min: Int, max: Int) = x >= min && y >= min && z >= min && x < max && y < max && z < max

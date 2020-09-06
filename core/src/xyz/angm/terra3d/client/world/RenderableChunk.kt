@@ -19,6 +19,7 @@ import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.ALL
 import xyz.angm.terra3d.common.world.Chunk
+import xyz.angm.terra3d.common.world.TYPE
 
 
 /** A chunk capable of rendering itself. Constructed from a regular chunk sent by the server. */
@@ -68,10 +69,12 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                     startPos[workAxis2] = -1
                     while (++startPos[workAxis2] < CHUNK_SIZE) {
 
-                        val block = getFromAIV3(startPos)
+                        val block = getFromAIV3(startPos) and TYPE
                         // Skip this block if it's been merged already, is air, or isn't visible
                         if (isMerged(startPos[workAxis1], startPos[workAxis2]) || block == 0 || !faceVisible(world, startPos, direction, isBackFace))
                             continue
+
+                        setColor(world, startPos, direction, isBackFace) // Set the blocks ambient color to be used by the vertex
 
                         quadSize.reset() // Making a new quad, reset
 
@@ -149,7 +152,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         tmpAIV.set(pos)[axis] += if (backFace) -1 else 1
         return if (tmpAIV[axis] !in 0 until CHUNK_SIZE)
             ((position.y + tmpAIV[1]) > -1) && !world.blockExists(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]), true)
-        else getFromAIV3(tmpAIV) == 0
+        else (getFromAIV3(tmpAIV) and TYPE) == 0
     }
 
     /** Takes a face and returns if the block at currPos can be merged
@@ -161,6 +164,18 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     }
 
     private fun getFromAIV3(pos: ArrIV3) = this[pos[0], pos[1], pos[2], ALL]
+
+    private fun setColor(world: World, pos: ArrIV3, axis: Int, backFace: Boolean) {
+        tmpAIV.set(pos)[axis] += if (backFace) -1 else 1
+        val localColor =  if (tmpAIV[axis] !in 0 until CHUNK_SIZE)
+            world.getLocalLight(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]))
+        else getLocalLight(pos[0], pos[1], pos[2])
+        localColor ?: return
+
+        color.r = localColor.x / 15f
+        color.g = localColor.y / 15f
+        color.b = localColor.z / 15f
+    }
 
     /** Returns if the chunk is meshed and visible to the given camera. */
     fun shouldRender(cam: Camera) = hasMesh && cam.frustum.boundsInFrustum(positionCentered, dimensions)
@@ -183,6 +198,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         private val corner3 = Vector3()
         private val corner4 = Vector3()
         private val normal = Vector3()
+        private val color = Color()
 
         private val tmpAIV = ArrIV3()
         private val tmpIV = IntVector3()
@@ -282,17 +298,15 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 // Additionally, faces that are orthogonal to the X axis need
                 // their points rotated by -90 degrees.
                 if (xFace) {
-                    if (backFace) rect(corner1, corner4, corner3, corner2, normal, height, width)
-                    else rect(corner4, corner1, corner2, corner3, normal, height, width)
+                    if (backFace) rect(corner1, corner4, corner3, corner2, height, width)
+                    else rect(corner4, corner1, corner2, corner3, height, width)
                 } else {
-                    if (backFace) rect(corner2, corner1, corner4, corner3, normal, width, height)
-                    else rect(corner1, corner2, corner3, corner4, normal, width, height)
+                    if (backFace) rect(corner2, corner1, corner4, corner3, width, height)
+                    else rect(corner1, corner2, corner3, corner4, width, height)
                 }
             }
 
-            val color = Color(0f, 0f, 0f, 1f)
-
-            private fun rect(corner00: Vector3, corner10: Vector3, corner11: Vector3, corner01: Vector3, normal: Vector3, width: Float, height: Float) {
+            private fun rect(corner00: Vector3, corner10: Vector3, corner11: Vector3, corner01: Vector3, width: Float, height: Float) {
                 builder.rect(
                     vertTmp1.set(corner00, normal, color, null).setUV(0f, height), vertTmp2.set(corner10, normal, color, null).setUV(width, height),
                     vertTmp3.set(corner11, normal, color, null).setUV(width, 0f), vertTmp4.set(corner01, normal, color, null).setUV(0f, 0f)

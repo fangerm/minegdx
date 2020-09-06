@@ -18,6 +18,7 @@ import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.networking.BlockUpdate
 import xyz.angm.terra3d.common.networking.ChunkRequest
 import xyz.angm.terra3d.common.networking.ChunksLine
+import xyz.angm.terra3d.common.world.BfsLight
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.WorldInterface
@@ -53,6 +54,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
     private val chunks = OrderedMap<IntVector3, RenderableChunk>()
     private val chunksWaitingForRender = Queue<RenderableChunk>(400)
     private val generator = TerrainGenerator(this)
+    private val lighting = BfsLight(this)
 
     val chunksLoaded: Int get() = chunks.size
     val waitingForRender: Int get() = chunksWaitingForRender.size
@@ -62,8 +64,12 @@ class World(private val client: Client, override val seed: String) : Disposable,
             when (packet) {
                 is BlockUpdate -> {
                     val chunk = getChunk(packet.position) ?: return@addListener
-                    chunk.setBlock(packet.position.minus(chunk.position), packet)
+                    packet.position.minus(chunk.position)
+
+                    val oldBlock = chunk.getBlock(packet.position)
+                    chunk.setBlock(packet.position, packet)
                     packet.position.add(chunk.position) // Restore state, listeners should not modify
+                    lighting.blockSet(packet, oldBlock)
 
                     // Do this immediately instead of queueing to prevent other
                     // chunks holding up the queue and the user noticing a delay
@@ -164,6 +170,21 @@ class World(private val client: Client, override val seed: String) : Disposable,
     fun getBlock(position: IntVector3): Block? {
         val chunk = getChunk(position)
         return chunk?.getBlock(tmpIV1.set(position).minus(chunk.position))
+    }
+
+    /** @return Local light at the given block.
+     * THE VECTOR RETURNED IS REUSED FOR EVERY CALL. Copy it if you need it to persist. */
+    override fun getLocalLight(position: IntVector3): IntVector3? {
+        val chunk = getChunk(position)
+        tmpIV3.set(position).minus(chunk?.position ?: return null)
+        return chunk.getLocalLight(tmpIV3.x, tmpIV3.y, tmpIV3.z)
+    }
+
+    /** Sets local light at the given block. */
+    override fun setLocalLight(position: IntVector3, light: IntVector3) {
+        val chunk = getChunk(position)
+        tmpIV3.set(position).minus(chunk?.position ?: return)
+        return chunk.setLocalLight(tmpIV3.x, tmpIV3.y, tmpIV3.z, light)
     }
 
     /** @return If there's a block at the given position. */

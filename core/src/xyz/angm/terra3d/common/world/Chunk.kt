@@ -16,12 +16,27 @@ import java.io.Serializable
 const val ALL = Int.MAX_VALUE
 
 /** Mask for getting a block's type. */
-const val TYPE = 0b00000000111111111111111111111111 // 0-24 bits
-
-const val ORIENTATION_SHIFT = 28
+const val TYPE = 0b00000000000000000000111111111111 // Lower 12 bits
 
 /** The orientation of the block. Index in [Block.Orientation]. */
+const val ORIENTATION_SHIFT = 12 // 3 bits after TYPE
 const val ORIENTATION = 0b111 shl ORIENTATION_SHIFT
+
+/** The block's global lighting strength. */
+const val GLOBAL_LIGHT_SHIFT = 15 // After ORIENTATION
+const val GLOBAL_LIGHT = 0b1111 shl GLOBAL_LIGHT_SHIFT
+/** The block's red local lighting strength. */
+const val RED_LIGHT_SHIFT = 19 // After global
+const val RED_LIGHT = 0b1111 shl RED_LIGHT_SHIFT
+/** The block's green local lighting strength. */
+const val GREEN_LIGHT_SHIFT = 23 // After red
+const val GREEN_LIGHT = 0b1111 shl GREEN_LIGHT_SHIFT
+/** The block's blue local lighting strength. */
+const val BLUE_LIGHT_SHIFT = 27 // After green
+const val BLUE_LIGHT = 0b1111 shl BLUE_LIGHT_SHIFT
+
+/** Convenience mask containing all lighting */
+const val LIGHTING = (GLOBAL_LIGHT or RED_LIGHT or GREEN_LIGHT or BLUE_LIGHT)
 
 /** A chunk is a 3D array of blocks of size [CHUNK_SIZE]. It should only be used by the world itself, and not exposed to other classes.
  * @property position The chunk's origin.
@@ -58,6 +73,30 @@ open class Chunk private constructor(
     fun getCollider(x: Int, y: Int, z: Int) = Item.Properties.fromType(blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)])?.block?.collider
         ?: PhysicsSystem.BlockCollider.NONE
 
+    fun getGlobalLight(x: Int, y: Int, z: Int) = this[x, y, z, GLOBAL_LIGHT] shr GLOBAL_LIGHT_SHIFT
+
+    fun getLocalLight(x: Int, y: Int, z: Int): IntVector3 {
+        colorVec.set(
+            get(x, y, z, RED_LIGHT) shr RED_LIGHT_SHIFT,
+            get(x, y, z, GREEN_LIGHT) shr GREEN_LIGHT_SHIFT,
+            get(x, y, z, BLUE_LIGHT) shr BLUE_LIGHT_SHIFT,
+        )
+        return colorVec
+    }
+
+    fun setGlobalLight(x: Int, y: Int, z: Int, l: Int) {
+        val data = this[x, y, z, ALL]
+        this[x, y, z] = data xor l shr GLOBAL_LIGHT_SHIFT
+    }
+
+    fun setLocalLight(x: Int, y: Int, z: Int, c: IntVector3) {
+        val color = (c.x shl RED_LIGHT_SHIFT) or (c.y shl GREEN_LIGHT_SHIFT) or (c.z shl BLUE_LIGHT_SHIFT)
+        val data = this[x, y, z, ALL]
+        // Reset color channels to 0 so they can be set properly using bitwise or
+        val dataNoColor = data and ((RED_LIGHT or GREEN_LIGHT or BLUE_LIGHT) xor ALL)
+        this[x, y, z] = dataNoColor or color
+    }
+
     /** @return If a block at the given position exists */
     fun blockExists(p: IntVector3) = p.isInBounds(0, CHUNK_SIZE) && blockExists(p.x, p.y, p.z)
 
@@ -77,9 +116,15 @@ open class Chunk private constructor(
     /** Same as [setBlock], but constructs a new block from specified type. */
     fun setBlock(position: IntVector3, type: ItemType) {
         if (position.isInBounds(0, CHUNK_SIZE)) {
-            this[position.x, position.y, position.z] = type
+            val dataNoColor = type and (LIGHTING xor ALL) // Strip color
+            val data = dataNoColor or this[position.x, position.y, position.z, LIGHTING]
+            this[position.x, position.y, position.z] = data
             blockMetadata.remove(position)
         }
+    }
+
+    companion object {
+        private val colorVec = IntVector3()
     }
 
     /** Custom chunk serializer. It's about 3x faster than regular serialization with a chunk filled with the same block, but is 3x SLOWER than

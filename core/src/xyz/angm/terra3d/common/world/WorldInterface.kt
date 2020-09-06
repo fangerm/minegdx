@@ -24,4 +24,11 @@ interface WorldInterface {
      * Does not cause a sync between client and server.
      * Returns success (false if no chunk generated at given position yet) */
     fun setBlockRaw(position: IntVector3, type: ItemType): Boolean
+
+    /** @return Local light at the given block.
+     * THE VECTOR RETURNED MIGHT BE REUSED FOR EVERY CALL. Copy it if you need it to persist. */
+    fun getLocalLight(position: IntVector3): IntVector3?
+
+    /** Sets local light at the given block. */
+    fun setLocalLight(position: IntVector3, light: IntVector3)
 }
