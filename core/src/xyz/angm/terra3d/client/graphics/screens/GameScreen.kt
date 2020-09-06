@@ -40,6 +40,7 @@ import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.client.networking.LocalServer
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
+import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.client.world.World
 import xyz.angm.terra3d.common.IntVector3
@@ -56,7 +57,6 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-private const val SHADOW_FBO_SIZE = 8192 * 2
 private const val SUN_OFFSET_X = 1f
 private const val SUN_OFFSET_Y = 0.7f
 private const val SUN_OFFSET_Z = 0.6f
@@ -100,7 +100,7 @@ class GameScreen(
     private val modelBatch = ModelBatch(DefaultShaderProvider(file("shader/vertex.glsl"), file("shader/fragment.glsl")))
     private val environment = Environment()
     private val renderableEntities = allOf(ModelRenderComponent::class).get()
-    private val shadowLight = DirectionalShadowLight(SHADOW_FBO_SIZE, SHADOW_FBO_SIZE, 300f, 300f, -50f, 350f)
+    private val shadowLight = DirectionalShadowLight(configuration.video.shadowFBO, configuration.video.shadowFBO, 300f, 300f, -50f, 350f)
     private val shadowBatch = ModelBatch(DepthShaderProvider());
 
     // Entities

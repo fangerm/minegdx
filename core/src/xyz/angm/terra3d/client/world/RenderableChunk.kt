@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.ObjectMap
 import ktx.collections.*
 import xyz.angm.terra3d.client.resources.ResourceManager
+import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
@@ -130,7 +131,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                             else -> props.block?.texSide ?: tex // Side face
                         }
                         Builder.drawRect(
-                            texture, props.block?.blend == true,
+                            texture, props.block?.isBlend == true,
                             quadSize[workAxis1].toFloat(), quadSize[workAxis2].toFloat(), isBackFace, direction == 0
                         )
                         hasMesh = true
@@ -157,7 +158,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         tmpAIV.set(pos)[axis] += if (backFace) -1 else 1
         return if (tmpAIV[axis] !in 0 until CHUNK_SIZE)
             ((position.y + tmpAIV[1]) > -1) && world.isBlended(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]))
-        else Item.Properties.fromType(getFromAIV3(tmpAIV) and TYPE)?.block?.blend ?: true
+        else Item.Properties.fromType(getFromAIV3(tmpAIV) and TYPE)?.block?.isBlend ?: true
     }
 
     /** Takes a face and returns if the block at currPos can be merged
@@ -318,7 +319,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             private fun getMaterial(texture: String, blend: Boolean): Material {
                 val tex = ResourceManager.get<Texture>(texture)
                 tex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
-                val mat = if (blend) Material(TextureAttribute.createDiffuse(tex), BlendingAttribute())
+                val mat = if (blend && configuration.video.blend) Material(TextureAttribute.createDiffuse(tex), BlendingAttribute())
                 else Material(TextureAttribute.createDiffuse(tex))
                 materials[texture] = mat
                 return mat

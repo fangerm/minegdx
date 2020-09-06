@@ -73,7 +73,7 @@ open class Chunk private constructor(
     fun getCollider(x: Int, y: Int, z: Int) = Item.Properties.fromType(blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)])?.block?.collider
         ?: PhysicsSystem.BlockCollider.NONE
 
-    fun isBlended(p: IntVector3) = Item.Properties.fromType(this[p.x, p.y, p.z, TYPE])?.block?.blend ?: true
+    fun isBlended(p: IntVector3) = Item.Properties.fromType(this[p.x, p.y, p.z, TYPE])?.block?.isBlend ?: true
 
     fun getGlobalLight(x: Int, y: Int, z: Int) = this[x, y, z, GLOBAL_LIGHT] shr GLOBAL_LIGHT_SHIFT
 

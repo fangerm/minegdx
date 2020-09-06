@@ -37,6 +37,7 @@ class Configuration {
     // All these are initialized by deserialization
     val keybinds = Keybinds()
     lateinit var resourcePack: ResourcePack
+    val video = VideoOptions()
 
     val servers = HashMap<String, String>()
     val clientUUID = System.nanoTime().toInt()
@@ -120,5 +121,16 @@ class Configuration {
             binds.remove(key)
             bindings.remove(Input.Keys.toString(key))
         }
+    }
+
+    /** Video options controllable by the user.
+     * @property blend If blending on blocks should be enabled.
+     * @property shadowQuality Shadow resolution multiplier.
+     * @property shadowFBO Size of the shadow framebuffer, not player-configured. */
+    @Serializable
+    class VideoOptions {
+        var blend = true
+        var shadowQuality = 1f
+        val shadowFBO get() = (shadowQuality * 8192).toInt()
     }
 }

@@ -8,6 +8,7 @@ import kotlinx.serialization.builtins.serializer
 import ktx.assets.file
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
+import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.items.Item.Properties
 import xyz.angm.terra3d.common.items.Item.Properties.BlockProperties.OrientationMode
 import xyz.angm.terra3d.common.items.metadata.IMetadata
@@ -171,7 +172,7 @@ data class Item(
             val collider: PhysicsSystem.BlockCollider = PhysicsSystem.BlockCollider.FULL,
             val orientation: OrientationMode = OrientationMode.DISABLE,
 
-            val blend: Boolean = false,
+            private val blend: Boolean = false,
             val emitsLight: Boolean = false,
             val redLight: Int = 0,
             val greenLight: Int = 0,
@@ -182,6 +183,8 @@ data class Item(
             val destroySound: String = "dig/stone1",
             val walkSound: String = "step/stone1"
         ) {
+            val isBlend get() = blend && configuration.video.blend
+
             /** Returns the actual time required to break a block, given the tool's properties. */
             fun getBreakTime(tool: ToolProperties?) = breakTime * (if (tool != null && tool.type == prefTool) tool.multiplier else 1f)
 
