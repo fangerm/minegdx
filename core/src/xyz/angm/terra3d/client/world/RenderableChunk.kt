@@ -3,6 +3,7 @@ package xyz.angm.terra3d.client.world
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.ModelCache
+import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.graphics.g3d.model.Node
 import com.badlogic.gdx.graphics.g3d.model.NodePart
@@ -121,13 +122,17 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                         tmpAIV.reset()[direction] += if (isBackFace) -1 else 1
                         tmpAIV.apply(normal)
 
-                        val tex = Item.Properties.fromType(block)!!.texture
+                        val props = Item.Properties.fromType(block)!!
+                        val tex = props.texture
                         val texture = when (face) {
                             1 -> tex // Top face
-                            4 -> Item.Properties.fromType(block)!!.block?.texBottom ?: tex // Bottom face
-                            else -> Item.Properties.fromType(block)!!.block?.texSide ?: tex // Side face
+                            4 -> props.block?.texBottom ?: tex // Bottom face
+                            else -> props.block?.texSide ?: tex // Side face
                         }
-                        Builder.drawRect(texture, quadSize[workAxis1].toFloat(), quadSize[workAxis2].toFloat(), isBackFace, direction == 0)
+                        Builder.drawRect(
+                            texture, props.block?.blend == true,
+                            quadSize[workAxis1].toFloat(), quadSize[workAxis2].toFloat(), isBackFace, direction == 0
+                        )
                         hasMesh = true
 
                         for (f in 0 until quadSize[workAxis1]) {
@@ -151,8 +156,8 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     private fun faceVisible(world: World, pos: ArrIV3, axis: Int, backFace: Boolean): Boolean {
         tmpAIV.set(pos)[axis] += if (backFace) -1 else 1
         return if (tmpAIV[axis] !in 0 until CHUNK_SIZE)
-            ((position.y + tmpAIV[1]) > -1) && !world.blockExists(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]), true)
-        else (getFromAIV3(tmpAIV) and TYPE) == 0
+            ((position.y + tmpAIV[1]) > -1) && world.isBlended(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]))
+        else Item.Properties.fromType(getFromAIV3(tmpAIV) and TYPE)?.block?.blend ?: true
     }
 
     /** Takes a face and returns if the block at currPos can be merged
@@ -279,13 +284,10 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             private val vertTmp4 = VertexInfo()
 
             /** Draw a rectangle, using the positions inside corner1-4. */
-            fun drawRect(texture: String, width: Float, height: Float, backFace: Boolean, xFace: Boolean) {
+            fun drawRect(texture: String, blend: Boolean, width: Float, height: Float, backFace: Boolean, xFace: Boolean) {
                 val meshPart = builder.part("c", GL20.GL_TRIANGLES)
-                val material = materials[texture]
-                if (material == null) {
-                    materials[texture] = Material(TextureAttribute.createDiffuse(getTex(texture)))
-                }
-                node.parts.add(NodePart(meshPart, materials[texture]!!))
+                val material = materials[texture] ?: getMaterial(texture, blend)
+                node.parts.add(NodePart(meshPart, material))
 
 
                 // Back faces need their corners to be CCW, regular faces CW.
@@ -313,10 +315,13 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 )
             }
 
-            private fun getTex(texture: String): Texture {
+            private fun getMaterial(texture: String, blend: Boolean): Material {
                 val tex = ResourceManager.get<Texture>(texture)
                 tex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
-                return tex
+                val mat = if (blend) Material(TextureAttribute.createDiffuse(tex), BlendingAttribute())
+                else Material(TextureAttribute.createDiffuse(tex))
+                materials[texture] = mat
+                return mat
             }
         }
     }

@@ -49,6 +49,7 @@ leaves_oak:
     breakTime: 1
     prefTool: shears
     drop: apple
+    blend: true
 
 stick:
   burnTime: 150
@@ -256,18 +257,21 @@ red_lamp:
   block:
     emitsLight: true
     redLight: 15
+    blend: true
 
 green_lamp:
   texture: textures/blocks/glass_green.png
   block:
     emitsLight: true
     greenLight: 15
+    blend: true
 
 blue_lamp:
   texture: textures/blocks/glass_blue.png
   block:
     emitsLight: true
     blueLight: 15
+    blend: true
 
 orange_lamp:
   texture: textures/blocks/glass_orange.png
@@ -275,3 +279,4 @@ orange_lamp:
     emitsLight: true
     redLight: 15
     greenLight: 9
+    blend: true

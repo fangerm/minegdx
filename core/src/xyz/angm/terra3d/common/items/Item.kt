@@ -148,6 +148,7 @@ data class Item(
          * @property collider: The collider of this block used by the physics system.
          * @property orientation The possible orientations of this block. See [OrientationMode] for more.
          *
+         * @property blend If this block has transparency: true enables blending and causes adjacent blocks to be visible.
          * @property emitsLight If this block produces light, ex. like a torch.
          * @property redLight Red light strength, 0-15; only matters if `emitsLight == true`
          * @property greenLight Green light strength, 0-15; only matters if `emitsLight == true`
@@ -170,6 +171,7 @@ data class Item(
             val collider: PhysicsSystem.BlockCollider = PhysicsSystem.BlockCollider.FULL,
             val orientation: OrientationMode = OrientationMode.DISABLE,
 
+            val blend: Boolean = false,
             val emitsLight: Boolean = false,
             val redLight: Int = 0,
             val greenLight: Int = 0,

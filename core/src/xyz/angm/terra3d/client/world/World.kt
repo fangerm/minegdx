@@ -193,6 +193,13 @@ class World(private val client: Client, override val seed: String) : Disposable,
         return chunk?.blockExists(tmpIV3.set(position).minus(chunk.position)) ?: default
     }
 
+    /** @return If there's a block at the given position AND the block is solid/not blended.
+     * Used by RenderableChunk to determine if an adjacent block face is visible */
+    fun isBlended(position: IntVector3): Boolean {
+        val chunk = getChunk(position)
+        return chunk?.isBlended(tmpIV3.set(position).minus(chunk.position)) ?: false
+    }
+
     /** Queue a chunk and all adjacent chunks for rendering. */
     private fun queueForRender(chunk: RenderableChunk) {
         if (chunk.isQueued) return
