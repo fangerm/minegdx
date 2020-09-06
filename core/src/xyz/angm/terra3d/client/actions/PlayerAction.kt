@@ -39,6 +39,8 @@ object PlayerActions {
 
         addAction(PlayerAction("debugInfo", { it.gameplayPanel.toggleDebugInfo() }))
         addAction(PlayerAction("pauseMenu", { it.pushPanel(PausePanel(it)) }))
+        addAction(PlayerAction("onlinePlayers", { it.gameplayPanel.toggleOnlinePlayers() }, { it.gameplayPanel.toggleOnlinePlayers() }))
+
         addAction(PlayerAction("chat", { it.pushPanel(ChatPanel(it)) }))
         addAction(PlayerAction("openInventory", { it.pushPanel(PlayerInventoryPanel(it)) }))
         addAction(PlayerAction("fullscreen", {

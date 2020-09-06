@@ -23,6 +23,7 @@ import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.health
 import xyz.angm.terra3d.common.ecs.localPlayer
@@ -37,7 +38,8 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
     private val hotbarSelected = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 44, 48, 48))
     private val blockLabel = Label("", skin, "default-24pt")
     private val blockTooltip = ItemTooltip(this)
-    private val debugLabel = Label("", skin["monospace", Label.LabelStyle::class.java])
+    private val debugLabel = Label("", skin, "monospace")
+    private val onlinePlayers = Label("", skin, "default-24pt")
     private val chat = Chat(skin, screen.client)
 
     init {
@@ -60,6 +62,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         addActor(blockLabel)
         addActor(blockTooltip)
         addActor(debugLabel)
+        addActor(onlinePlayers)
         addActor(hotbarItems)
         addActor(crosshair)
         addActor(healthBar)
@@ -76,11 +79,13 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         hotbarItems.setPosition(hotbar.x + 2f, hotbar.y + 2f)
         crosshair.setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, Align.center)
         debugLabel.setPosition(5f, WORLD_HEIGHT - 200, Align.topLeft)
+        onlinePlayers.setPosition(WORLD_WIDTH - 400, WORLD_HEIGHT / 3)
         healthBar.setPosition(hotbar.x, hotbar.height + 6, Align.bottomLeft)
         hungerBar.setPosition(hotbar.x + hotbar.width + 16, hotbar.height + 6, Align.bottomRight)
         chat.setPosition(10f, 90f)
 
         debugLabel.isVisible = false
+        onlinePlayers.isVisible = false
         updateHotbarSelector(screen.player[playerM]!!.inventory.hotbarPosition)
         background = null
     }
@@ -88,6 +93,8 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
     override fun act(delta: Float) {
         super.act(delta)
         if (debugLabel.isVisible) debugLabel.setText(getDebugLabelString())
+        if (onlinePlayers.isVisible) updateOnlinePlayers()
+
         val block = screen.world.getBlock(screen.player[localPlayer]!!.blockLookingAt)
         blockTooltip.update(block)
         blockTooltip.setPosition(0f, WORLD_HEIGHT, Align.topLeft)
@@ -108,12 +115,24 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         blockLabel.setPosition(hotbarSelected.x, 120f, Align.center)
     }
 
+    private fun updateOnlinePlayers() {
+        val s = StringBuilder()
+        s.append(I18N["players-online"])
+        screen.onlinePlayers.forEach { s.append("\n$it") }
+        onlinePlayers.setText(s)
+    }
+
     /** Displays the chat, without it fading. */
     fun displayChat() = chat.update(fade = false)
 
     /** Toggle the debug menu/info. */
     fun toggleDebugInfo() {
         debugLabel.isVisible = !debugLabel.isVisible
+    }
+
+    /** Toggle the online players list. */
+    fun toggleOnlinePlayers() {
+        onlinePlayers.isVisible = !onlinePlayers.isVisible
     }
 
     private fun getDebugLabelString() =

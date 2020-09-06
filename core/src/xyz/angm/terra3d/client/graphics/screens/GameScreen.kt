@@ -46,6 +46,7 @@ import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.IgnoreSyncFlag
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
+import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.networking.BlockUpdate
@@ -106,14 +107,16 @@ class GameScreen(
     private val engine = Engine()
     val playerInputSystem: PlayerInputSystem get() = engine.getSystem(PlayerInputSystem::class.java)
     val playerInventory get() = player[playerM]!!.inventory
+    private val players = allOf(PlayerComponent::class).get()
 
     // 2D Graphics
     private val stage = Stage(FitViewport(WORLD_WIDTH, WORLD_HEIGHT))
     private val uiPanels = PanelStack()
     val gameplayPanel = GameplayOverlay(this)
 
-    val entitiesLoaded: Int get() = engine.entities.size()
-    val systemsActive: Int get() = engine.systems.size()
+    val entitiesLoaded get() = engine.entities.size()
+    val systemsActive get() = engine.systems.size()
+    val onlinePlayers get() = engine.getEntitiesFor(players).map { it[playerM]!!.name }
 
     init {
         initSystems()
