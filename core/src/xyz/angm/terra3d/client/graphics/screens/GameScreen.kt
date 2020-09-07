@@ -128,7 +128,7 @@ class GameScreen(
     }
 
     override fun render(delta: Float) {
-        Gdx.gl.glClearColor(0.05f, 0.05f, 0.05f, 1f)
+        Gdx.gl.glClearColor(134 / 255f, 172 / 255f, 250 / 255f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
         /* Uncomment this and the stop call at the end to enable performance profiling.
@@ -270,7 +270,7 @@ class GameScreen(
 
         // Camera
         cam.near = 0.15f
-        cam.far = 150f
+        cam.far = 300f
         cam.update()
 
         // 2D / Stage

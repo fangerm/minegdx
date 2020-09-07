@@ -71,7 +71,6 @@ class PlayerSystem(
         screen.cam.fieldOfView -= (screen.cam.fieldOfView - player[localPlayer]!!.fov) * 10f * delta
 
         // Update rendering-related positions
-        pRender.skybox.transform.setToTranslation(tmpV.set(pPosition))
         pRender.blockSelector.transform.setToTranslation(localPlayerC.blockLookingAt.toV3(tmpV).add(0.5f))
         soundPlayer.updateListenerPosition(pPosition, pDirection)
     }

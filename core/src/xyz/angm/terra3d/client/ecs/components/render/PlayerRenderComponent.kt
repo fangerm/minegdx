@@ -13,7 +13,6 @@ import xyz.angm.terra3d.client.resources.ResourceManager
  * @property blockSelector The block selector model. */
 class PlayerRenderComponent : RenderableComponent {
 
-    val skybox = ModelInstance(ResourceManager.get<Model>("models/skybox.obj"))
     val blockSelector: ModelInstance
 
     init {
@@ -26,7 +25,6 @@ class PlayerRenderComponent : RenderableComponent {
     }
 
     override fun render(batch: ModelBatch, environment: Environment) {
-        batch.render(skybox, environment)
         batch.render(ResourceManager.models.activeDamageModel)
         batch.render(blockSelector)
     }
