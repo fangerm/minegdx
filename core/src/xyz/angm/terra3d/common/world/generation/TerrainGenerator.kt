@@ -22,7 +22,7 @@ class TerrainGenerator(val world: WorldInterface) {
     /** Generate a line of chunks.
      * @param position Position of the chunks; Y axis ignored. */
     fun generateChunks(position: IntVector3): Array<Chunk> {
-        position.norm(CHUNK_SIZE).y = 0
+        position.chunk().y = 0
         val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
         val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z, biomeMap)
 

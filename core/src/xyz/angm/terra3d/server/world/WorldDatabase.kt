@@ -50,7 +50,7 @@ internal class WorldDatabase(private val server: Server) {
         transaction(db) {
             for (x in -WORLD_BUFFER_DIST..WORLD_BUFFER_DIST) {
                 for (z in -WORLD_BUFFER_DIST..WORLD_BUFFER_DIST) {
-                    tmpIV.set(position).norm(CHUNK_SIZE).add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE).y = 0
+                    tmpIV.set(position).chunk().add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE).y = 0
                     if (newChunks[tmpIV] == null && Chunks.select { (Chunks.x eq tmpIV.x) and (Chunks.z eq tmpIV.z) }.toList().isEmpty()) {
                         generator.generateChunks(tmpIV)
                     }
@@ -67,7 +67,7 @@ internal class WorldDatabase(private val server: Server) {
     /** Returns chunk or null if it is not in the DB
      * @param generate If the chunk should be generated if missing. Does not return null if true. */
     internal fun getChunk(position: IntVector3, generate: Boolean = true): Chunk? {
-        tmpIV.set(position).norm(CHUNK_SIZE)
+        tmpIV.set(position).chunk()
         val cacheChunk = getCachedChunk(tmpIV)
         if (cacheChunk != null) return cacheChunk
 
@@ -77,7 +77,7 @@ internal class WorldDatabase(private val server: Server) {
         else {
             server.world.generator.generateChunks(tmpIV)
             server.world.generator.finalizeGen()
-            getCachedChunk(tmpIV.set(position).norm(CHUNK_SIZE))!!
+            getCachedChunk(tmpIV.set(position).chunk())!!
         }
 
         unchangedChunks[chunk.position] = chunk
@@ -163,7 +163,7 @@ internal class WorldDatabase(private val server: Server) {
     }
 
     private fun getDBChunk(position: IntVector3): ResultRow? {
-        tmpIV.set(position).norm(CHUNK_SIZE)
+        tmpIV.set(position).chunk()
         return transaction(db) { Chunks.select { (Chunks.x eq tmpIV.x) and (Chunks.y eq tmpIV.y) and (Chunks.z eq tmpIV.z) }.firstOrNull() }
     }
 

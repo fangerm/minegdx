@@ -58,7 +58,7 @@ class World(private val server: Server) : WorldInterface {
      * @param position The chunk's position, y axis is ignored.
      * @return All chunks with matching x and z axis that had player modification */
     fun getChunkLine(position: IntVector3): Array<Chunk> {
-        tmpIV.set(position).norm(CHUNK_SIZE).y = 0
+        tmpIV.set(position).chunk().y = 0
         val out = GdxArray<Chunk>(false, 6, Chunk::class.java)
         for (chunk in 0..WORLD_HEIGHT_IN_CHUNKS) {
             val loaded = getLoadedChunk(tmpIV.add(0, CHUNK_SIZE, 0))
@@ -79,7 +79,7 @@ class World(private val server: Server) : WorldInterface {
         val across = (INIT_DIST_CHUNKS * 2) + 1
         val out = GdxArray<Chunk>(false, across * across * WORLD_HEIGHT_IN_CHUNKS, Chunk::class.java)
         val dist = INIT_DIST_CHUNKS * CHUNK_SIZE * 2
-        tmpIV.set(position).norm(CHUNK_SIZE).minus(dist, 0, dist)
+        tmpIV.set(position).chunk().minus(dist, 0, dist)
         val tmpI = IntVector3()
 
         for (x in tmpIV.x until (position.x + dist + CHUNK_SIZE).toInt() step CHUNK_SIZE)

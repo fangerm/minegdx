@@ -38,18 +38,16 @@ private const val RENDER_TIME = 4
 /** The amount of time to spend rendering/meshing chunks per frame during initialization, see [xyz.angm.terra3d.client.Terra3D]. */
 const val RENDER_TIME_LOAD = 10
 
-/** The maximum distance a chunk can have to the player before being discarded, squared. */
-private const val MAX_CHUNK_DIST = 250 * 250
+/** The maximum distance a chunk can have to the player before being discarded. */
+private const val MAX_CHUNK_DIST = (RENDER_DIST_CHUNKS + 1) * CHUNK_SIZE
 
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
 class World(private val client: Client, override val seed: String) : Disposable, WorldInterface {
 
-    private val tmpIV1 = IntVector3()
-    private val tmpIV2 = IntVector3()
-    private val tmpIV3 = IntVector3()
-    private val tmpV1 = Vector3()
-    private val tmpV2 = Vector3()
+    private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
+    private val tmpIV1 get() = tmpIVLocal.get()
+    private val tmpIV2 = ThreadLocal.withInitial { IntVector3() }
 
     private val chunks = OrderedMap<IntVector3, RenderableChunk>()
     private val chunksWaitingForRender = Queue<RenderableChunk>(400)
@@ -85,9 +83,10 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * and unloads far away chunks.
      * @param position The position to check. Should be the player's position. */
     fun updateLoadedChunks(position: IntVector3) {
+        val chunkPos = IntVector3()
         for (x in -RENDER_DIST_CHUNKS..RENDER_DIST_CHUNKS) {
             for (z in -RENDER_DIST_CHUNKS..RENDER_DIST_CHUNKS) {
-                val chunkPosition = tmpIV2.set(position).add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE)
+                val chunkPosition = chunkPos.set(position).add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE)
                 if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
             }
         }
@@ -99,7 +98,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
             var i = 0
             while (i < chunks.size) {
                 val pos = chunks.orderedKeys()[i]
-                if (pos.distXZSQ(position) > MAX_CHUNK_DIST) {
+                if (!pos.within(position, MAX_CHUNK_DIST)) {
                     chunks[pos]!!.dispose()
                     chunks.removeIndex(i)
                 } else i++
@@ -133,6 +132,8 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
     private val last = IntVector3()
     private val raycast = IntVector3()
+    private val tmpV1 = Vector3()
+    private val tmpV2 = Vector3()
 
     /** Gets the position of the block being looked at.
      * @param position Position of the one looking
@@ -175,29 +176,31 @@ class World(private val client: Client, override val seed: String) : Disposable,
     /** @return Local light at the given block.
      * THE VECTOR RETURNED IS REUSED FOR EVERY CALL. Copy it if you need it to persist. */
     override fun getLocalLight(position: IntVector3): IntVector3? {
+        val iv = tmpIV2.get()
         val chunk = getChunk(position)
-        tmpIV3.set(position).minus(chunk?.position ?: return null)
-        return chunk.getLocalLight(tmpIV3.x, tmpIV3.y, tmpIV3.z)
+        iv.set(position).minus(chunk?.position ?: return null)
+        return chunk.getLocalLight(iv.x, iv.y, iv.z)
     }
 
     /** Sets local light at the given block. */
     override fun setLocalLight(position: IntVector3, light: IntVector3) {
+        val iv = tmpIV2.get()
         val chunk = getChunk(position)
-        tmpIV3.set(position).minus(chunk?.position ?: return)
-        return chunk.setLocalLight(tmpIV3.x, tmpIV3.y, tmpIV3.z, light)
+        iv.set(position).minus(chunk?.position ?: return)
+        return chunk.setLocalLight(iv.x, iv.y, iv.z, light)
     }
 
     /** @return If there's a block at the given position. */
     fun blockExists(position: IntVector3, default: Boolean = false): Boolean {
         val chunk = getChunk(position)
-        return chunk?.blockExists(tmpIV3.set(position).minus(chunk.position)) ?: default
+        return chunk?.blockExists(tmpIV1.set(position).minus(chunk.position)) ?: default
     }
 
     /** @return If there's a block at the given position AND the block is solid/not blended.
      * Used by RenderableChunk to determine if an adjacent block face is visible */
     fun isBlended(position: IntVector3): Boolean {
         val chunk = getChunk(position)
-        return chunk?.isBlended(tmpIV3.set(position).minus(chunk.position)) ?: false
+        return chunk?.isBlended(tmpIV1.set(position).minus(chunk.position)) ?: false
     }
 
     /** Queue a chunk and all adjacent chunks for rendering. */
@@ -210,13 +213,14 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
     /** Queues all neighboring chunks for rerender. */
     private fun queueNeighbors(chunk: Chunk) {
+        val iv = tmpIV2.get()
         // TODO: don't do this
-        queueRerender(getChunk(tmpIV3.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
-        queueRerender(getChunk(tmpIV3.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
-        queueRerender(getChunk(tmpIV3.set(chunk.position).minus(0, 0, CHUNK_SIZE)))
-        queueRerender(getChunk(tmpIV3.set(chunk.position).add(CHUNK_SIZE, 0, 0)))
-        queueRerender(getChunk(tmpIV3.set(chunk.position).add(0, CHUNK_SIZE, 0)))
-        queueRerender(getChunk(tmpIV3.set(chunk.position).add(0, 0, CHUNK_SIZE)))
+        queueRerender(getChunk(iv.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
+        queueRerender(getChunk(iv.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
+        queueRerender(getChunk(iv.set(chunk.position).minus(0, 0, CHUNK_SIZE)))
+        queueRerender(getChunk(iv.set(chunk.position).add(CHUNK_SIZE, 0, 0)))
+        queueRerender(getChunk(iv.set(chunk.position).add(0, CHUNK_SIZE, 0)))
+        queueRerender(getChunk(iv.set(chunk.position).add(0, 0, CHUNK_SIZE)))
     }
 
     private fun queueRerender(chunk: RenderableChunk?) {
@@ -244,7 +248,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
         return true
     }
 
-    private fun getChunk(position: IntVector3): RenderableChunk? = chunks[tmpIV1.set(position).norm(CHUNK_SIZE)]
+    private fun getChunk(position: IntVector3): RenderableChunk? = chunks[tmpIV1.set(position).chunk()]
 
     override fun getLoadedChunk(position: IntVector3): Chunk? = getChunk(position)
 
@@ -259,7 +263,9 @@ class World(private val client: Client, override val seed: String) : Disposable,
     override fun addChunk(chunk: Chunk) {
         val renderableChunk = RenderableChunk(serverChunk = chunk)
         queueForRender(renderableChunk)
-        if (!chunks.containsKey(renderableChunk.position)) chunks[renderableChunk.position] = renderableChunk
+        if (!chunks.containsKey(renderableChunk.position)) {
+            Gdx.app.postRunnable { chunks[renderableChunk.position] = renderableChunk }
+        }
     }
 
     /** Adds given chunks to the world and queues them for render. */

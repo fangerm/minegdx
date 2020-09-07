@@ -1,13 +1,12 @@
 package xyz.angm.terra3d.common
 
 import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import ktx.collections.*
 import org.nustaq.serialization.FSTBasicObjectSerializer
 import org.nustaq.serialization.FSTClazzInfo
 import org.nustaq.serialization.FSTObjectInput
 import org.nustaq.serialization.FSTObjectOutput
-import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 import java.io.Serializable
 
 /** A 3D vector using integers as values.
@@ -21,9 +20,6 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     /** Constructs a vector from a libGDX float vector. Values are floored.
      * @param vector3 The float vector to be floored */
     constructor(vector3: Vector3) : this(MathUtils.floor(vector3.x), MathUtils.floor(vector3.y), MathUtils.floor(vector3.z))
-
-    /** Constructs a vector from the translation of a libGDX Matrix4. */
-    constructor(matrix4: Matrix4) : this(matrix4.getTranslation(tmpV))
 
     /** Constructs from an integer array that must have at least 3 values. */
     constructor(arr: IntArray) : this(arr[0], arr[1], arr[2])
@@ -49,19 +45,14 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     /** @param min Minimum value.
      * @param max Maximum value (non-inclusive)
      * @return If all 3 directions are in bounds */
-    fun isInBounds(min: Int, max: Int) = isInBounds(x, y, z, min, max)
+    fun isInBounds(min: Int, max: Int) = x >= min && y >= min && z >= min && x < max && y < max && z < max
 
     /** Sets itself to specified values.
      * @return Itself */
     fun set(v: IntVector3) = set(v.x, v.y, v.z)
 
-    /** @see set */
     fun set(v: Vector3) = set(MathUtils.floor(v.x), MathUtils.floor(v.y), MathUtils.floor(v.z))
 
-    /** @see set */
-    fun set(v: VectoredComponent) = set(MathUtils.floor(v.x), MathUtils.floor(v.y), MathUtils.floor(v.z))
-
-    /** @see set */
     fun set(x: Int, y: Int, z: Int): IntVector3 {
         this.x = x
         this.y = y
@@ -93,16 +84,6 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     /** @see minus */
     fun minus(other: IntVector3) = minus(other.x, other.y, other.z)
 
-    /** Multiplies all axes.
-     * @param num Value to multiply by.
-     * @return Itself */
-    private fun mul(num: Int): IntVector3 {
-        x *= num
-        y *= num
-        z *= num
-        return this
-    }
-
     /** Divides all axes by specified values.
      * @return Itself */
     fun div(v: IntVector3) = div(v.x, v.y, v.z)
@@ -118,14 +99,20 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
         return this
     }
 
-    /** Normalize this vector to a multiple of the specified number. */
-    fun norm(num: Int) = this.div(num).mul(num)
+    /** Normalize this vector to multiples of chunk positions. */
+    fun chunk(): IntVector3 {
+        val mask = (CHUNK_SIZE - 1) xor Int.MAX_VALUE
+        x = x and mask
+        y = y and mask
+        z = z and mask
+        return this
+    }
 
-    /** @return the distance between this vector and the given vector on the XZ axes squared */
-    fun distXZSQ(other: IntVector3): Int {
+    /** @return If the distance between this and other on the XZ axes is within max. */
+    fun within(other: IntVector3, max: Int): Boolean {
         val a = other.x - this.x
         val c = other.z - this.z
-        return a * a + c * c
+        return a > -max && a < max && c > -max && c < max
     }
 
     /** Makes this vector into a single scalar int for use with indexing or compression
@@ -152,14 +139,8 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
     }
 
     companion object {
-        private val tmpV = Vector3()
-
         val ZERO = IntVector3()
-
-        /** @return If all 3 directions are in bounds */
-        fun isInBounds(x: Int, y: Int, z: Int, min: Int, max: Int) = x >= min && y >= min && z >= min && x < max && y < max && z < max
     }
-
 
     /** Simple vector serializer to improve performance a bit compared to reflection. */
     class FSTVectorSerializer : FSTBasicObjectSerializer() {
