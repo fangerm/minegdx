@@ -12,7 +12,6 @@ import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.panels.menu.options.OptionsPanel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.client.resources.I18N
-import kotlin.system.exitProcess
 
 /** Main menu panel. */
 class MainMenuPanel(screen: MenuScreen) : Panel(screen) {
@@ -44,10 +43,7 @@ class MainMenuPanel(screen: MenuScreen) : Panel(screen) {
             }
             visTextButton(I18N["main.exit"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).row()
-                onClick {
-                    Gdx.app.exit()
-                    exitProcess(0)
-                }
+                onClick { Gdx.app.exit() }
             }
 
             setFillParent(true)

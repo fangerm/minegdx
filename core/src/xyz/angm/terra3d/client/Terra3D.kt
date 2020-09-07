@@ -15,6 +15,7 @@ import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.networking.InitPacket
 import xyz.angm.terra3d.common.networking.JoinPacket
 import xyz.angm.terra3d.common.world.WorldSaveManager
+import kotlin.system.exitProcess
 
 /** The game itself. Only sets the screen, everything else is handled per-screen. */
 class Terra3D : Game() {
@@ -66,4 +67,6 @@ class Terra3D : Game() {
 
     private fun startGame(client: Client, world: World, data: InitPacket) =
         setScreen(GameScreen(this, client, world, data.player.toEntity(), EntityData.toEntities(data.entities)))
+
+    override fun dispose() = exitProcess(0)
 }
