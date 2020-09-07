@@ -23,8 +23,8 @@ import java.sql.Connection
 internal class WorldDatabase(private val server: Server) {
 
     private val db: Database
-    private val tmpIV = IntVector3()
-    private val tmpV2 = IntVector3()
+    private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
+    private val tmpIV get() = tmpIVLocal.get()
 
     // These chunks have been created/modified/accessed since the last flushToDB call.
     private val newChunks = OrderedMap<IntVector3, Chunk>()
@@ -50,9 +50,9 @@ internal class WorldDatabase(private val server: Server) {
         transaction(db) {
             for (x in -WORLD_BUFFER_DIST..WORLD_BUFFER_DIST) {
                 for (z in -WORLD_BUFFER_DIST..WORLD_BUFFER_DIST) {
-                    tmpV2.set(position).norm(CHUNK_SIZE).add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE).y = 0
-                    if (newChunks[tmpV2] == null && Chunks.select { (Chunks.x eq tmpV2.x) and (Chunks.z eq tmpV2.z) }.toList().isEmpty()) {
-                        generator.generateChunks(tmpV2)
+                    tmpIV.set(position).norm(CHUNK_SIZE).add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE).y = 0
+                    if (newChunks[tmpIV] == null && Chunks.select { (Chunks.x eq tmpIV.x) and (Chunks.z eq tmpIV.z) }.toList().isEmpty()) {
+                        generator.generateChunks(tmpIV)
                     }
                 }
             }

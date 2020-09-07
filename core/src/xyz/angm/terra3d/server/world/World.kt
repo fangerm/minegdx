@@ -30,9 +30,8 @@ const val INIT_DIST_CHUNKS = 2
  * @property seed The world seed used for generating the terrain. */
 class World(private val server: Server) : WorldInterface {
 
-    private val tmpV = Vector3()
-    private val tmpIV = IntVector3()
-    private val tmpIV2 = IntVector3()
+    private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
+    private val tmpIV get() = tmpIVLocal.get()
 
     override val seed = server.save.seed
     private val database = WorldDatabase(server)
@@ -81,11 +80,12 @@ class World(private val server: Server) : WorldInterface {
         val out = GdxArray<Chunk>(false, across * across * WORLD_HEIGHT_IN_CHUNKS, Chunk::class.java)
         val dist = INIT_DIST_CHUNKS * CHUNK_SIZE * 2
         tmpIV.set(position).norm(CHUNK_SIZE).minus(dist, 0, dist)
+        val tmpI = IntVector3()
 
         for (x in tmpIV.x until (position.x + dist + CHUNK_SIZE).toInt() step CHUNK_SIZE)
             for (z in tmpIV.z until (position.z + dist + CHUNK_SIZE).toInt() step CHUNK_SIZE) {
-                database.getChunkLine(tmpIV2.set(x, 0, z), out)
-                generator.generateMissing(out, tmpIV2)
+                database.getChunkLine(tmpI.set(x, 0, z), out)
+                generator.generateMissing(out, tmpI)
             }
 
         generator.finalizeGen()
@@ -114,7 +114,7 @@ class World(private val server: Server) : WorldInterface {
 
             val item = Item(oldBlock)
             item.type = Item.Properties.fromIdentifier(item.properties.block!!.drop ?: item.properties.ident).type
-            ItemComponent.create(server.engine, item, position.toV3(tmpV).add(0.5f, 0f, 0.5f))
+            ItemComponent.create(server.engine, item, position.toV3().add(0.5f, 0f, 0.5f))
 
         } else if (oldBlock?.type != block.type) { // A new block got placed; the block was just updated if this is false
             BlockEvents.getListener(block, Event.BLOCK_PLACED)?.invoke(this, block)

@@ -9,7 +9,8 @@ import xyz.angm.terra3d.common.IntVector3
  * https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1 */
 class BfsLight(private val world: WorldInterface) {
 
-    private val tmpColor = IntVector3()
+    private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
+    private val tmpColor get() = tmpIVLocal.get()
     private val lightQ = Queue<LightNode>()
     private val removeQ = Queue<RemoveNode>()
 

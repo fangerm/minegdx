@@ -13,7 +13,8 @@ class TerrainGenerator(val world: WorldInterface) {
 
     private val noiseGenerator = NoiseGenerator(world.seed.convertToLong())
     private val structures = Structures()
-    private val tmpIV = IntVector3()
+    private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
+    private val tmpIV get() = tmpIVLocal.get()
 
     /** Finalize generation. Call after finishing with generating something, usually something batched. */
     fun finalizeGen() = structures.update(world)

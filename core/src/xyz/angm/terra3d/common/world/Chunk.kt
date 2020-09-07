@@ -126,7 +126,8 @@ open class Chunk private constructor(
     }
 
     companion object {
-        private val colorVec = IntVector3()
+        private val colorLocal = ThreadLocal.withInitial { IntVector3() }
+        private val colorVec get() = colorLocal.get()
     }
 
     /** Custom chunk serializer. It's about 3x faster than regular serialization with a chunk filled with the same block, but is 3x SLOWER than
