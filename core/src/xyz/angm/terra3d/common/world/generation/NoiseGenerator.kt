@@ -14,7 +14,7 @@ class NoiseGenerator(seed: Long) {
 
     // These values heavily influence heightmap generation.
     private val octaves = 3
-    private val roughness = 0.4f
+    private val roughness = 0.6f
     private val heightScale = 0.01
     private val biomeScale = 0.005
 
@@ -89,6 +89,11 @@ class NoiseGenerator(seed: Long) {
             layerFrequency *= 2f
             weightSum += layerWeight
             layerWeight *= roughness
+        }
+        for (x in 0 until CHUNK_SIZE) {
+            for (z in 0 until CHUNK_SIZE) {
+                totalNoise[x][z] /= weightSum
+            }
         }
         return totalNoise
     }
