@@ -10,44 +10,34 @@ import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ScreenAdapter
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.PerspectiveCamera
-import com.badlogic.gdx.graphics.g3d.Environment
-import com.badlogic.gdx.graphics.g3d.ModelBatch
-import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
-import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight
-import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider
-import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.PerformanceCounter
 import com.badlogic.gdx.utils.viewport.FitViewport
 import ktx.ashley.allOf
 import ktx.ashley.exclude
 import ktx.ashley.get
-import ktx.assets.file
 import xyz.angm.terra3d.client.Terra3D
-import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
-import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
 import xyz.angm.terra3d.client.ecs.systems.*
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.panels.PanelStack
 import xyz.angm.terra3d.client.graphics.panels.game.GameplayOverlay
 import xyz.angm.terra3d.client.graphics.panels.menu.MessagePanel
+import xyz.angm.terra3d.client.graphics.render.Renderer
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.client.networking.LocalServer
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
-import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.client.world.World
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.ecs.*
+import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.IgnoreSyncFlag
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
+import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.networking.BlockUpdate
@@ -56,11 +46,6 @@ import xyz.angm.terra3d.common.networking.InitPacket
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-
-private const val SUN_OFFSET_X = 1f
-private const val SUN_OFFSET_Y = 0.7f
-private const val SUN_OFFSET_Z = 0.6f
-private const val SUN_MUL = 150
 
 /** The game screen. Active during gameplay. Uses 2 panels; 1 for hotbar and a stack for the other panels required by the Screen interface.
  *
@@ -95,16 +80,12 @@ class GameScreen(
     val bench = PerformanceCounter("render")
 
     // 3D Graphics
-    val cam = PerspectiveCamera(FOV, WORLD_WIDTH, WORLD_HEIGHT)
     private val inputHandler = PlayerInputHandler(this)
-    private val modelBatch = ModelBatch(DefaultShaderProvider(file("shader/vertex.glsl"), file("shader/fragment.glsl")))
-    private val environment = Environment()
-    private val renderableEntities = allOf(ModelRenderComponent::class).get()
-    private val shadowLight = DirectionalShadowLight(configuration.video.shadowFBO, configuration.video.shadowFBO, 300f, 300f, -50f, 350f)
-    private val shadowBatch = ModelBatch(DepthShaderProvider());
+    private val renderer = Renderer(this)
+    val cam get() = renderer.cam
 
     // Entities
-    private val engine = Engine()
+    val engine = Engine()
     val playerInputSystem: PlayerInputSystem get() = engine.getSystem(PlayerInputSystem::class.java)
     val playerInventory get() = player[playerM]!!.inventory
     private val players = allOf(PlayerComponent::class).get()
@@ -128,9 +109,6 @@ class GameScreen(
     }
 
     override fun render(delta: Float) {
-        Gdx.gl.glClearColor(134 / 255f, 172 / 255f, 250 / 255f, 1f)
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
-
         /* Uncomment this and the stop call at the end to enable performance profiling.
         bench.tick(delta)
         if (bench.time.count > 120) bench.reset()
@@ -140,34 +118,11 @@ class GameScreen(
         world.update()
         engine.update(delta)
 
-        renderShadows()
-        modelBatch.begin(cam)
-        world.render(modelBatch, cam, environment)
-        player[playerRender]!!.render(modelBatch, environment)
-        engine.getEntitiesFor(renderableEntities).forEach { it[modelRender]!!.render(modelBatch, environment) }
-        // Uncomment to enable player physics debug rendering
-        // engine.getSystem(PlayerPhysicsSystem::class.java).render(modelBatch)
-        modelBatch.end()
-
+        renderer.render(delta)
         stage.act()
         stage.draw()
 
         // bench.stop()
-    }
-
-    private fun renderShadows() {
-        shadowLight.camera.position.set(
-            cam.position.x + SUN_OFFSET_X * SUN_MUL,
-            cam.position.y + SUN_OFFSET_Y * SUN_MUL,
-            cam.position.z + SUN_OFFSET_Z * SUN_MUL
-        )
-        shadowLight.camera.lookAt(cam.position)
-        shadowLight.camera.update()
-        shadowLight.begin()
-        shadowBatch.begin(shadowLight.camera)
-        world.render(shadowBatch, shadowLight.camera, null)
-        shadowBatch.end()
-        shadowLight.end()
     }
 
     override fun pushPanel(panel: Panel) {
@@ -230,13 +185,10 @@ class GameScreen(
     // Initialize everything not render-related
     private fun initState() {
         // Network
-        client.disconnectListener = { Gdx.app.postRunnable { returnToMenu(I18N["disconnected-from-server"]) } }
         val netSystem = engine.getSystem(NetworkSystem::class.java)
-        client.addListener {
-            when (it) {
-                is EntityData -> netSystem.receive(it)
-            }
-        }
+        client.addListener { if (it is EntityData) netSystem.receive(it) }
+
+        client.disconnectListener = { Gdx.app.postRunnable { returnToMenu(I18N["disconnected-from-server"]) } }
         client.send(ChatMessagePacket("[CYAN]${player[playerM]!!.name}[LIGHT_GRAY] ${I18N["joined-game"]}"))
 
         // Input
@@ -268,21 +220,9 @@ class GameScreen(
         // Initialize model cache to ensure loading of required models
         ResourceManager.models.init()
 
-        // Camera
-        cam.near = 0.15f
-        cam.far = 300f
-        cam.update()
-
         // 2D / Stage
         stage.addActor(gameplayPanel)
         stage.addActor(uiPanels)
-
-        // Lighting
-        environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
-        environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -SUN_OFFSET_X, -SUN_OFFSET_Y, -SUN_OFFSET_Z))
-        shadowLight.set(0.8f, 0.8f, 0.8f, -SUN_OFFSET_X, -SUN_OFFSET_Y, -SUN_OFFSET_Z)
-        environment.add(shadowLight)
-        environment.shadowMap = shadowLight
 
         // Sound
         client.addListener {
@@ -301,7 +241,7 @@ class GameScreen(
     override fun dispose() {
         LocalServer.stop()
         client.close()
-        modelBatch.dispose()
+        renderer.dispose()
         gameplayPanel.dispose()
         uiPanels.dispose()
         scheduler.shutdown()

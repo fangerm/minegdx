@@ -12,5 +12,5 @@ interface RenderableComponent : Component {
     /** Called when the component should render itself.
      * @param batch A model batch with begin() already called.
      * @param environment The environment that should be used. */
-    fun render(batch: ModelBatch, environment: Environment)
+    fun render(batch: ModelBatch, environment: Environment?)
 }

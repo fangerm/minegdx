@@ -100,6 +100,7 @@ object ResourceManager {
         for (i in 0 until 10) load<Texture>("textures/blocks/destroy_stage_$i.png")
         load<Texture>("textures/gui/icons.png")
         load<Texture>("textures/gui/block_highlighted.png")
+        load<Texture>("textures/sun.png")
     }
 
     private fun loadMenuAssets() {

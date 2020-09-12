@@ -8,5 +8,5 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance
  * @property model The model instance used in render calls. */
 class ModelRenderComponent : RenderableComponent {
     lateinit var model: ModelInstance
-    override fun render(batch: ModelBatch, environment: Environment) = batch.render(model, environment)
+    override fun render(batch: ModelBatch, environment: Environment?) = batch.render(model, environment)
 }
