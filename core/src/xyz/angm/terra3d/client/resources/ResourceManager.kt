@@ -101,6 +101,7 @@ object ResourceManager {
         load<Texture>("textures/gui/icons.png")
         load<Texture>("textures/gui/block_highlighted.png")
         load<Texture>("textures/sun.png")
+        load<Texture>("textures/moon.png")
     }
 
     private fun loadMenuAssets() {

@@ -1,8 +1,6 @@
 package xyz.angm.terra3d.client.graphics.render
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Camera
-import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider
@@ -33,9 +31,6 @@ class Renderer(private val screen: GameScreen) : Disposable {
     }
 
     fun render(delta: Float) {
-        Gdx.gl.glClearColor(134 / 255f, 172 / 255f, 250 / 255f, 1f)
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
-
         env.preRender(this, delta)
         modelBatch.begin(cam)
         env.render(modelBatch)
