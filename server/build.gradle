@@ -17,18 +17,32 @@ task debug(dependsOn: classes, type: JavaExec) {
     debug = true
 }
 
-task dist(type: Jar) {
+task explodeForWeave(type: Sync, dependsOn: classes) {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    into project.weaveDir
     from files(sourceSets.main.output.classesDirs)
     from files(sourceSets.main.output.resourcesDir)
     from {configurations.runtimeClasspath.collect {zipTree(it)}}
     from files(project.assetsDir)
+}
+
+weave {
+    dependsOn explodeForWeave
+    enableArtemisPlugin = true
+    enablePooledWeaving = true
+    ideFriendlyPacking = true
+    optimizeEntitySystems = true
+    classesDir = project.weaveDir
+}
+
+task dist(type: Jar, dependsOn: weave) {
+    from project.weaveDir
     archiveBaseName = "terra3d-server"
     // Exclude Linux ARM targets
     exclude('linux/arm32/**', 'linux/arm64/**')
 
     manifest {
-        attributes "Main-Class": project.mainClassName
+        attributes 'Main-Class': project.mainClassName
     }
 }
 

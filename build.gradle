@@ -15,6 +15,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlinVersion"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.17"
+        classpath "net.onedaybeard.artemis:artemis-odb-gradle-plugin:1.4.0"
     }
 }
 
@@ -38,6 +39,7 @@ allprojects {
         aiVersion = "1.8.2"
         ktxVersion = "1.9.11-b1"
         assetsDir = new File("../assets")
+        weaveDir = new File("$buildDir/explodedForWeave")
     }
 
     repositories {
@@ -74,6 +76,8 @@ allprojects {
 }
 
 project(":desktop") {
+    apply plugin: "artemis"
+
     dependencies {
         implementation project(":core")
         implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
@@ -84,6 +88,8 @@ project(":desktop") {
 }
 
 project(":server") {
+    apply plugin: "artemis"
+
     dependencies {
         implementation project(":core")
         implementation "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
@@ -109,6 +115,7 @@ project(":core") {
         api "com.kotcrab.vis:vis-ui:1.4.6"
 
         api "com.github.fangerm:ashley:1.7.4"
+        api "net.onedaybeard.artemis:artemis-odb:2.2.0"
         api "de.ruedigermoeller:fst:2.56"
         api "io.netty:netty-all:4.1.36.Final"
 
