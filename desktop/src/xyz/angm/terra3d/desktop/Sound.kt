@@ -42,6 +42,20 @@ object Sound : SoundInterface {
 
     override fun playSound(sound: String) = playSound3D(sound, listenerPosition)
 
+    override fun playLooping(sound: String, location: Vector3): Int {
+        val source = genSource(sound)
+        alSourcei(source, AL_LOOPING, 1)
+        alSource3f(source, AL_POSITION, location.x, location.y, location.z)
+        alSourcePlay(source)
+        return source
+    }
+
+    override fun stopPlaying(source: Int) {
+        // Don't actually stop the sound; just disable looping
+        // so it stops on it's own instead of unnatural cutoff
+        alSourcei(source, AL_LOOPING, 0)
+    }
+
     private fun genSource(sound: String): Int {
         val source = alGenSources()
         alSourcei(source, AL_BUFFER, getSound(sound))

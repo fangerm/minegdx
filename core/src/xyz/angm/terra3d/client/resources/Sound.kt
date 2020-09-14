@@ -15,6 +15,12 @@ interface SoundInterface {
     /** Play a 3D sound at the specified location. Coordinate system is the world. */
     fun playSound3D(sound: String, location: Vector3)
 
+    /** Same as [playSound3D] but loops the source until [stopPlaying] is called. */
+    fun playLooping(sound: String, location: Vector3): Int
+
+    /** Interrupts the given source. Source ID is obtained from [playLooping]. */
+    fun stopPlaying(source: Int)
+
     /** Updates the position and direction of the listener for 3D sound, which is usually the player. */
     fun updateListenerPosition(position: VectoredComponent, direction: VectoredComponent)
 }
@@ -25,6 +31,8 @@ private object DummySoundInterface : SoundInterface {
     override fun init() {}
     override fun playSound(sound: String) {}
     override fun playSound3D(sound: String, location: Vector3) {}
+    override fun playLooping(sound: String, location: Vector3) = 0
+    override fun stopPlaying(source: Int) {}
     override fun updateListenerPosition(position: VectoredComponent, direction: VectoredComponent) {}
 }
 

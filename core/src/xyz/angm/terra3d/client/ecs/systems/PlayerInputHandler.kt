@@ -35,13 +35,18 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
         if (!active) return
 
         if (Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
-            screen.playerInputSystem.leftClick(delta)
+            screen.playerInputSystem.leftHeld(delta)
         } else if (Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && rightClickCooldown < 0f) {
             screen.playerInputSystem.rightClick()
             rightClickCooldown = RIGHT_CLICK_COOLDOWN
         }
 
         rightClickCooldown -= delta
+    }
+
+    override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+        if (button == Input.Buttons.LEFT) screen.playerInputSystem.leftUp()
+        return true
     }
 
     /** Searches and executes the action bound to the key */

@@ -10,6 +10,7 @@ import xyz.angm.terra3d.client.actions.PlayerInteractions
 import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.SPRINT_FOV
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.direction
 import xyz.angm.terra3d.common.ecs.localPlayer
@@ -37,18 +38,45 @@ class PlayerInputSystem(
     private val tmpV = Vector3()
     private val localPlayerC = player[localPlayer]!!
     private val playerC = player[playerM]!!
+    private var breakSound = 0
+    private var breakType = 0
+
 
     override fun update(delta: Float) = inputHandler.update(delta)
 
     /** Called when the player is holding the left mouse button. */
-    internal fun leftClick(delta: Float) {
-        val block = screen.world.getBlock(localPlayerC.blockLookingAt) ?: return
+    internal fun leftHeld(delta: Float) {
+        val block = screen.world.getBlock(localPlayerC.blockLookingAt)
+        checkSound(block)
+        block ?: return
 
         localPlayerC.blockHitTime += delta
         val breakTime = block.properties!!.block!!.getBreakTime(playerC.inventory.heldItem?.properties?.tool)
         localPlayerC.blockHitPercent = (localPlayerC.blockHitTime / breakTime) * 100
 
         if (localPlayerC.blockHitPercent > 100f) screen.world.setBlock(Block(NOTHING, localPlayerC.blockLookingAt))
+    }
+
+    /** Called when the player lets go of the left mouse button */
+    internal fun leftUp() {
+        if (breakSound != 0) {
+            soundPlayer.stopPlaying(breakSound)
+            breakSound = 0
+            breakType = 0
+        }
+    }
+
+    /** Called when the player is holding the left mouse button to make sure sound stays correct. */
+    internal fun checkSound(block: Block?) {
+        if (block == null && breakSound != 0) {
+            soundPlayer.stopPlaying(breakSound)
+            breakSound = 0
+            breakType = 0
+        } else if (block != null && block.type != breakType) {
+            soundPlayer.stopPlaying(breakSound)
+            breakSound = soundPlayer.playLooping(block.properties?.block?.hitSound ?: return, block.position.toV3())
+            breakType = block.type
+        }
     }
 
     /** Called when the player right-clicks. */
