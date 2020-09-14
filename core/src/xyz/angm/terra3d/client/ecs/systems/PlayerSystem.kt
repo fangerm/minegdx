@@ -12,6 +12,7 @@ import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.*
+import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 
@@ -34,7 +35,7 @@ class PlayerSystem(
     private val playerC = player[playerM]!!
     private val pRender = player[playerRender]!!
 
-    private val allDroppedItems = allOf(ItemComponent::class).exclude(RemoveFlag::class).get()
+    private val allDroppedItems = allOf(ItemComponent::class, PositionComponent::class).exclude(RemoveFlag::class).get()
     private var timeSinceSync = 0f
     private var hungerLeft = 1f // 1 hunger point is removed when this reaches 0
     private var starveTime = 1f // Time until the player takes starving damage again
