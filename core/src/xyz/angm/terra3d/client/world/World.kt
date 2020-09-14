@@ -45,9 +45,8 @@ private const val MAX_CHUNK_DIST = (RENDER_DIST_CHUNKS + 1) * CHUNK_SIZE
  * @param client A connected network client. */
 class World(private val client: Client, override val seed: String) : Disposable, WorldInterface {
 
-    private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
-    private val tmpIV1 get() = tmpIVLocal.get()
-    private val tmpIV2 = ThreadLocal.withInitial { IntVector3() }
+    private val tmpIV1 = IntVector3()
+    private val tmpIV2 = IntVector3()
 
     private val chunks = OrderedMap<IntVector3, RenderableChunk>()
     private val chunksWaitingForRender = Queue<RenderableChunk>(400)
@@ -173,18 +172,16 @@ class World(private val client: Client, override val seed: String) : Disposable,
     /** @return Local light at the given block.
      * THE VECTOR RETURNED IS REUSED FOR EVERY CALL. Copy it if you need it to persist. */
     override fun getLocalLight(position: IntVector3): IntVector3? {
-        val iv = tmpIV2.get()
         val chunk = getChunk(position)
-        iv.set(position).minus(chunk?.position ?: return null)
-        return chunk.getLocalLight(iv.x, iv.y, iv.z)
+        tmpIV2.set(position).minus(chunk?.position ?: return null)
+        return chunk.getLocalLight(tmpIV2.x, tmpIV2.y, tmpIV2.z)
     }
 
     /** Sets local light at the given block. */
     override fun setLocalLight(position: IntVector3, light: IntVector3) {
-        val iv = tmpIV2.get()
         val chunk = getChunk(position)
-        iv.set(position).minus(chunk?.position ?: return)
-        return chunk.setLocalLight(iv.x, iv.y, iv.z, light)
+        tmpIV2.set(position).minus(chunk?.position ?: return)
+        return chunk.setLocalLight(tmpIV2.x, tmpIV2.y, tmpIV2.z, light)
     }
 
     /** @return If there's a block at the given position. */
@@ -201,23 +198,22 @@ class World(private val client: Client, override val seed: String) : Disposable,
     }
 
     /** Queue a chunk and all adjacent chunks for rendering. */
-    private fun queueForRender(chunk: RenderableChunk) {
+    private fun queueForRender(chunk: RenderableChunk, queueNeighbors: Boolean = true) {
         if (chunk.isQueued) return
         chunk.isQueued = true
         chunksWaitingForRender.addFirst(chunk)
-        queueNeighbors(chunk)
+        if (queueNeighbors) queueNeighbors(chunk)
     }
 
     /** Queues all neighboring chunks for rerender. */
     private fun queueNeighbors(chunk: Chunk) {
-        val iv = tmpIV2.get()
         // TODO: don't do this
-        queueRerender(getChunk(iv.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
-        queueRerender(getChunk(iv.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
-        queueRerender(getChunk(iv.set(chunk.position).minus(0, 0, CHUNK_SIZE)))
-        queueRerender(getChunk(iv.set(chunk.position).add(CHUNK_SIZE, 0, 0)))
-        queueRerender(getChunk(iv.set(chunk.position).add(0, CHUNK_SIZE, 0)))
-        queueRerender(getChunk(iv.set(chunk.position).add(0, 0, CHUNK_SIZE)))
+        queueRerender(getChunk(tmpIV2.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
+        queueRerender(getChunk(tmpIV2.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
+        queueRerender(getChunk(tmpIV2.set(chunk.position).minus(0, 0, CHUNK_SIZE)))
+        queueRerender(getChunk(tmpIV2.set(chunk.position).add(CHUNK_SIZE, 0, 0)))
+        queueRerender(getChunk(tmpIV2.set(chunk.position).add(0, CHUNK_SIZE, 0)))
+        queueRerender(getChunk(tmpIV2.set(chunk.position).add(0, 0, CHUNK_SIZE)))
     }
 
     private fun queueRerender(chunk: RenderableChunk?) {
@@ -261,13 +257,19 @@ class World(private val client: Client, override val seed: String) : Disposable,
         val renderableChunk = RenderableChunk(serverChunk = chunk)
         queueForRender(renderableChunk)
         if (!chunks.containsKey(renderableChunk.position)) {
-            Gdx.app.postRunnable { chunks[renderableChunk.position] = renderableChunk }
+            chunks[renderableChunk.position] = renderableChunk
         }
     }
 
     /** Adds given chunks to the world and queues them for render. */
-    fun addChunks(chunks: Array<Chunk>) {
-        chunks.forEach { addChunk(it) }
+    fun addChunks(chunks: Array<Chunk>, queueNeighbors: Boolean = true) {
+        chunks.forEach {
+            val renderableChunk = RenderableChunk(serverChunk = it)
+            queueForRender(renderableChunk, queueNeighbors)
+            if (!this@World.chunks.containsKey(renderableChunk.position)) {
+                this@World.chunks[renderableChunk.position] = renderableChunk
+            }
+        }
     }
 
     override fun dispose() {

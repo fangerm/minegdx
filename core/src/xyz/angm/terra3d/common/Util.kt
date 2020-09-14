@@ -1,10 +1,7 @@
 package xyz.angm.terra3d.common
 
 import ch.qos.logback.classic.Level
-import kotlinx.coroutines.ExecutorCoroutineDispatcher
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.launch
 import mu.KLogger
@@ -27,11 +24,11 @@ fun String.convertToLong(): Long {
     return long
 }
 
-/** Schedules a closure to run at given intervals, using the provided context.
+/** Schedules a closure to run at given intervals, using the provided scope.
  * Used as a replacement for java timers. */
-fun schedule(initial: Long, delay: Long, ctx: ExecutorCoroutineDispatcher, run: () -> Unit) {
-    val ticker = ticker(delay, initial, ctx)
-    GlobalScope.launch(ctx) {
+fun schedule(initial: Long, delay: Long, scope: CoroutineScope, run: () -> Unit) {
+    val ticker = ticker(delay, initial, scope.coroutineContext)
+    scope.launch {
         while (true) {
             ticker.receive()
             run()

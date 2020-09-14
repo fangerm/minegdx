@@ -1,12 +1,13 @@
 package xyz.angm.terra3d.client.networking
 
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import ktx.collections.*
 import xyz.angm.terra3d.common.log
-import java.util.concurrent.atomic.AtomicBoolean
+import xyz.angm.terra3d.common.spawn
 
 /** A client used for sending and receiving packages from a server.
  * @property disconnectListener Called when the client is disconnected.
@@ -23,13 +24,14 @@ class Client() {
     private val queued = GdxArray<Any>()
     // The channel that is used by the processing coroutine
     private val packetChannel = Channel<Any>()
+
     // If a packet is currently processing, will spinlock if so and lock() is called
     private var processing = false
-    private val worker: Job
+    private val scope = CoroutineScope(Dispatchers.Default)
 
     init {
         addListener { packet -> log.debug { "[CLIENT] Received packet of class ${packet.javaClass.name}" } }
-        worker = GlobalScope.launch {
+        scope.launch { // Processing / worker coroutine
             while (true) processPacket(packetChannel.receive())
         }
     }
@@ -72,7 +74,7 @@ class Client() {
 
     internal fun receive(packet: Any) {
         if (locked) queued.add(packet)
-        else GlobalScope.launch { packetChannel.send(packet) }
+        else scope.launch { packetChannel.send(packet) }
     }
 
     /** Should only be called from the processing coroutine. */
@@ -90,7 +92,7 @@ class Client() {
     fun lock() {
         locked = true
         // Spin until processing finished if still active
-        while (processing) Thread.sleep(0, 100000) // 0.1ms
+        while (processing) Thread.sleep(0, 50000) // 0.05ms
     }
 
     /** Unlocks this client again, processing all packets that arrived in the meantime.
@@ -98,7 +100,7 @@ class Client() {
     fun unlock() {
         locked = false
         // Kick this off on a coroutine to prevent locking main thread
-        GlobalScope.launch {
+        scope.launch {
             while (!queued.isEmpty) {
                 packetChannel.send(queued.pop())
             }
@@ -111,6 +113,6 @@ class Client() {
     fun close() {
         clearListeners()
         client.close()
-        worker.cancel()
+        scope.cancel()
     }
 }

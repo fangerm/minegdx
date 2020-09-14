@@ -10,8 +10,7 @@ import xyz.angm.terra3d.common.IntVector3
  * This implementation is NOT thread safe. */
 class BfsLight(private val world: WorldInterface) {
 
-    private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
-    private val tmpColor get() = tmpIVLocal.get()
+    private val tmpColor = IntVector3()
     private val lightQ = Queue<LightNode>()
     private val removeQ = Queue<RemoveNode>()
 

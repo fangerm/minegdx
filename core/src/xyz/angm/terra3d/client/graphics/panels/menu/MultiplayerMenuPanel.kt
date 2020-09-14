@@ -1,5 +1,9 @@
 package xyz.angm.terra3d.client.graphics.panels.menu
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import ktx.actors.onClick
 import ktx.actors.onClickEvent
 import ktx.actors.plusAssign
@@ -20,6 +24,8 @@ import java.io.IOException
 
 /** Multiplayer server selection. */
 class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
+
+    private val scope = CoroutineScope(Dispatchers.Default)
 
     init {
         reload(screen)
@@ -57,7 +63,7 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                                 screen.connectToServer(server.value)
                             }
 
-                            Thread {
+                            scope.launch {
                                 try {
                                     var client: Client? = null
                                     client = Client(server.value) {
@@ -70,7 +76,7 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                                 } catch (e: IOException) {
                                     motd.setText(I18N["multi.offline"])
                                 }
-                            }.start()
+                            }
 
                             it.width(700f).pad(20f, 0f, 20f, 0f).row()
                         }
@@ -99,4 +105,6 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
             setFillParent(true)
         }
     }
+
+    override fun dispose() = scope.cancel()
 }

@@ -11,9 +11,9 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.utils.PerformanceCounter
 import com.badlogic.gdx.utils.viewport.FitViewport
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import ktx.ashley.allOf
 import ktx.ashley.exclude
@@ -46,9 +46,6 @@ import xyz.angm.terra3d.common.networking.BlockUpdate
 import xyz.angm.terra3d.common.networking.ChatMessagePacket
 import xyz.angm.terra3d.common.networking.InitPacket
 import xyz.angm.terra3d.common.schedule
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
 
 /** The game screen. Active during gameplay. Uses 2 panels; 1 for hotbar and a stack for the other panels required by the Screen interface.
  *
@@ -69,7 +66,7 @@ import java.util.concurrent.TimeUnit
  * @property playerInputSystem The input system active in the ECS
  * @property playerInventory A simpler way of getting the players inventory
  *
- * @property gameplayPanel The panel always active; responsible for drawing hotbar and other elements */
+ * @property gameplayPanel This panel is always active; responsible for drawing hotbar and other elements */
 class GameScreen(
     private val game: Terra3D,
     val client: Client,
@@ -78,8 +75,7 @@ class GameScreen(
     entities: Array<Entity>
 ) : ScreenAdapter(), Screen {
 
-    private val dispatchCtx = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    val bench = PerformanceCounter("render")
+    private val coScope = CoroutineScope(Dispatchers.Default)
 
     // 3D Graphics
     private val inputHandler = PlayerInputHandler(this)
@@ -111,12 +107,6 @@ class GameScreen(
     }
 
     override fun render(delta: Float) {
-        /* Uncomment this and the stop call at the end to enable performance profiling.
-        bench.tick(delta)
-        if (bench.time.count > 120) bench.reset()
-        bench.start()
-        */
-
         client.lock()
         world.update()
         engine.update(delta)
@@ -125,8 +115,6 @@ class GameScreen(
         renderer.render(delta)
         stage.act()
         stage.draw()
-
-        // bench.stop()
     }
 
     override fun pushPanel(panel: Panel) {
@@ -200,7 +188,7 @@ class GameScreen(
         Gdx.input.isCursorCatched = true
 
         // Chunk loading
-        schedule(2000, 1000, dispatchCtx) {
+        schedule(2000, 1000, coScope) {
             Gdx.app.postRunnable { world.updateLoadedChunks(IntVector3(player[position]!!)) }
         }
     }
@@ -238,7 +226,7 @@ class GameScreen(
     override fun dispose() {
         LocalServer.stop()
         client.close()
-        dispatchCtx.cancel()
+        coScope.cancel()
         renderer.dispose()
         gameplayPanel.dispose()
         uiPanels.dispose()

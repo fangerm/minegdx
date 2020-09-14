@@ -50,7 +50,7 @@ class Terra3D : Game() {
     private fun initWorld(client: Client, data: InitPacket) {
         client.clearListeners() // Remove the collectWorld listener
         val world = World(client, data.seed)
-        world.addChunks(data.world)
+        world.addChunks(data.world, false)
         (screen as MenuScreen).setWorldLoading(world)
         Gdx.app.postRunnable { updateWorld(client, world, data) }
     }

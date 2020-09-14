@@ -9,6 +9,9 @@ import com.badlogic.gdx.utils.Array
 import com.kotcrab.vis.ui.widget.file.FileChooser
 import com.kotcrab.vis.ui.widget.file.FileChooserAdapter
 import com.kotcrab.vis.ui.widget.file.FileTypeFilter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import ktx.actors.centerPosition
 import ktx.actors.onClick
 import ktx.actors.plusAssign
@@ -93,11 +96,11 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
         chooser.selectionMode = FileChooser.SelectionMode.FILES_AND_DIRECTORIES
         chooser.setFileTypeFilter(filter)
         chooser.setListener(object : FileChooserAdapter() {
-            override fun selected(files: Array<FileHandle>) {
+            override fun selected(files: Array<FileHandle>) = runBlocking {
                 removeActor(chooser)
                 Gdx.input.inputProcessor = null
 
-                val loadingThread = Thread {
+                launch(Dispatchers.Default) {
                     ResourceManager.importMinecraftPack(files.first())
                     Gdx.app.postRunnable {
                         Gdx.input.inputProcessor = stage
@@ -105,7 +108,6 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
                         screen.pushPanel(ResourcePackPanel(screen))
                     }
                 }
-                loadingThread.start()
 
                 val messageLabel = Label(I18N["wait"], skin, "pack-loading")
                 messageLabel.width = WORLD_WIDTH

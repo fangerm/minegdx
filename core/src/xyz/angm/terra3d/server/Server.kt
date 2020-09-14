@@ -1,11 +1,10 @@
 package xyz.angm.terra3d.server
 
-import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.utils.IntMap
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.channels.ticker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.collections.*
@@ -27,9 +26,6 @@ import xyz.angm.terra3d.server.networking.Connection
 import xyz.angm.terra3d.server.networking.LocalServerSocket
 import xyz.angm.terra3d.server.networking.NettyServerSocket
 import xyz.angm.terra3d.server.world.World
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
 
 
 /** A server, handles the world and interacts with clients.
@@ -43,17 +39,17 @@ class Server(
 ) {
 
     private val serverSocket = if (configuration.isLocalServer) LocalServerSocket.getSocket(this) else NettyServerSocket(this)
-    internal val dispatchCtx = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()).asCoroutineDispatcher()
+    internal val coScope = CoroutineScope(Dispatchers.Default)
 
-    val engine = ConcurrentEngine()
+    val engine = ConcurrentEngine(coScope)
     val world = World(this)
     private val players = IntMap<Entity>() // Key is the connection id
     private val playerFamily = allOf(PlayerComponent::class).get()
     private val networkedFamily = allOf(NetworkSyncComponent::class).get()
 
     init {
-        schedule(2000, 1000 / TICK_RATE, dispatchCtx, ::tick)
-        schedule(30000, 30000, dispatchCtx) {
+        schedule(2000, 1000 / TICK_RATE, coScope, ::tick)
+        schedule(30000, 30000, coScope) {
             engine { world.updateLoadedChunksByPlayers(getEntitiesFor(playerFamily)) }
         }
 
@@ -134,8 +130,7 @@ class Server(
         log.info { "[SERVER] Shutting down..." }
         serverSocket.close()
         world.close()
-        engine.close()
         engine { save.saveAllEntities(this) }
-        dispatchCtx.cancel()
+        coScope.cancel()
     }
 }

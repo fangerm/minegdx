@@ -2,8 +2,6 @@ package xyz.angm.terra3d.server.world
 
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector3
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import ktx.ashley.get
@@ -25,7 +23,6 @@ import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
 import xyz.angm.terra3d.server.ecs.systems.BlockEntitySystem
 import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
-import java.util.concurrent.TimeUnit
 
 /** The render distance to use when sending a newly connecting client init data. */
 const val INIT_DIST_CHUNKS = 2
@@ -44,17 +41,16 @@ class World(private val server: Server) : WorldInterface {
     private val blockEntitySystem = BlockEntitySystem(this)
     private val lighting = BfsLight(this)
 
-    private val worker: Job
     private val channel = Channel<World.() -> Unit>()
 
     init {
         // 60 seconds
-        schedule(60000, 60000, server.dispatchCtx, database::flushChunks)
+        schedule(60000, 60000, server.coScope, database::flushChunks)
         server.engine {
             addSystem(blockEntitySystem)
             addSystem(PhysicsSystem(this@World::getBlock))
         }
-        worker = GlobalScope.launch {
+        server.coScope.launch {
             while (true) channel.receive()(this@World)
         }
     }
@@ -168,7 +164,7 @@ class World(private val server: Server) : WorldInterface {
     /** This method always runs the given closures on the same thread.
      * Used for non-thread-safe operations. */
     private fun sync(fn: World.() -> Unit) {
-        GlobalScope.launch { channel.send(fn) }
+        server.coScope.launch { channel.send(fn) }
     }
 
     /** Called on server close; saves to disk */
