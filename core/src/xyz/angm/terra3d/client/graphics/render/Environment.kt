@@ -107,7 +107,12 @@ internal class Environment : Disposable {
         }
 
         ambientLight.color.set(ambientC)
-        directionalLight.set(directionalC, -SUN_OFFSET_X, -SUN_OFFSET_Y, -SUN_OFFSET_Z)
+        directionalLight.set(
+            directionalC,
+            -SUN_OFFSET_X * -cosT,
+            -SUN_OFFSET_Y * max(abs(sinT), 0.1f),
+            -SUN_OFFSET_Z * cosT
+        )
         shadowLight.camera.position.set(
             cam.position.x + SUN_OFFSET_X * SUN_MUL * -cosT,
             cam.position.y + (SUN_OFFSET_Y * SUN_MUL) * max(abs(sinT), 0.1f),
