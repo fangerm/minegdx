@@ -280,3 +280,17 @@ orange_lamp:
     redLight: 15
     greenLight: 9
     blend: true
+
+lamp:
+  texture: textures/blocks/glass.png
+  block:
+    emitsLight: true
+    redLight: 15
+    greenLight: 15
+    blueLight: 15
+    blend: true
+
+water:
+  texture: textures/blocks/water.png
+  block:
+    blend: true
