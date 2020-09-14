@@ -83,6 +83,7 @@ class PlayerSystem(
                 starveTime -= delta
                 if (starveTime < 0f) {
                     pHealth.health--
+                    playerHurt()
                     starveTime = 1f
                 }
             }
@@ -107,16 +108,20 @@ class PlayerSystem(
     private fun checkBelowWorld() {
         if (pPosition.y < 0f) {
             pHealth.health--
+            playerHurt()
         }
     }
 
     private fun checkDeath() {
         if (pHealth.health <= 0 && !playerC.isDead) {
+            playerHurt()
             playerC.inventory.dropAll(engine, pPosition)
             playerC.isDead = true
             screen.pushPanel(DeathPanel(screen))
         }
     }
+
+    private fun playerHurt() = soundPlayer.playSound("random/hurt")
 
     private companion object {
         private val tmpV = Vector3()
