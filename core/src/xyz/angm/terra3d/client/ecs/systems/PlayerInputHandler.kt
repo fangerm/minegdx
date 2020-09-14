@@ -22,10 +22,11 @@ private const val DEG_TO_RAD = MathUtils.degreesToRadians
  * @param screen The game screen */
 class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
 
-    private var lastX = 0f
-    private var lastY = 0f
+    private var lastX = 0
+    private var lastY = 0
     private var yaw = 0f
     private var pitch = 0f
+    private var roll = 0f
 
     private var firstMouseInput = true
     private var active = true
@@ -41,7 +42,19 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
             rightClickCooldown = RIGHT_CLICK_COOLDOWN
         }
 
+        // Check if roll != 0 and slightly reduce it and update if so
+        // (Intentionally not a comparison to account for float inaccuracy)
+        if (roll > 0.0000f) {
+            updateCamera()
+            roll -= roll * 10f * delta
+        }
+
         rightClickCooldown -= delta
+    }
+
+    /** Call on player hurt, causes camera to tilt shortly */
+    fun playerHurt() {
+        roll = 0.2f
     }
 
     override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
@@ -78,15 +91,15 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
     override fun mouseMoved(xPos: Int, yPos: Int): Boolean {
         // Math code is copied from https://learnopengl.com/Getting-started/Camera, with some changes to fit libGDX
         if (firstMouseInput) {
-            lastX = xPos.toFloat()
-            lastY = yPos.toFloat()
+            lastX = xPos
+            lastY = yPos
             firstMouseInput = false
         }
 
-        val xOffset = (xPos - lastX) * SENSITIVITY * configuration.sensitivity
-        val yOffset = (lastY - yPos) * SENSITIVITY * configuration.sensitivity
-        lastX = xPos.toFloat()
-        lastY = yPos.toFloat()
+        val xOffset = (xPos - lastX).toFloat() * SENSITIVITY * configuration.sensitivity
+        val yOffset = (lastY - yPos).toFloat() * SENSITIVITY * configuration.sensitivity
+        lastX = xPos
+        lastY = yPos
 
         yaw += xOffset
         pitch += yOffset
@@ -100,10 +113,15 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
             MathUtils.sin(pitch * DEG_TO_RAD),
             MathUtils.sin(yaw * DEG_TO_RAD) * MathUtils.cos(pitch * DEG_TO_RAD)
         ).nor()
-        screen.cam.up.set(0f, 1f, 0f)
-        screen.cam.update()
+        updateCamera()
         screen.player[localPlayer]!!.transform.setFromEulerAngles(yaw, pitch, 0f)
         return true
+    }
+
+    /** Called when camera needs update (mouse was moved or roll is not 0). */
+    private fun updateCamera() {
+        screen.cam.up.set(roll, 1f, roll)
+        screen.cam.update()
     }
 
     override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean = mouseMoved(screenX, screenY)

@@ -41,7 +41,6 @@ class PlayerInputSystem(
     private var breakSound = 0
     private var breakType = 0
 
-
     override fun update(delta: Float) = inputHandler.update(delta)
 
     /** Called when the player is holding the left mouse button. */

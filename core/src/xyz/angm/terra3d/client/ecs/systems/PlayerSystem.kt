@@ -121,7 +121,10 @@ class PlayerSystem(
         }
     }
 
-    private fun playerHurt() = soundPlayer.playSound("random/hurt")
+    private fun playerHurt() {
+        soundPlayer.playSound("random/hurt")
+        screen.inputHandler.playerHurt()
+    }
 
     private companion object {
         private val tmpV = Vector3()
