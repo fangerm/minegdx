@@ -11,6 +11,7 @@ import com.kotcrab.vis.ui.VisUI
 import com.kotcrab.vis.ui.widget.VisTextButton
 import ktx.scene2d.Scene2DSkin
 import xyz.angm.terra3d.common.items.Item
+import kotlin.math.min
 
 /** An actor showing a single item.
  * @param item The item to display. */
@@ -50,7 +51,7 @@ open class ItemActor(open var item: Item? = null, window: InventoryWindow?) : Ac
 
             if (item.amount > 1) font.draw(
                 batch, item.amount.toString(),
-                x + fontOffsetX,
+                x + fontOffsetX - (fontOffsetAdd * min(item.amount / 100, 1)) - (fontOffsetAdd * min(item.amount / 10, 1)),
                 y + fontOffsetY
             )
         }
@@ -58,7 +59,8 @@ open class ItemActor(open var item: Item? = null, window: InventoryWindow?) : Ac
     }
 
     private companion object {
-        private const val fontOffsetX = 14
+        private const val fontOffsetX = 22
+        private const val fontOffsetAdd = 10
         private const val fontOffsetY = 14
 
         private val font = Scene2DSkin.defaultSkin.getFont("default-16pt")
