@@ -12,6 +12,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import ktx.ashley.get
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.IntVector3
+import xyz.angm.terra3d.common.ecs.health
 import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Item
@@ -51,6 +52,15 @@ object CommandHandler {
                 .executes {
                     returnMessage = "[ORANGE]Syntax: tp [x] [y] [z]"
                     -1
+                }
+        )
+
+        dispatcher.register(
+            literal<GameScreen>("kill")
+                .executes {
+                    it.source.player[health]!!.health = 0
+                    returnMessage = "[ORANGE]You died."
+                    1
                 }
         )
     }
