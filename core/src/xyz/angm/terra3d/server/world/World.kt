@@ -12,6 +12,7 @@ import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.position
+import xyz.angm.terra3d.common.ecs.systems.DayTimeSystem
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.schedule
@@ -44,11 +45,11 @@ class World(private val server: Server) : WorldInterface {
     private val channel = Channel<World.() -> Unit>()
 
     init {
-        // 60 seconds
         schedule(60000, 60000, server.coScope, database::flushChunks)
         server.engine {
             addSystem(blockEntitySystem)
             addSystem(PhysicsSystem(this@World::getBlock))
+            addSystem(DayTimeSystem())
         }
         server.coScope.launch {
             while (true) channel.receive()(this@World)

@@ -7,7 +7,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import ktx.collections.*
 import xyz.angm.terra3d.common.log
-import xyz.angm.terra3d.common.spawn
 
 /** A client used for sending and receiving packages from a server.
  * @property disconnectListener Called when the client is disconnected.

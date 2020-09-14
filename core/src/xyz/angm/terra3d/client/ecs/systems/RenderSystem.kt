@@ -9,6 +9,7 @@ import ktx.ashley.get
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
+import xyz.angm.terra3d.common.ecs.dayTime
 import xyz.angm.terra3d.common.ecs.modelRender
 import xyz.angm.terra3d.common.ecs.position
 
@@ -23,12 +24,19 @@ class RenderSystem : IteratingSystem(allOf(ModelRenderComponent::class, Position
 
     /** Add the entities model. */
     override fun entityAdded(entity: Entity) {
-        Gdx.app.postRunnable {
-            val component = ModelRenderComponent()
-            component.model = ResourceManager.models.getEntityModelInstance(entity)
-            entity.add(component)
+        if (hasModel(entity)) {
+            Gdx.app.postRunnable {
+                val component = ModelRenderComponent()
+                component.model = ResourceManager.models.getEntityModelInstance(entity)
+                entity.add(component)
+            }
         }
     }
 
     override fun entityRemoved(entity: Entity) {}
+
+    companion object {
+        /** If this entity has a model that needs rendering. */
+        private fun hasModel(e: Entity) = e[dayTime] == null // DayTime entity currently only one without model
+    }
 }

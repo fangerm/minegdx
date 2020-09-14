@@ -6,12 +6,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import ktx.ashley.allOf
+import ktx.ashley.entity
 import ktx.ashley.get
+import ktx.ashley.with
 import ktx.collections.*
 import xyz.angm.terra3d.common.TICK_RATE
 import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
+import xyz.angm.terra3d.common.ecs.components.specific.DayTimeComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.network
 import xyz.angm.terra3d.common.ecs.position
@@ -60,6 +63,15 @@ class Server(
             addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
             addSystem(netSystem)
             save.getAllEntities(this)
+
+            // If this is the first launch, add the DayTime entity used for
+            // keeping track of the time
+            if (entities.size() == 0) {
+                entity {
+                    with<DayTimeComponent>()
+                    with<NetworkSyncComponent>()
+                }
+            }
         }
 
         // Executed on SIGTERM

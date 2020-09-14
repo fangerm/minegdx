@@ -139,8 +139,6 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         """
         FPS: ${Gdx.graphics.framesPerSecond}
         Time since last frame: ${(Gdx.graphics.deltaTime * 1000).format(1)}ms
-        Average time in render(): ${(screen.bench.time.average * 1000).format(1)}ms
-        Mean time in render(): ${(screen.bench.time.mean.mean * 1000).format(1)}ms
         
         Heap Size: ${Runtime.getRuntime().totalMemory()}
         Heap Free: ${Runtime.getRuntime().freeMemory()}

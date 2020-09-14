@@ -5,6 +5,7 @@ import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
 import xyz.angm.terra3d.common.ecs.components.*
+import xyz.angm.terra3d.common.ecs.components.specific.DayTimeComponent
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
@@ -21,6 +22,7 @@ val health = mapperFor<HealthComponent>()
 
 val item = mapperFor<ItemComponent>()
 val block = mapperFor<BlockComponent>()
+val dayTime = mapperFor<DayTimeComponent>()
 
 val playerM = mapperFor<PlayerComponent>()
 val playerRender = mapperFor<PlayerRenderComponent>()

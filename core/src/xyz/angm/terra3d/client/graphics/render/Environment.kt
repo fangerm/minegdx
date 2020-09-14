@@ -14,12 +14,14 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight
 import com.badlogic.gdx.graphics.g3d.utils.DepthShaderProvider
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.math.MathUtils.PI
 import com.badlogic.gdx.utils.Disposable
+import ktx.assets.disposeSafely
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.configuration
 import kotlin.math.abs
 import kotlin.math.max
+import kotlin.math.pow
 
 /** The relative offset between sun/player in X direction */
 private const val SUN_OFFSET_X = 1f
@@ -34,9 +36,6 @@ private const val SUN_OFFSET_Z = 0.6f
  * above to get position of the sun from the player. */
 private const val SUN_MUL = 150
 
-/** The movement speed of the sun. */
-private const val SUN_SPEED = 0.05f
-
 // These colors are used for the day/night cycle and the various lights in it.
 // To get the color at a specific point in the cycle, the colors are linearly interpolated.
 // Ambient: Color for the base/stray 'ambient' lighting
@@ -46,14 +45,13 @@ private val DAYLIGHT_AMBIENT = Color(0.4f, 0.4f, 0.4f, 1f)
 private val DAYLIGHT_DIRECTIONAL = Color(0.8f, 0.8f, 0.8f, 1f)
 private val DAYLIGHT_SKY = Color(0.525f, 0.675f, 0.98f, 1f)
 private val NIGHTLIGHT_AMBIENT = Color(0.05f, 0.05f, 0.1f, 1f)
-private val NIGHTLIGHT_DIRECTIONAL = Color(0.8f, 0.8f, 0.8f, 1f)
+private val NIGHTLIGHT_DIRECTIONAL = Color(0.08f, 0.08f, 0.12f, 1f)
 private val NIGHTLIGHT_SKY = Color(0.03f, 0.03f, 0.08f, 1f)
 
 /** This class is part of Renderer and responsible for handling
  * rendering and related graphics data for lighting effects and the day/night cycle. */
 internal class Environment : Disposable {
 
-    private var dayTime = 0f
     private val ambientC = Color(DAYLIGHT_AMBIENT)
     private val directionalC = Color(DAYLIGHT_DIRECTIONAL)
     private val skyC = Color(DAYLIGHT_SKY)
@@ -74,9 +72,8 @@ internal class Environment : Disposable {
     }
 
     /** Renders sky & shadows. Called before any other rendering. */
-    fun preRender(renderer: Renderer, delta: Float) {
-        dayTime += delta * SUN_SPEED
-        updatePositions(renderer.cam)
+    fun preRender(renderer: Renderer, dayTime: Float) {
+        updatePositions(renderer.cam, dayTime)
 
         shadowLight.begin()
         shadowBatch.begin(shadowLight.camera)
@@ -94,14 +91,20 @@ internal class Environment : Disposable {
         batch.render(moon)
     }
 
-    private fun updatePositions(cam: Camera) {
+    private fun updatePositions(cam: Camera, dayTime: Float) {
         val sinT = MathUtils.sin(dayTime)
         val cosT = MathUtils.cos(dayTime)
 
-        val cA = abs(cosT)
-        ambientC.set(DAYLIGHT_AMBIENT).lerp(NIGHTLIGHT_AMBIENT, cA)
-        directionalC.set(DAYLIGHT_DIRECTIONAL).lerp(NIGHTLIGHT_DIRECTIONAL, cA)
-        skyC.set(DAYLIGHT_SKY).lerp(NIGHTLIGHT_SKY, cA)
+        ambientC.set(NIGHTLIGHT_AMBIENT)
+        directionalC.set(NIGHTLIGHT_DIRECTIONAL)
+        skyC.set(NIGHTLIGHT_SKY)
+
+        if (dayTime < PI) {
+            val cA = 1 - abs(cosT).pow(7)
+            ambientC.lerp(DAYLIGHT_AMBIENT, cA)
+            directionalC.lerp(DAYLIGHT_DIRECTIONAL, cA)
+            skyC.lerp(DAYLIGHT_SKY, cA)
+        }
 
         ambientLight.color.set(ambientC)
         directionalLight.set(directionalC, -SUN_OFFSET_X, -SUN_OFFSET_Y, -SUN_OFFSET_Z)
@@ -113,12 +116,22 @@ internal class Environment : Disposable {
         shadowLight.setColor(directionalC)
         shadowLight.camera.lookAt(cam.position)
         shadowLight.camera.update()
-        sun.transform.setToLookAt(cam.position, Vector3.Y)
-        sun.transform.setTranslation(shadowLight.camera.position)
+
+        sun.transform.setTranslation(
+            cam.position.x + SUN_OFFSET_X * SUN_MUL * -cosT,
+            cam.position.y + (SUN_OFFSET_Y * SUN_MUL) * sinT,
+            cam.position.z + SUN_OFFSET_Z * SUN_MUL * cosT
+        )
+        moon.transform.setTranslation(
+            cam.position.x + SUN_OFFSET_X * SUN_MUL * cosT,
+            cam.position.y + (SUN_OFFSET_Y * SUN_MUL) * -sinT,
+            cam.position.z + SUN_OFFSET_Z * SUN_MUL * -cosT
+        )
     }
 
     override fun dispose() {
-        sun.model.dispose()
+        sun.model.disposeSafely() // Sometimes complains about buffers?
+        moon.model.disposeSafely() // ^^^
         shadowBatch.dispose()
         shadowLight.dispose()
     }

@@ -38,8 +38,10 @@ import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.IgnoreSyncFlag
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
+import xyz.angm.terra3d.common.ecs.dayTime
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.ecs.position
+import xyz.angm.terra3d.common.ecs.systems.DayTimeSystem
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.networking.BlockUpdate
@@ -79,7 +81,7 @@ class GameScreen(
 
     // 3D Graphics
     private val inputHandler = PlayerInputHandler(this)
-    private val renderer = Renderer(this)
+    private val renderer = Renderer(this, entities.find { it[dayTime] != null }!!)
     val cam get() = renderer.cam
 
     // Entities
@@ -112,7 +114,7 @@ class GameScreen(
         engine.update(delta)
         client.unlock()
 
-        renderer.render(delta)
+        renderer.render()
         stage.act()
         stage.draw()
     }
@@ -172,6 +174,7 @@ class GameScreen(
         engine.addEntityListener(exclude(LocalPlayerComponent::class).get(), 1, renderSystem)
         engine.addSystem(netSystem)
         engine.addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
+        engine.addSystem(DayTimeSystem())
     }
 
     // Initialize everything not render-related

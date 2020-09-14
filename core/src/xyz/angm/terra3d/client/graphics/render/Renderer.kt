@@ -1,5 +1,6 @@
 package xyz.angm.terra3d.client.graphics.render
 
+import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.g3d.ModelBatch
@@ -13,11 +14,12 @@ import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.common.ecs.dayTime
 import xyz.angm.terra3d.common.ecs.modelRender
 import xyz.angm.terra3d.common.ecs.playerRender
 
 /** Responsible for 3D rendering the game. */
-class Renderer(private val screen: GameScreen) : Disposable {
+class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity) : Disposable {
 
     val cam = PerspectiveCamera(FOV, WORLD_WIDTH, WORLD_HEIGHT)
     private val env = Environment()
@@ -30,8 +32,8 @@ class Renderer(private val screen: GameScreen) : Disposable {
         cam.update()
     }
 
-    fun render(delta: Float) {
-        env.preRender(this, delta)
+    fun render() {
+        env.preRender(this, dayTimeEntity[dayTime]!!.time)
         modelBatch.begin(cam)
         env.render(modelBatch)
         renderWorld(modelBatch, cam, env.environment)
