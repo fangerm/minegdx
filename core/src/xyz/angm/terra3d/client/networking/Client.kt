@@ -1,8 +1,12 @@
 package xyz.angm.terra3d.client.networking
 
-import com.badlogic.gdx.utils.Array
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import ktx.collections.*
 import xyz.angm.terra3d.common.log
+import java.util.concurrent.atomic.AtomicBoolean
 
 /** A client used for sending and receiving packages from a server.
  * @property disconnectListener Called when the client is disconnected.
@@ -11,14 +15,23 @@ class Client() {
 
     private var client: ClientSocketInterface = LocalClientSocket.getSocket(this)
     private val listeners = GdxArray<(Any) -> Unit>(false, 10)
-
-    // Required since receiving multiple packets at once on different threads
-    // would otherwise crash since GdxArrays cannot be iterated multiple times at once
-    private val listenersIter = ThreadLocal.withInitial { Array.ArrayIterator(listeners) }
     var disconnectListener: () -> Unit = {}
+
+    // If the client is locked and forbidden to process packets to prevent race conditions
+    private var locked = false
+    // Queued packets to process once the client is unlocked again
+    private val queued = GdxArray<Any>()
+    // The channel that is used by the processing coroutine
+    private val packetChannel = Channel<Any>()
+    // If a packet is currently processing, will spinlock if so and lock() is called
+    private var processing = false
+    private val worker: Job
 
     init {
         addListener { packet -> log.debug { "[CLIENT] Received packet of class ${packet.javaClass.name}" } }
+        worker = GlobalScope.launch {
+            while (true) processPacket(packetChannel.receive())
+        }
     }
 
     /** Constructs a client for a remote server using netty.
@@ -58,8 +71,38 @@ class Client() {
     }
 
     internal fun receive(packet: Any) {
-        listenersIter.get().reset()
-        listenersIter.get().forEach { it(packet) }
+        if (locked) queued.add(packet)
+        else GlobalScope.launch { packetChannel.send(packet) }
+    }
+
+    /** Should only be called from the processing coroutine. */
+    private fun processPacket(packet: Any) {
+        processing = true
+        listeners.forEach { it(packet) }
+        processing = false
+    }
+
+    /** Locks this client until [Client.unlock] is called, preventing
+     * it from doing any processing on incoming packets.
+     * Used to prevent race conditions with the main game thread concurrently
+     * accessing not-thread-safe data.
+     * Packets received while locked will be processed in unlock(). */
+    fun lock() {
+        locked = true
+        // Spin until processing finished if still active
+        while (processing) Thread.sleep(0, 100000) // 0.1ms
+    }
+
+    /** Unlocks this client again, processing all packets that arrived in the meantime.
+     * Will cause client to immediately process incoming packets again. */
+    fun unlock() {
+        locked = false
+        // Kick this off on a coroutine to prevent locking main thread
+        GlobalScope.launch {
+            while (!queued.isEmpty) {
+                packetChannel.send(queued.pop())
+            }
+        }
     }
 
     internal fun disconnected() = disconnectListener()
@@ -68,5 +111,6 @@ class Client() {
     fun close() {
         clearListeners()
         client.close()
+        worker.cancel()
     }
 }

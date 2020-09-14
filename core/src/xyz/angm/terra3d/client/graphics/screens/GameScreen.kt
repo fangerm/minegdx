@@ -13,6 +13,8 @@ import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.PerformanceCounter
 import com.badlogic.gdx.utils.viewport.FitViewport
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
 import ktx.ashley.allOf
 import ktx.ashley.exclude
 import ktx.ashley.get
@@ -43,6 +45,7 @@ import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.networking.BlockUpdate
 import xyz.angm.terra3d.common.networking.ChatMessagePacket
 import xyz.angm.terra3d.common.networking.InitPacket
+import xyz.angm.terra3d.common.schedule
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -66,8 +69,7 @@ import java.util.concurrent.TimeUnit
  * @property playerInputSystem The input system active in the ECS
  * @property playerInventory A simpler way of getting the players inventory
  *
- * @property gameplayPanel The panel always active; responsible for drawing hotbar and other elements
- * @property scheduler A scheduler for usage in the game */
+ * @property gameplayPanel The panel always active; responsible for drawing hotbar and other elements */
 class GameScreen(
     private val game: Terra3D,
     val client: Client,
@@ -76,7 +78,7 @@ class GameScreen(
     entities: Array<Entity>
 ) : ScreenAdapter(), Screen {
 
-    private val scheduler: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+    private val dispatchCtx = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     val bench = PerformanceCounter("render")
 
     // 3D Graphics
@@ -115,8 +117,10 @@ class GameScreen(
         bench.start()
         */
 
+        client.lock()
         world.update()
         engine.update(delta)
+        client.unlock()
 
         renderer.render(delta)
         stage.act()
@@ -196,16 +200,9 @@ class GameScreen(
         Gdx.input.isCursorCatched = true
 
         // Chunk loading
-        scheduler.scheduleAtFixedRate({
-            // This is needed since world generation with TerrainGenerator can sometimes
-            // cause race conditions due to threads sharing temporary vectors.
-            // This isn't a great solution, but cheaper than using ThreadLocal
-            // for temporary vectors.
-            try {
-                world.updateLoadedChunks(IntVector3(player[position]!!))
-            } catch (e: Exception) {
-            }
-        }, 2, 1, TimeUnit.SECONDS)
+        schedule(2000, 1000, dispatchCtx) {
+            Gdx.app.postRunnable { world.updateLoadedChunks(IntVector3(player[position]!!)) }
+        }
     }
 
     // Adds local components to the player entity.
@@ -241,10 +238,10 @@ class GameScreen(
     override fun dispose() {
         LocalServer.stop()
         client.close()
+        dispatchCtx.cancel()
         renderer.dispose()
         gameplayPanel.dispose()
         uiPanels.dispose()
-        scheduler.shutdown()
         engine.getSystem(PlayerPhysicsSystem::class.java).dispose()
     }
 }

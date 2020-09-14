@@ -41,9 +41,11 @@ class Renderer(private val screen: GameScreen) : Disposable {
     /** Renders all entities and the world, using the given objects.
      * The batch should already have begin() called, end() is NOT called. */
     internal fun renderWorld(batch: ModelBatch, cam: Camera, environment: com.badlogic.gdx.graphics.g3d.Environment?) {
+        screen.client.lock()
         screen.world.render(batch, cam, environment)
         screen.player[playerRender]!!.render(batch, environment)
         screen.engine.getEntitiesFor(renderableEntities).forEach { it[modelRender]!!.render(batch, environment) }
+        screen.client.unlock()
     }
 
     override fun dispose() {

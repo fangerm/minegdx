@@ -92,17 +92,14 @@ class World(private val client: Client, override val seed: String) : Disposable,
         }
         generator.finalizeGen()
 
-        // Post a runnable since disposing gl data needs to happen on the main thread
-        Gdx.app.postRunnable {
-            // Iterate chunks and remove all that are too far
-            var i = 0
-            while (i < chunks.size) {
-                val pos = chunks.orderedKeys()[i]
-                if (!pos.within(position, MAX_CHUNK_DIST)) {
-                    chunks[pos]!!.dispose()
-                    chunks.removeIndex(i)
-                } else i++
-            }
+        // Iterate chunks and remove all that are too far
+        var i = 0
+        while (i < chunks.size) {
+            val pos = chunks.orderedKeys()[i]
+            if (!pos.within(position, MAX_CHUNK_DIST)) {
+                chunks[pos]!!.dispose()
+                chunks.removeIndex(i)
+            } else i++
         }
     }
 

@@ -2,6 +2,10 @@ package xyz.angm.terra3d.server.world
 
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector3
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import ktx.ashley.get
 import ktx.collections.*
 import xyz.angm.terra3d.common.CHUNK_SIZE
@@ -12,6 +16,7 @@ import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
+import xyz.angm.terra3d.common.schedule
 import xyz.angm.terra3d.common.world.BfsLight
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
@@ -37,14 +42,21 @@ class World(private val server: Server) : WorldInterface {
     private val database = WorldDatabase(server)
     internal val generator = TerrainGenerator(this)
     private val blockEntitySystem = BlockEntitySystem(this)
-    private val physics = PhysicsSystem(this::getBlock)
     private val lighting = BfsLight(this)
 
+    private val worker: Job
+    private val channel = Channel<World.() -> Unit>()
+
     init {
-        server.executor.scheduleAtFixedRate(database::flushChunks, 60, 60, TimeUnit.SECONDS)
-        database.generateChunks(IntVector3(1000, 0, 1000), generator)
-        server.engine.addSystem(blockEntitySystem)
-        server.engine.addSystem(physics)
+        // 60 seconds
+        schedule(60000, 60000, server.dispatchCtx, database::flushChunks)
+        server.engine {
+            addSystem(blockEntitySystem)
+            addSystem(PhysicsSystem(this@World::getBlock))
+        }
+        worker = GlobalScope.launch {
+            while (true) channel.receive()(this@World)
+        }
     }
 
     /** Updates pre-generated chunks around the player.
@@ -114,7 +126,7 @@ class World(private val server: Server) : WorldInterface {
 
             val item = Item(oldBlock)
             item.type = Item.Properties.fromIdentifier(item.properties.block!!.drop ?: item.properties.ident).type
-            ItemComponent.create(server.engine, item, position.toV3().add(0.5f, 0f, 0.5f))
+            server.engine { ItemComponent.create(this, item, position.toV3().add(0.5f, 0f, 0.5f)) }
 
         } else if (oldBlock?.type != block.type) { // A new block got placed; the block was just updated if this is false
             BlockEvents.getListener(block, Event.BLOCK_PLACED)?.invoke(this, block)
@@ -122,7 +134,7 @@ class World(private val server: Server) : WorldInterface {
             if (blockEntity != null) blockEntitySystem.createBlockEntity(server.engine, blockEntity)
         }
 
-        lighting.blockSet(block, oldBlock)
+        sync { lighting.blockSet(block, oldBlock) }
         server.sendToAll(block)
 
         return true
@@ -151,6 +163,12 @@ class World(private val server: Server) : WorldInterface {
         tmpIV.set(position).minus(chunk?.position ?: return)
         database.markChunkChanged(chunk)
         return chunk.setLocalLight(tmpIV.x, tmpIV.y, tmpIV.z, light)
+    }
+
+    /** This method always runs the given closures on the same thread.
+     * Used for non-thread-safe operations. */
+    private fun sync(fn: World.() -> Unit) {
+        GlobalScope.launch { channel.send(fn) }
     }
 
     /** Called on server close; saves to disk */

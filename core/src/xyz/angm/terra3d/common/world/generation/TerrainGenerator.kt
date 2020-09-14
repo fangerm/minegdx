@@ -17,10 +17,12 @@ class TerrainGenerator(val world: WorldInterface) {
     private val tmpIV get() = tmpIVLocal.get()
 
     /** Finalize generation. Call after finishing with generating something, usually something batched. */
+    @Synchronized
     fun finalizeGen() = structures.update(world)
 
     /** Generate a line of chunks.
      * @param position Position of the chunks; Y axis ignored. */
+    @Synchronized
     fun generateChunks(position: IntVector3): Array<Chunk> {
         position.chunk().y = 0
         val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
@@ -40,6 +42,7 @@ class TerrainGenerator(val world: WorldInterface) {
     /** Generates missing chunks in a line of chunks.
      * @param alreadyCreated Chunks already created in this line.
      * Optional, if null the generator will simply only add new chunks to the world. */
+    @Synchronized
     fun generateMissing(alreadyCreated: GdxArray<Chunk>?, position: IntVector3) {
         val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
         val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z, biomeMap)
@@ -61,6 +64,7 @@ class TerrainGenerator(val world: WorldInterface) {
         }
     }
 
+    @Synchronized
     private fun generateChunk(chunk: Chunk, heightMap: Array<IntArray>, biomeMap: Array<Array<Biome>>) {
         val random = Random((chunk.position.x * chunk.position.y + chunk.position.z).toLong() + world.seed.convertToLong() + heightMap[0][0])
 

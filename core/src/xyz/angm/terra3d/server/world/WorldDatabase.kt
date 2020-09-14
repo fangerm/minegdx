@@ -8,7 +8,6 @@ import ktx.collections.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
 import org.jetbrains.exposed.sql.transactions.TransactionManager
-import org.jetbrains.exposed.sql.transactions.transaction
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.WORLD_BUFFER_DIST
@@ -19,6 +18,7 @@ import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
 import java.sql.Connection
+import java.util.concurrent.ConcurrentHashMap
 
 internal class WorldDatabase(private val server: Server) {
 
@@ -27,9 +27,9 @@ internal class WorldDatabase(private val server: Server) {
     private val tmpIV get() = tmpIVLocal.get()
 
     // These chunks have been created/modified/accessed since the last flushToDB call.
-    private val newChunks = OrderedMap<IntVector3, Chunk>()
-    private val changedChunks = OrderedMap<IntVector3, Chunk>()
-    private val unchangedChunks = OrderedMap<IntVector3, Chunk>()
+    private val newChunks = ConcurrentHashMap<IntVector3, Chunk>()
+    private val changedChunks = ConcurrentHashMap<IntVector3, Chunk>()
+    private val unchangedChunks = ConcurrentHashMap<IntVector3, Chunk>()
 
     init {
         db = dbs[server.save.location] ?: {
@@ -38,7 +38,7 @@ internal class WorldDatabase(private val server: Server) {
         }()
 
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
-        transaction(db) {
+        transaction {
             SchemaUtils.create(Chunks)
             (exposedLogger as Logger).level = Level.ERROR
         }
@@ -47,7 +47,7 @@ internal class WorldDatabase(private val server: Server) {
     /** Generates chunks in an area, if they're not already loaded.
      * @param position The position to check. Should be the player's position. */
     internal fun generateChunks(position: IntVector3, generator: TerrainGenerator) {
-        transaction(db) {
+        transaction {
             for (x in -WORLD_BUFFER_DIST..WORLD_BUFFER_DIST) {
                 for (z in -WORLD_BUFFER_DIST..WORLD_BUFFER_DIST) {
                     tmpIV.set(position).chunk().add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE).y = 0
@@ -87,7 +87,7 @@ internal class WorldDatabase(private val server: Server) {
     /** Gets all chunks with matching x and z axes, adding them to out.
      * @param position The chunks position, y axis is ignored. */
     internal fun getChunkLine(position: IntVector3, out: GdxArray<Chunk>) {
-        val dbChunks = transaction(db) { Chunks.select { (Chunks.x eq position.x) and (Chunks.z eq position.z) }.toList() }
+        val dbChunks = transaction { Chunks.select { (Chunks.x eq position.x) and (Chunks.z eq position.z) }.toList() }
         for (chunk in dbChunks) {
             // Already got this one in cache if true
             if (out.any { it.position.x == chunk[Chunks.x] && it.position.y == chunk[Chunks.y] && it.position.z == chunk[Chunks.z] }) continue
@@ -142,8 +142,8 @@ internal class WorldDatabase(private val server: Server) {
 
     /** Saves all chunks to DB. Called at regular intervals; as well as on shutdown. */
     internal fun flushChunks() {
-        transaction(db) {
-            newChunks.filter { changedChunks.keys().contains(it.key) }.forEach { chunk ->
+        transaction {
+            newChunks.filter { changedChunks.contains(it.key) }.forEach { chunk ->
                 Chunks.insert {
                     it[x] = chunk.key.x
                     it[y] = chunk.key.y
@@ -151,7 +151,7 @@ internal class WorldDatabase(private val server: Server) {
                     it[data] = ExposedBlob(fst.asByteArray(chunk.value))
                 }
             }
-            changedChunks.filter { !newChunks.keys().contains(it.key) }.forEach { chunk ->
+            changedChunks.filter { !newChunks.contains(it.key) }.forEach { chunk ->
                 Chunks.update({ (Chunks.x eq chunk.key.x) and (Chunks.y eq chunk.key.y) and (Chunks.z eq chunk.key.z) }) {
                     it[data] = ExposedBlob(fst.asByteArray(chunk.value))
                 }
@@ -164,8 +164,11 @@ internal class WorldDatabase(private val server: Server) {
 
     private fun getDBChunk(position: IntVector3): ResultRow? {
         tmpIV.set(position).chunk()
-        return transaction(db) { Chunks.select { (Chunks.x eq tmpIV.x) and (Chunks.y eq tmpIV.y) and (Chunks.z eq tmpIV.z) }.firstOrNull() }
+        return transaction { Chunks.select { (Chunks.x eq tmpIV.x) and (Chunks.y eq tmpIV.y) and (Chunks.z eq tmpIV.z) }.firstOrNull() }
     }
+
+    @Synchronized
+    private fun <T> transaction(statement: Transaction.() -> T) = org.jetbrains.exposed.sql.transactions.transaction(db, statement)
 
     private companion object {
         // https://github.com/JetBrains/Exposed/wiki/Transactions#working-with-a-multiple-databases

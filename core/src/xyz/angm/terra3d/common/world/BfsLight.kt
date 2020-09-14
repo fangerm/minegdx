@@ -6,7 +6,8 @@ import xyz.angm.terra3d.common.IntVector3
 /** A BFS search algorithm used to propagate light through the world.
  * This alg is a adaption and reimplementation of the one used in "Seed of Andromeda",
  * the blog post about it can be found here:
- * https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1 */
+ * https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1
+ * This implementation is NOT thread safe. */
 class BfsLight(private val world: WorldInterface) {
 
     private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }

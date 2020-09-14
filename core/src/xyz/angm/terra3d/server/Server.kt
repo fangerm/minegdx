@@ -3,6 +3,9 @@ package xyz.angm.terra3d.server
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.utils.IntMap
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.ticker
 import ktx.ashley.allOf
 import ktx.ashley.get
 import ktx.collections.*
@@ -17,6 +20,7 @@ import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.log
 import xyz.angm.terra3d.common.networking.*
+import xyz.angm.terra3d.common.schedule
 import xyz.angm.terra3d.common.world.WorldSaveManager
 import xyz.angm.terra3d.server.ecs.systems.ItemSystem
 import xyz.angm.terra3d.server.networking.Connection
@@ -32,34 +36,35 @@ import java.util.concurrent.TimeUnit
  * @property save The save to use.
  * @property configuration The server configuration to use.
  * @property world The world being used
- * @property engine Manager for all types of entities
- * @property executor A simple scheduler for all tasks. */
+ * @property engine Manager for all types of entities */
 class Server(
     val save: WorldSaveManager.Save,
     private val configuration: ServerConfiguration = ServerConfiguration()
 ) {
 
     private val serverSocket = if (configuration.isLocalServer) LocalServerSocket.getSocket(this) else NettyServerSocket(this)
-    val executor: ScheduledExecutorService = Executors.newScheduledThreadPool(Runtime.getRuntime().availableProcessors())
+    internal val dispatchCtx = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()).asCoroutineDispatcher()
 
-    val engine = Engine()
+    val engine = ConcurrentEngine()
     val world = World(this)
     private val players = IntMap<Entity>() // Key is the connection id
     private val playerFamily = allOf(PlayerComponent::class).get()
     private val networkedFamily = allOf(NetworkSyncComponent::class).get()
 
     init {
-        executor.scheduleAtFixedRate(TickThread(this), 2000, 1000 / TICK_RATE, TimeUnit.MILLISECONDS)
-        executor.scheduleAtFixedRate({ world.updateLoadedChunksByPlayers(engine.getEntitiesFor(playerFamily)) }, 30, 30, TimeUnit.SECONDS)
+        schedule(2000, 1000 / TICK_RATE, dispatchCtx, ::tick)
+        schedule(30000, 30000, dispatchCtx) {
+            engine { world.updateLoadedChunksByPlayers(getEntitiesFor(playerFamily)) }
+        }
 
-        engine.addSystem(ItemSystem())
-        engine.addSystem(RemoveSystem())
-
-        val netSystem = NetworkSystem(::sendToAll)
-        engine.addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
-        engine.addSystem(netSystem)
-
-        save.getAllEntities(engine)
+        engine {
+            addSystem(ItemSystem())
+            addSystem(RemoveSystem())
+            val netSystem = NetworkSystem(::sendToAll)
+            addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
+            addSystem(netSystem)
+            save.getAllEntities(this)
+        }
 
         // Executed on SIGTERM
         Runtime.getRuntime().addShutdownHook(Thread { close() })
@@ -85,8 +90,10 @@ class Server(
             is ChatMessagePacket -> sendToAll(packet)
             is JoinPacket -> registerPlayer(connection, packet)
             is EntityData -> {
-                engine.getSystem(NetworkSystem::class.java).receive(packet)
-                sendToAll(packet) // Ensure it syncs to all players
+                engine {
+                    getSystem(NetworkSystem::class.java).receive(packet)
+                    sendToAll(packet) // Ensure it syncs to all players
+                }
             }
         }
     }
@@ -102,12 +109,14 @@ class Server(
     }
 
     private fun registerPlayer(connection: Connection, packet: JoinPacket) {
-        val entities = EntityData.from(engine.getEntitiesFor(networkedFamily))
-        val playerEntity = save.getPlayer(engine, packet)
-        players[connection.id] = playerEntity
+        engine {
+            val entities = EntityData.from(getEntitiesFor(networkedFamily))
+            val playerEntity = save.getPlayer(this, packet)
+            players[connection.id] = playerEntity
 
-        send(connection, InitPacket(EntityData.from(playerEntity), entities, world.getInitData(playerEntity[position]!!), world.seed))
-        playerEntity[network]!!.needsSync = true // Ensure player gets synced next tick
+            send(connection, InitPacket(EntityData.from(playerEntity), entities, world.getInitData(playerEntity[position]!!), world.seed))
+            playerEntity[network]!!.needsSync = true // Ensure player gets synced next tick
+        }
     }
 
     internal fun onDisconnected(connection: Connection) {
@@ -117,12 +126,16 @@ class Server(
         log.info { "[SERVER] Disconnected from connection id ${connection.id}." }
     }
 
+    /** Perform a tick, stepping the world forward. */
+    private fun tick() = engine { update(1f / TICK_RATE) }
+
     /** Close the server. Will save world and close all connections, making the object unusable. */
     fun close() {
         log.info { "[SERVER] Shutting down..." }
         serverSocket.close()
         world.close()
-        save.saveAllEntities(engine)
-        executor.shutdown()
+        engine.close()
+        engine { save.saveAllEntities(this) }
+        dispatchCtx.cancel()
     }
 }

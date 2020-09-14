@@ -6,8 +6,10 @@ import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.gdx.utils.ObjectMap
 import ktx.ashley.allOf
 import ktx.ashley.get
+import ktx.collections.set
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.block
+import xyz.angm.terra3d.server.ConcurrentEngine
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
 import xyz.angm.terra3d.server.world.World
 
@@ -33,17 +35,21 @@ class BlockEntitySystem(private val world: World) : IteratingSystem(allOf(BlockC
     private fun shouldTick(block: BlockComponent) = tickCount % block.tickInterval == 0
 
     /** Creates a new block entity. All entities should be created with this helper. */
-    fun createBlockEntity(engine: Engine, component: BlockComponent) {
-        val entity = engine.createEntity()
-        entity.add(component)
-        engine.addEntity(entity)
-        blockEntities.put(component.blockPosition, entity)
+    fun createBlockEntity(engine: ConcurrentEngine, component: BlockComponent) {
+        engine {
+            val entity = createEntity()
+            entity.add(component)
+            addEntity(entity)
+            blockEntities[component.blockPosition] = entity
+        }
     }
 
     /** Removes a block entity at the given position. All block entities should be removed with this helper. */
-    fun removeBlockEntity(engine: Engine, position: IntVector3) {
-        val entity = blockEntities[position] ?: return
-        blockEntities.remove(position)
-        engine.removeEntity(entity)
+    fun removeBlockEntity(engine: ConcurrentEngine, position: IntVector3) {
+        engine {
+            val entity = blockEntities[position] ?: return@engine
+            blockEntities.remove(position)
+            removeEntity(entity)
+        }
     }
 }
