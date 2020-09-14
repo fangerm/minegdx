@@ -21,7 +21,6 @@ import ktx.scene2d.scene2d
 import ktx.scene2d.scrollPane
 import ktx.scene2d.vis.visLabel
 import ktx.scene2d.vis.visTable
-import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
@@ -64,7 +63,7 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
                 it.colspan(4).pad(50f, 0f, 50f, 0f).expand().row()
             }
 
-            backButton(this, screen)
+            backButton(screen)
 
             visTextButton(I18N["apply"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)

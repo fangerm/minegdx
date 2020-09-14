@@ -8,7 +8,6 @@ import ktx.scene2d.scene2d
 import ktx.scene2d.textField
 import ktx.scene2d.vis.visLabel
 import ktx.scene2d.vis.visTable
-import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
@@ -37,7 +36,7 @@ class SingleplayerWorldCreatePanel(screen: MenuScreen, parent: SingleplayerWorld
                 }
             }
 
-            backButton(this, screen)
+            backButton(screen)
             row()
 
             onKeyDown { keycode ->

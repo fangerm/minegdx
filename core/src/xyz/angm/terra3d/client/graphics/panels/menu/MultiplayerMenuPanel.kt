@@ -12,8 +12,8 @@ import ktx.scene2d.scene2d
 import ktx.scene2d.scrollPane
 import ktx.scene2d.vis.visLabel
 import ktx.scene2d.vis.visTable
-import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
+import xyz.angm.terra3d.client.graphics.click
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.client.networking.Client
@@ -78,6 +78,7 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                                 }
                             }
 
+                            click()
                             it.width(700f).pad(20f, 0f, 20f, 0f).row()
                         }
                     }
@@ -85,7 +86,7 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                 it.colspan(3).pad(50f, 0f, 50f, 0f).expand().row()
             }
 
-            backButton(this, screen)
+            backButton(screen)
 
             visTextButton(I18N["multi.add"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f)

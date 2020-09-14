@@ -28,6 +28,9 @@ resourcePack:
   path: "resourcepacks/default"
   description: "Pack shipped with MineGDX."
   sizeMod: 1.0
+video:
+  blend: true
+  shadowQuality: 2.0
 servers:
   "angm.xyz": "angm.xyz"
   "Local": "127.0.0.1"

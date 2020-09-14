@@ -9,6 +9,7 @@ import ktx.scene2d.buttonGroup
 import ktx.scene2d.scene2d
 import ktx.scene2d.textButton
 import ktx.scene2d.vis.visLabel
+import xyz.angm.terra3d.client.graphics.click
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.InventoryPanel
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
@@ -38,6 +39,7 @@ class CraftingWindow(panel: InventoryPanel) : InventoryWindow(panel, "crafting")
                         selected = if (selected == recipe) null else recipe
                     }
 
+                    click()
                     it.padBottom(5f).width(400f).row()
                     pack()
                 }
@@ -50,6 +52,7 @@ class CraftingWindow(panel: InventoryPanel) : InventoryWindow(panel, "crafting")
                 val item = selected?.consume(craftingInput.inventory, craftingResult.inventory[0])
                 craftingResult.inventory += item ?: return@onClick
             }
+            click()
         }
 
         add(ScrollPane(recipes)).height(300f)
