@@ -14,7 +14,6 @@ import ktx.scene2d.scrollPane
 import ktx.scene2d.textField
 import ktx.scene2d.vis.visLabel
 import ktx.scene2d.vis.visTable
-import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.actions.PlayerAction
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel

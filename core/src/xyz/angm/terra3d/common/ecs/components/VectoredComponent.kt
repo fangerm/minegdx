@@ -33,9 +33,3 @@ class VelocityComponent : VectoredComponent() {
     var accelerationRate = 1f
     var speedModifier = 4.5f
 }
-
-
-/** Component for all entities with a size. Each axis represents the width on that axis.
- * Mainly used by physics systems.
- * Entities without this will often be represented by a (0|0|0) size. */
-class SizeComponent : VectoredComponent()

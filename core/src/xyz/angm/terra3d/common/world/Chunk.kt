@@ -22,21 +22,20 @@ const val TYPE = 0b00000000000000000000111111111111 // Lower 12 bits
 const val ORIENTATION_SHIFT = 12 // 3 bits after TYPE
 const val ORIENTATION = 0b111 shl ORIENTATION_SHIFT
 
-/** The block's global lighting strength. */
-const val GLOBAL_LIGHT_SHIFT = 15 // After ORIENTATION
-const val GLOBAL_LIGHT = 0b1111 shl GLOBAL_LIGHT_SHIFT
 /** The block's red local lighting strength. */
-const val RED_LIGHT_SHIFT = 19 // After global
+const val RED_LIGHT_SHIFT = 15 // After ORIENTATION
 const val RED_LIGHT = 0b1111 shl RED_LIGHT_SHIFT
+
 /** The block's green local lighting strength. */
-const val GREEN_LIGHT_SHIFT = 23 // After red
+const val GREEN_LIGHT_SHIFT = 19 // After red
 const val GREEN_LIGHT = 0b1111 shl GREEN_LIGHT_SHIFT
+
 /** The block's blue local lighting strength. */
-const val BLUE_LIGHT_SHIFT = 27 // After green
+const val BLUE_LIGHT_SHIFT = 23 // After green
 const val BLUE_LIGHT = 0b1111 shl BLUE_LIGHT_SHIFT
 
 /** Convenience mask containing all lighting */
-const val LIGHTING = (GLOBAL_LIGHT or RED_LIGHT or GREEN_LIGHT or BLUE_LIGHT)
+const val LIGHTING = (RED_LIGHT or GREEN_LIGHT or BLUE_LIGHT)
 
 /** A chunk is a 3D array of blocks of size [CHUNK_SIZE]. It should only be used by the world itself, and not exposed to other classes.
  * @property position The chunk's origin.
@@ -75,8 +74,6 @@ open class Chunk private constructor(
 
     fun isBlended(p: IntVector3) = Item.Properties.fromType(this[p.x, p.y, p.z, TYPE])?.block?.isBlend ?: true
 
-    fun getGlobalLight(x: Int, y: Int, z: Int) = this[x, y, z, GLOBAL_LIGHT] shr GLOBAL_LIGHT_SHIFT
-
     fun getLocalLight(x: Int, y: Int, z: Int): IntVector3 {
         colorVec.set(
             get(x, y, z, RED_LIGHT) shr RED_LIGHT_SHIFT,
@@ -84,11 +81,6 @@ open class Chunk private constructor(
             get(x, y, z, BLUE_LIGHT) shr BLUE_LIGHT_SHIFT,
         )
         return colorVec
-    }
-
-    fun setGlobalLight(x: Int, y: Int, z: Int, l: Int) {
-        val data = this[x, y, z, ALL]
-        this[x, y, z] = data xor l shr GLOBAL_LIGHT_SHIFT
     }
 
     fun setLocalLight(x: Int, y: Int, z: Int, c: IntVector3) {

@@ -22,7 +22,7 @@ private const val tooltipOffsetY = -5f
 @Suppress("LeakingThis")
 abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
 
-    var heldItem: Item? = null
+    private var heldItem: Item? = null
     private var heldItemActor = ItemActor(heldItem, null)
     private val tooltip = ItemTooltip(this)
     private val holdingItem get() = heldItem != null

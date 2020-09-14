@@ -6,7 +6,6 @@ import ktx.actors.plusAssign
 import ktx.scene2d.image
 import ktx.scene2d.scene2d
 import ktx.scene2d.vis.visTable
-import ktx.scene2d.vis.visTextButton
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.panels.menu.options.OptionsPanel

@@ -6,11 +6,12 @@ import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.math.MathUtils
 import ktx.ashley.get
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.client.resources.Configuration
 import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.playerM
 
-/** Mouse sensitivity, will be multiplied with [configuration.sensitivity]. */
+/** Mouse sensitivity, will be multiplied with [Configuration.sensitivity]. */
 private const val SENSITIVITY = 0.1f
 
 /** Amount of time the game will wait until registering a right click again when holding the button. */

@@ -99,9 +99,6 @@ open class Inventory(size: Int = 0) : Serializable {
         for (i in 0 until size) items[i] = null
     }
 
-    /** @return The amount of slots that contain an item. */
-    fun occupiedSize() = items.count { it != null }
-
     /** Returns a formatted list of all items in the inventory; 1 slot per line. */
     override fun toString(): String {
         var s = ""
