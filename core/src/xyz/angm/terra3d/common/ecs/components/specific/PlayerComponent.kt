@@ -45,6 +45,15 @@ class PlayerComponent : Component {
             if (hotbarPosition > 8) hotbarPosition -= 9
             if (hotbarPosition < 0) hotbarPosition += 9
         }
+
+        /** Spawns item entities for all items at the given position
+         * and clears the inventory. Used on player death. */
+        fun dropAll(engine: Engine, position: Vector3) {
+            for (item in items) {
+                ItemComponent.create(engine, item ?: continue, position)
+            }
+            clear()
+        }
     }
 
     companion object {

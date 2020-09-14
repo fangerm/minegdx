@@ -6,7 +6,7 @@ import java.io.Serializable
  * @property size The size of the inventory. */
 open class Inventory(size: Int = 0) : Serializable {
 
-    private var items = Array<Item?>(size) { null }
+    protected var items = Array<Item?>(size) { null }
     val size get() = items.size
 
     /** Gets items.

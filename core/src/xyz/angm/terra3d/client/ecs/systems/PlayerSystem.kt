@@ -34,6 +34,7 @@ class PlayerSystem(
     private val localPlayerC = player[localPlayer]!!
     private val playerC = player[playerM]!!
     private val pRender = player[playerRender]!!
+    private val pHealth = player[health]!!
 
     private val allDroppedItems = allOf(ItemComponent::class, PositionComponent::class).exclude(RemoveFlag::class).get()
     private var timeSinceSync = 0f
@@ -69,7 +70,7 @@ class PlayerSystem(
         screen.cam.update()
 
         // Update camera FOV
-        screen.cam.fieldOfView -= (screen.cam.fieldOfView - player[localPlayer]!!.fov) * 10f * delta
+        screen.cam.fieldOfView -= (screen.cam.fieldOfView - localPlayerC.fov) * 10f * delta
 
         // Update rendering-related positions
         pRender.blockSelector.transform.setToTranslation(localPlayerC.blockLookingAt.toV3(tmpV).add(0.5f))
@@ -81,7 +82,7 @@ class PlayerSystem(
             (playerC.hunger == 0) -> {
                 starveTime -= delta
                 if (starveTime < 0f) {
-                    player[health]!!.health--
+                    pHealth.health--
                     starveTime = 1f
                 }
             }
@@ -94,8 +95,9 @@ class PlayerSystem(
     }
 
     private fun checkPickedUpItems() {
+        if (playerC.isDead) return
         engine.getEntitiesFor(allDroppedItems).forEach {
-            if (it[item]!!.pickupTimeout <= 0f && tmpV.set(it[position]!!).dst2(tmpV2.set(player[position]!!)) < 4f) {
+            if (it[item]!!.pickupTimeout <= 0f && tmpV.set(it[position]!!).dst2(tmpV2.set(pPosition)) < 4f) {
                 playerC.inventory += it[item]!!.item
                 RemoveFlag.flag(it)
             }
@@ -104,14 +106,14 @@ class PlayerSystem(
 
     private fun checkBelowWorld() {
         if (pPosition.y < 0f) {
-            player[health]!!.health--
+            pHealth.health--
         }
     }
 
     private fun checkDeath() {
-        if (player[health]!!.health <= 0 && !player[playerM]!!.isDead) {
-            player[playerM]!!.inventory.clear()
-            player[playerM]!!.isDead = true
+        if (pHealth.health <= 0 && !playerC.isDead) {
+            playerC.inventory.dropAll(engine, pPosition)
+            playerC.isDead = true
             screen.pushPanel(DeathPanel(screen))
         }
     }
