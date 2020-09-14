@@ -7,6 +7,7 @@ import xyz.angm.terra3d.client.graphics.actors.PlayerInventoryWindow
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.metadata.ChestMetadata
@@ -22,6 +23,7 @@ class ChestPanel(screen: GameScreen, private val chest: Block) : NetworkInventor
         val blockInv = (chest.metadata as ChestMetadata).inventory
         copyToInv(blockInv)
         addActor(GenericInventoryWindow(this, chestInv))
+        soundPlayer.playSound3D("random/chestopen", chest.position.toV3())
     }
 
     private fun copyToInv(blockInv: Inventory) {
@@ -36,5 +38,9 @@ class ChestPanel(screen: GameScreen, private val chest: Block) : NetworkInventor
 
     override fun updateNetInventory() {
         (chest.metadata as ChestMetadata).inventory = chestInv
+    }
+
+    override fun dispose() {
+        soundPlayer.playSound3D("random/chestclosed", chest.position.toV3())
     }
 }
