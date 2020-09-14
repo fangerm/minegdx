@@ -4,6 +4,10 @@ import xyz.angm.terra3d.common.CHUNK_SIZE
 import kotlin.math.sqrt
 import kotlin.random.Random
 
+/** Radius of the rectangle of blocks checked around a block to
+ * smooth the block height, used to prevent cliffs at biome edges. */
+private const val HEIGHT_SMOOTH_R = 3
+
 /** Generates noise for the terrain.
  * @param seed The world seed */
 class NoiseGenerator(seed: Long) {
@@ -14,7 +18,8 @@ class NoiseGenerator(seed: Long) {
 
     // These values heavily influence heightmap generation.
     private val octaves = 3
-    private val roughness = 0.6f
+    private val roughnessHeight = 0.6f
+    private val roughnessBiome = 0.3f
     private val heightScale = 0.01
     private val biomeScale = 0.005
 
@@ -37,20 +42,25 @@ class NoiseGenerator(seed: Long) {
      * @param biomeMap Biome map for the chunk
      * @return Height map for chunk*/
     fun generateChunkHeightMap(posX: Int, posZ: Int, biomeMap: Array<Array<Biome>>): Array<IntArray> {
-        val heights = generateChunkNoise(posX, posZ, heightScale, heightMapPerm)
         val result = Array(CHUNK_SIZE) {
             IntArray(CHUNK_SIZE)
         }
 
         for (x in 0 until CHUNK_SIZE) {
             for (z in 0 until CHUNK_SIZE) {
-                val biome = biomeMap[x][z]
-                var value = heights[x][z]
-                value++
-                value /= 2 // value is now 0.0 to 1.0
-                var height = biome.minimumSurfaceHeight
-                height += (biome.surfaceHeightDeviation * value).toInt()
-                result[x][z] = height
+                var heightTotal = 0f
+                for (xD in -HEIGHT_SMOOTH_R..HEIGHT_SMOOTH_R) {
+                    for (zD in -HEIGHT_SMOOTH_R..HEIGHT_SMOOTH_R) {
+                        val bNoise = generateNoisePoint(posX + x + xD, posZ + z + zD, biomeScale, roughnessBiome, biomeMapPerm)
+                        val biome = Biome.getBiomeByNoise(bNoise)
+                        var value = generateNoisePoint(posX + x + xD, posZ + z + zD, heightScale, roughnessHeight, heightMapPerm)
+                        value++
+                        value /= 2 // value is now 0.0 to 1.0
+                        heightTotal += biome.minimumSurfaceHeight + (biome.surfaceHeightDeviation * value)
+                    }
+                }
+
+                result[x][z] = (heightTotal / (((HEIGHT_SMOOTH_R * 2) + 1) * ((HEIGHT_SMOOTH_R * 2) + 1))).toInt()
             }
         }
         return result
@@ -61,7 +71,7 @@ class NoiseGenerator(seed: Long) {
      * @param posZ Chunk Y position
      * @return Biome map for chunk*/
     fun generateChunkBiomeMap(posX: Int, posZ: Int): Array<Array<Biome>> {
-        val noise = generateChunkNoise(posX, posZ, biomeScale, biomeMapPerm)
+        val noise = generateChunkBiomeNoise(posX, posZ)
         return Array(CHUNK_SIZE) { x ->
             Array(CHUNK_SIZE) {
                 Biome.getBiomeByNoise(noise[x][it])
@@ -69,12 +79,12 @@ class NoiseGenerator(seed: Long) {
         }
     }
 
-    // Generates a generic 2D noise map for a chunk. Values are float; -1 < x < 1
-    private fun generateChunkNoise(startX: Int, startZ: Int, scale: Double, perm: IntArray): Array<FloatArray> {
+    // Generates a biome 2D noise map for a chunk. Values are float; -1 < x < 1
+    private fun generateChunkBiomeNoise(startX: Int, startZ: Int): Array<FloatArray> {
         val totalNoise = Array(CHUNK_SIZE) {
             FloatArray(CHUNK_SIZE)
         }
-        var layerFrequency = scale
+        var layerFrequency = biomeScale
         var layerWeight = 1f
         var weightSum = 0f
 
@@ -82,13 +92,13 @@ class NoiseGenerator(seed: Long) {
             // Calculate single layer/octave of simplex noise, then add it to total noise
             for (x in 0 until CHUNK_SIZE) {
                 for (z in 0 until CHUNK_SIZE) {
-                    totalNoise[x][z] += noise((startX + x) * layerFrequency, (startZ + z) * layerFrequency, perm).toFloat() * layerWeight
+                    totalNoise[x][z] += noise((startX + x) * layerFrequency, (startZ + z) * layerFrequency, biomeMapPerm).toFloat() * layerWeight
                 }
             }
             // Increase variables with each incrementing octave
             layerFrequency *= 2f
             weightSum += layerWeight
-            layerWeight *= roughness
+            layerWeight *= roughnessBiome
         }
         for (x in 0 until CHUNK_SIZE) {
             for (z in 0 until CHUNK_SIZE) {
@@ -96,6 +106,23 @@ class NoiseGenerator(seed: Long) {
             }
         }
         return totalNoise
+    }
+
+    // Generates a generic 2D noise map for a chunk. Values are float; -1 < x < 1
+    private fun generateNoisePoint(x: Int, z: Int, scale: Double, roughness: Float, perm: IntArray): Float {
+        var layerFrequency = scale
+        var layerWeight = 1f
+        var weightSum = 0f
+        var out = 0f
+
+        for (octave in 0 until octaves) {
+            out += noise(x * layerFrequency, z * layerFrequency, perm).toFloat() * layerWeight
+            // Increase variables with each incrementing octave
+            layerFrequency *= 2f
+            weightSum += layerWeight
+            layerWeight *= roughness
+        }
+        return out / weightSum
     }
 
     // -v- Taken from Stefan Gustavsons paper on simplex noise -v- \\

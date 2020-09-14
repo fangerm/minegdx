@@ -4,9 +4,16 @@ PLAINS:
 FOREST:
   structuresGenerating:
     small_oak_tree: 0.01
+  minimumSurfaceHeight: 65
 
 DESERT:
   surfaceBlock: sand
   surfaceLayers: 3
   belowSurfaceBlock: sandstone
   belowSurfaceLayers: 5
+
+HILLS:
+  surfaceLayers: 1
+  belowSurfaceLayers: 6
+  minimumSurfaceHeight: 80
+  surfaceHeightDeviation: 20

@@ -80,7 +80,7 @@ class GameScreen(
     private val coScope = CoroutineScope(Dispatchers.Default)
 
     // 3D Graphics
-    private val inputHandler = PlayerInputHandler(this)
+    val inputHandler = PlayerInputHandler(this)
     private val renderer = Renderer(this, entities.find { it[dayTime] != null }!!)
     val cam get() = renderer.cam
 
