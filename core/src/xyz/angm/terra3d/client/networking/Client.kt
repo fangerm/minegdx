@@ -57,6 +57,11 @@ class Client() {
         listeners.add(listener)
     }
 
+    /** Add a listener for received packets, ensuring it gets called first */
+    fun addListenerPriority(listener: (Any) -> Unit) {
+        listeners.insert(0, listener)
+    }
+
     /** Removes given listener. */
     fun removeListener(listener: (Any) -> Unit) {
         listeners.removeValue(listener, true)

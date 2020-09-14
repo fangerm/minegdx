@@ -26,12 +26,12 @@ import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.panels.PanelStack
 import xyz.angm.terra3d.client.graphics.panels.game.GameplayOverlay
 import xyz.angm.terra3d.client.graphics.panels.menu.MessagePanel
+import xyz.angm.terra3d.client.graphics.registerBlockChangeListener
 import xyz.angm.terra3d.client.graphics.render.Renderer
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.client.networking.LocalServer
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
-import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.client.world.World
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.EntityData
@@ -213,12 +213,7 @@ class GameScreen(
         stage.addActor(uiPanels)
 
         // Sound
-        client.addListener {
-            if (it is BlockUpdate) {
-                val sound = it.properties?.block?.placedSound
-                if (sound != null) soundPlayer.playSound3D(sound, it.position.toV3())
-            }
-        }
+        registerBlockChangeListener(client, world)
     }
 
     override fun resize(width: Int, height: Int) = stage.viewport.update(width, height, true)
