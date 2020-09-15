@@ -23,11 +23,12 @@ import xyz.angm.terra3d.client.world.World
 import xyz.angm.terra3d.common.world.WorldSaveManager
 import java.io.IOException
 
+private const val PANORAMA_SPEED = 2f
+
 /** The menu screen. It manages the current menu panel stack and draws it on top of a nice background.
  * @param game The game instance. */
 class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
 
-    private val panoramaRotationSpeed = 4f
 
     private val stage = Stage(FitViewport(WORLD_WIDTH, WORLD_HEIGHT))
     private var panelStack = PanelStack()
@@ -50,7 +51,7 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
         Gdx.gl.glClearColor(0.05f, 0.05f, 0.05f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
-        cam.rotate(Vector3.Y, panoramaRotationSpeed * delta)
+        cam.rotate(Vector3.Y, PANORAMA_SPEED * delta)
         cam.update()
 
         modelBatch.begin(cam)
