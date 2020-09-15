@@ -99,7 +99,8 @@ object ResourceManager {
         for (item in Item.Properties.allItems) {
             load<Texture>(item.texture)
             load<Texture>(item.block?.texSide ?: continue)
-            load<Texture>(item.block.texBottom ?: continue)
+            if (item.block.texBottom != null) load<Texture>(item.block.texBottom)
+            load<Texture>(item.block.texFront ?: continue)
         }
         for (i in 0 until 10) load<Texture>("textures/blocks/destroy_stage_$i.png")
         load<Texture>("textures/gui/icons.png")

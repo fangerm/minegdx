@@ -37,13 +37,23 @@ class Block(
 
     /** Orientation of a block. */
     enum class Orientation {
-        UP, DOWN, NORTH, EAST, SOUTH, WEST;
+        NORTH, UP, EAST, SOUTH, DOWN, WEST;
 
         fun toId() = list.indexOf(this)
 
         companion object {
             private val list = values()
+
             fun fromId(id: Int) = list[id]
+
+            /** Returns if this face is the block's front face.
+             * @param faceId Face ID as used by RenderableChunk.
+             * @param blockDat Block int data inside the chunk. */
+            fun isFront(faceId: Int, blockDat: Int): Boolean {
+                val orient = (blockDat and ORIENTATION) shr ORIENTATION_SHIFT
+                return orient == faceId // This works because orientations
+                // are in the same order as block faces in RenderableChunk
+            }
         }
     }
 }

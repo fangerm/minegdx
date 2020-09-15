@@ -113,13 +113,22 @@ class ModelCache {
         activeDamageModel = blockDamageModels[0]
     }
 
-    private fun createBlockModel(tex: String, texSide: String? = null, texBottom: String? = null, blend: Boolean = false): Model {
+    private fun createBlockModel(
+        tex: String,
+        texSide: String? = null,
+        texBottom: String? = null,
+        texFront: String? = null,
+        blend: Boolean = false
+    ): Model {
         val material = Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(tex)))
         val materialSide =
             if (texSide != null) Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(texSide)))
             else material
         val materialBottom =
             if (texBottom != null) Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(texBottom)))
+            else material
+        val materialFront =
+            if (texFront != null) Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(texFront)))
             else material
 
         if (blend) {
@@ -134,7 +143,7 @@ class ModelCache {
         rect(corner001, corner000, corner100, corner101, nor.scl(-1f), materialBottom)
 
         nor = tmpV1.set(corner001)
-        rect(corner100, corner000, corner010, corner110, nor.scl(-1f), materialSide)
+        rect(corner100, corner000, corner010, corner110, nor.scl(-1f), materialFront)
         rect(corner001, corner101, corner111, corner011, nor.scl(-1f), materialSide)
 
         nor = tmpV1.set(corner100)
@@ -152,7 +161,7 @@ class ModelCache {
         val model: Model
 
         if (type.isBlock) {
-            model = createBlockModel(type.texture, type.block?.texSide, type.block?.texBottom, type.block?.isBlend ?: false)
+            model = createBlockModel(type.texture, type.block?.texSide, type.block?.texBottom, type.block?.texFront, type.block?.isBlend ?: false)
             model.nodes.first()?.scale?.set(0.25f, 0.25f, 0.25f)
             model.nodes.first()?.translation?.set(-0.125f, 0.0f, -0.125f)
         } else {

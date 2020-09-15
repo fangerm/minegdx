@@ -81,6 +81,7 @@ sandstone:
 
 glass:
   block:
+    blend: true
     drop: glass_shard
 
 glass_shard:
@@ -101,6 +102,8 @@ furnace:
     prefTool: pickaxe
     minToolLevel: 1
     texSide: textures/blocks/furnace_side.png
+    texFront: textures/blocks/furnace_front_off.png
+    orientation: XZ
 
 chest:
   texture: textures/blocks/log_oak_top.png

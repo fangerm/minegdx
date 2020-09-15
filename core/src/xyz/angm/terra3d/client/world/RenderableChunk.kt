@@ -20,6 +20,7 @@ import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.ALL
+import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.TYPE
 
@@ -125,9 +126,11 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
                         val props = Item.Properties.fromType(block)!!
                         val tex = props.texture
-                        val texture = when (face) {
-                            1 -> tex // Top face
-                            4 -> props.block?.texBottom ?: tex // Bottom face
+                        val texture = when {
+                            face == 1 -> tex // Top face
+                            face == 4 -> props.block?.texBottom ?: tex // Bottom face
+                            Block.Orientation.isFront(face, getFromAIV3(startPos)) ->
+                                props.block?.texFront ?: props.block?.texSide ?: tex // Front face
                             else -> props.block?.texSide ?: tex // Side face
                         }
                         Builder.drawRect(
