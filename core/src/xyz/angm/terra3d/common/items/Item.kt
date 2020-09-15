@@ -37,7 +37,7 @@ data class Item(
     private var textureBackingField: Texture? = null
     val texture: Texture
         get() {
-            if (textureBackingField == null) textureBackingField = ResourceManager.get(properties.texture)
+            if (textureBackingField == null) genTexture()
             return textureBackingField!!
         }
 
@@ -48,6 +48,13 @@ data class Item(
 
     /** If the item stacks with the other item. */
     infix fun stacksWith(other: Item?) = other != null && type == other.type && metadata == other.metadata
+
+    private fun genTexture(): Texture {
+        val tex = if (properties.isBlock) ResourceManager.models.itemImage(type)
+        else ResourceManager.get(properties.texture)
+        textureBackingField = tex
+        return tex
+    }
 
     override fun hashCode() = Objects.hash(type, metadata)
 

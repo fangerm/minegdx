@@ -25,7 +25,7 @@ object ResourceManager {
     private val defaultPack = yaml.decodeFromString(ResourcePack.serializer(), file("resourcepacks/default/pack.yaml").readString())
 
     /** A cache for 3D models. **/
-    val models = ModelCache(this)
+    val models = ModelCache()
 
     /** A list of all available resource packs. */
     val availablePacks = ArrayList<ResourcePack>()

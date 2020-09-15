@@ -1,19 +1,20 @@
 package xyz.angm.terra3d.client.world
 
 import com.badlogic.ashley.core.Entity
-import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.VertexAttributes
-import com.badlogic.gdx.graphics.g3d.Material
-import com.badlogic.gdx.graphics.g3d.Model
-import com.badlogic.gdx.graphics.g3d.ModelInstance
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.*
+import com.badlogic.gdx.graphics.g3d.*
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute.Diffuse
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
+import com.badlogic.gdx.graphics.glutils.FrameBuffer
+import com.badlogic.gdx.graphics.glutils.PixmapTextureData
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.IntMap
+import com.badlogic.gdx.utils.ScreenUtils
 import ktx.ashley.get
 import ktx.collections.*
 import xyz.angm.terra3d.client.resources.ResourceManager
@@ -21,11 +22,16 @@ import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.item
 import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.log
 import kotlin.math.min
 
+/** Resolution of the inventory image for blocks.
+ * 32 is the size of ItemActor, bigger size is simply to make it smoother. */
+private const val BLOCK_TEX_RES = 128
+
 /** Caches block and entity models to prevent building a new model every time. */
-class ModelCache(private val resourceManager: ResourceManager) {
+class ModelCache {
 
     private val attributes = VertexAttributes.Usage.Position.toLong() or
             VertexAttributes.Usage.Normal.toLong() or VertexAttributes.Usage.TextureCoordinates.toLong()
@@ -38,11 +44,11 @@ class ModelCache(private val resourceManager: ResourceManager) {
     private val corner101 = Vector3(1f, 0f, 1f)
     private val corner111 = Vector3(1f, 1f, 1f)
     private val tmpV1 = Vector3()
-    private val tmpV2 = Vector3()
 
     private var blockDamageModels = emptyArray<ModelInstance>()
     internal lateinit var activeDamageModel: ModelInstance
     private val itemModels = IntMap<Model>()
+    private val itemImages = IntMap<Texture>() // Images for blocks in inventories
     private val playerModel: Model
     private val builder = ModelBuilder()
 
@@ -50,7 +56,10 @@ class ModelCache(private val resourceManager: ResourceManager) {
         playerModel = builder.createBox(0.4f, 1.75f, 0.4f, Material(ColorAttribute(Diffuse, 1f, 0f, 0f, 1f)), attributes)
     }
 
-    fun init() = loadBlockDamageModels()
+    fun init() {
+        loadBlockDamageModels()
+        generateItemImages()
+    }
 
     /** Clears all caches. Needs to be called when resource pack changes. */
     fun clear() {
@@ -66,7 +75,7 @@ class ModelCache(private val resourceManager: ResourceManager) {
     fun getEntityModelInstance(entity: Entity): ModelInstance {
         return when {
             entity.getComponent(ItemComponent::class.java) != null ->
-                ModelInstance(itemModels[entity[item]!!.item.type - 1] ?: addItemModelToCache(entity[item]!!.item.properties))
+                ModelInstance(getItemModel(entity[item]!!.item.type))
 
             entity.getComponent(PlayerComponent::class.java) != null ->
                 ModelInstance(playerModel)
@@ -78,6 +87,11 @@ class ModelCache(private val resourceManager: ResourceManager) {
             }
         }
     }
+
+    private fun getItemModel(type: ItemType) = itemModels[type - 1] ?: addItemModelToCache(Item.Properties.fromType(type)!!)
+
+    /** Takes a block type and returns the texture to use for it when displaying in inventories. */
+    fun itemImage(type: ItemType) = itemImages[type]!!
 
     /** Call on position change, or block breakTime change.
      * @param transform Model world transform (block position)
@@ -99,14 +113,13 @@ class ModelCache(private val resourceManager: ResourceManager) {
         activeDamageModel = blockDamageModels[0]
     }
 
-    // TODO: A bunch of this vector math seems really unnecessary
     private fun createBlockModel(tex: String, texSide: String? = null, texBottom: String? = null, blend: Boolean = false): Model {
-        val material = Material(TextureAttribute.createDiffuse(resourceManager.get<Texture>(tex)))
+        val material = Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(tex)))
         val materialSide =
-            if (texSide != null) Material(TextureAttribute.createDiffuse(resourceManager.get<Texture>(texSide)))
+            if (texSide != null) Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(texSide)))
             else material
         val materialBottom =
-            if (texBottom != null) Material(TextureAttribute.createDiffuse(resourceManager.get<Texture>(texBottom)))
+            if (texBottom != null) Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(texBottom)))
             else material
 
         if (blend) {
@@ -116,16 +129,16 @@ class ModelCache(private val resourceManager: ResourceManager) {
         }
 
         builder.begin()
-        var nor = tmpV1.set(corner000).lerp(corner101, 0.5f).sub(tmpV2.set(corner010).lerp(corner111, 0.5f)).nor()
+        var nor = tmpV1.set(corner010)
         rect(corner010, corner011, corner111, corner110, nor.scl(-1f), material)
-        rect(corner001, corner000, corner100, corner101, nor, materialBottom)
+        rect(corner001, corner000, corner100, corner101, nor.scl(-1f), materialBottom)
 
-        nor = tmpV1.set(corner000).lerp(corner110, 0.5f).sub(tmpV2.set(corner001).lerp(corner111, 0.5f)).nor()
-        rect(corner100, corner000, corner010, corner110, nor, materialSide)
+        nor = tmpV1.set(corner001)
+        rect(corner100, corner000, corner010, corner110, nor.scl(-1f), materialSide)
         rect(corner001, corner101, corner111, corner011, nor.scl(-1f), materialSide)
 
-        nor = tmpV1.set(corner000).lerp(corner011, 0.5f).sub(tmpV2.set(corner100).lerp(corner111, 0.5f)).nor()
-        rect(corner000, corner001, corner011, corner010, nor, materialSide)
+        nor = tmpV1.set(corner100)
+        rect(corner000, corner001, corner011, corner010, nor.scl(-1f), materialSide)
         rect(corner101, corner100, corner110, corner111, nor.scl(-1f), materialSide)
 
         return builder.end()
@@ -135,33 +148,70 @@ class ModelCache(private val resourceManager: ResourceManager) {
         builder.part("rect", GL20.GL_TRIANGLES, attributes, material).rect(v0, v1, v2, v3, nor)
     }
 
-    private fun createBlockModel(type: Item.Properties) = createBlockModel(type.texture, type.block?.texSide, type.block?.texBottom)
-
-    private val itemCorner000 = Vector3(-0.2f, -0.2f, -0.2f)
-    private val itemCorner010 = Vector3(-0.2f, 0.2f, -0.2f)
-    private val itemCorner101 = Vector3(0.2f, -0.2f, 0.2f)
-    private val itemCorner100 = Vector3(0.2f, -0.2f, -0.2f)
-    private val itemCorner001 = Vector3(-0.2f, -0.2f, 0.2f)
-    private val itemCorner111 = Vector3(0.2f, 0.2f, 0.2f)
-
     private fun addItemModelToCache(type: Item.Properties): Model {
         val model: Model
 
         if (type.isBlock) {
-            model = createBlockModel(type)
-            model.nodes.first()?.scale?.set(0.3f, 0.3f, 0.3f)
-            model.nodes.first()?.translation?.set(-0.15f, 0.0f, -0.15f)
+            model = createBlockModel(type.texture, type.block?.texSide, type.block?.texBottom, type.block?.isBlend ?: false)
+            model.nodes.first()?.scale?.set(0.25f, 0.25f, 0.25f)
+            model.nodes.first()?.translation?.set(-0.125f, 0.0f, -0.125f)
         } else {
-            val material = Material(TextureAttribute.createDiffuse(resourceManager.get<Texture>(type.texture)))
+            val material = Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(type.texture)))
             material.set(BlendingAttribute())
-
-            builder.begin()
-            val builderPart = builder.part("rect", GL20.GL_TRIANGLES, attributes, material)
-            val nor = tmpV1.set(itemCorner000).lerp(itemCorner101, 0.5f).sub(tmpV2.set(itemCorner010).lerp(itemCorner111, 0.5f)).nor()
-            builderPart.rect(itemCorner000, itemCorner001, itemCorner101, itemCorner100, nor.scl(-1f))
-            model = builder.end()
+            model = builder.createRect(
+                -0.2f, -0.2f, -0.2f,
+                -0.2f, -0.2f, 0.2f,
+                0.2f, -0.2f, 0.2f,
+                0.2f, -0.2f, -0.2f,
+                0f, 1f, 0f,
+                material, attributes
+            )
         }
         itemModels[type.type - 1] = model
         return model
+    }
+
+    /** Generates item images of blocks.
+     * Works by creating a model instance of the block and rendering a side view of it
+     * into a framebuffer, from which the texture is then extracted from. */
+    private fun generateItemImages() {
+        val fbo = FrameBuffer(Pixmap.Format.RGBA8888, BLOCK_TEX_RES, BLOCK_TEX_RES, false)
+        val camera = OrthographicCamera(BLOCK_TEX_RES.toFloat(), BLOCK_TEX_RES.toFloat())
+        val batch = ModelBatch()
+        val environment = Environment()
+        environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
+        environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, 0.8f, -0.2f))
+
+        // Modify these and mess up render positions, i dare you
+        camera.far = 8f
+        camera.zoom = 0.027f
+        camera.position.set(3f, 4f, 3f)
+        camera.up.set(0f, -1f, 0f) // Frame buffers are inverted by default, invert the cam to counter
+        camera.lookAt(Vector3.Y)
+        camera.update()
+
+        fbo.begin()
+        for (item in Item.Properties.allItems) {
+            if (item.isBlock) generateItemImage(item.type, camera, batch, environment)
+        }
+        fbo.end()
+    }
+
+    private fun generateItemImage(type: ItemType, camera: Camera, batch: ModelBatch, env: Environment) {
+        val block = getItemModel(type)
+        val inst = ModelInstance(block)
+        inst.transform.setToScaling(8f, 8f, 8f)
+
+        Gdx.gl.glClearColor(0f, 0f, 0f, 0f)
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+        batch.begin(camera)
+        batch.render(inst, env)
+        batch.end()
+
+        val pixmap = ScreenUtils.getFrameBufferPixmap(0, 0, BLOCK_TEX_RES, BLOCK_TEX_RES)
+        val data = PixmapTextureData(pixmap, null, false, false)
+        val texture = Texture(data)
+        pixmap.dispose()
+        itemImages[type] = texture
     }
 }
