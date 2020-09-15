@@ -29,7 +29,7 @@ class PlayerRenderComponent : RenderableComponent {
         blockSelector = ModelInstance(model)
         hand = ModelInstance(
             ModelBuilder().createBox(
-                0.15f, 0.8f, 0.2f,
+                0.2f, 0.6f, 0.2f,
                 Material(
                     ColorAttribute.createDiffuse(
                         Color(232f / 255f, 177f / 255f, 112f / 255f, 1f)

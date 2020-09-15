@@ -3,18 +3,19 @@ package xyz.angm.terra3d.client.ecs.systems
 import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
-import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.utils.Disposable
 import ktx.ashley.get
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
+import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
 import xyz.angm.terra3d.common.ecs.playerRender
 
 /** A system used to render the player hand, which is rendered
@@ -22,18 +23,16 @@ import xyz.angm.terra3d.common.ecs.playerRender
 class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Disposable {
 
     private val batch = ModelBatch()
-    private val camera = OrthographicCamera(Gdx.graphics.backBufferWidth.toFloat(), Gdx.graphics.backBufferHeight.toFloat())
-    private val fbo = FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, true)
+    private val camera = PerspectiveCamera(40f, WORLD_WIDTH, WORLD_HEIGHT)
+    private val fbo = FrameBuffer(Pixmap.Format.RGBA8888, WORLD_WIDTH.toInt(), WORLD_HEIGHT.toInt(), true)
     private val environment = Environment()
     private val pRender get() = screen.player[playerRender]!!
 
     init {
         camera.far = 10f
-        camera.zoom = 0.001f
-        camera.position.set(1f, 1f, 1f)
-        camera.up.set(0f, -1f, 0f) // Frame buffers are inverted by default, invert the cam to counter
-        camera.lookAt(Vector3.Zero)
-        camera.position.set(1.7f, 1.8f, 0.65f)
+        camera.position.set(0f, 0f, 0f)
+        camera.up.set(0f, 1f, 0f) // Frame buffers are inverted by default, invert the cam to counter
+        camera.lookAt(0f, -1f, 0f)
         camera.update()
 
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
@@ -46,8 +45,8 @@ class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Dispo
         Gdx.gl.glClearColor(0f, 0f, 0f, 0f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
-        pRender.hand.transform.setToRotation(Vector3.Z, -20f)
-        pRender.hand.transform.rotate(Vector3.X, -10f)
+        pRender.hand.transform.setToTranslation(0.593f, -1.8f, -0.678f)
+        pRender.hand.transform.rotate(-0.982f, 0.08f, 0.368f, 222f)
         batch.begin(camera)
         batch.render(pRender.hand, environment)
         batch.end()
