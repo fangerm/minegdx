@@ -1,0 +1,66 @@
+package xyz.angm.terra3d.client.ecs.systems
+
+import com.badlogic.ashley.core.EntitySystem
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.g3d.Environment
+import com.badlogic.gdx.graphics.g3d.ModelBatch
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
+import com.badlogic.gdx.graphics.glutils.FrameBuffer
+import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.utils.Disposable
+import ktx.ashley.get
+import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.common.ecs.playerRender
+
+/** A system used to render the player hand, which is rendered
+ * into it's own framebuffer that is then rendered on top of the back buffer. */
+class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Disposable {
+
+    private val batch = ModelBatch()
+    private val camera = OrthographicCamera(Gdx.graphics.backBufferWidth.toFloat(), Gdx.graphics.backBufferHeight.toFloat())
+    private val fbo = FrameBuffer(Pixmap.Format.RGBA8888, Gdx.graphics.backBufferWidth, Gdx.graphics.backBufferHeight, true)
+    private val environment = Environment()
+    private val pRender get() = screen.player[playerRender]!!
+
+    init {
+        camera.far = 10f
+        camera.zoom = 0.001f
+        camera.position.set(1f, 1f, 1f)
+        camera.up.set(0f, -1f, 0f) // Frame buffers are inverted by default, invert the cam to counter
+        camera.lookAt(Vector3.Zero)
+        camera.position.set(1.7f, 1.8f, 0.65f)
+        camera.update()
+
+        environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
+        environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, 0.8f, -0.2f))
+    }
+
+    /** Regenerates the hand image to account for player actions. */
+    override fun update(deltaTime: Float) {
+        fbo.begin()
+        Gdx.gl.glClearColor(0f, 0f, 0f, 0f)
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
+
+        pRender.hand.transform.setToRotation(Vector3.Z, -20f)
+        pRender.hand.transform.rotate(Vector3.X, -10f)
+        batch.begin(camera)
+        batch.render(pRender.hand, environment)
+        batch.end()
+
+        fbo.end()
+    }
+
+    /** The actor to be used for rendering the player hand into the
+     * back buffer using Scene2D. */
+    fun getActor() = Image(fbo.colorBufferTexture)
+
+    override fun dispose() {
+        batch.dispose()
+        fbo.dispose()
+    }
+}

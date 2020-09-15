@@ -89,6 +89,7 @@ class GameScreen(
     // Entities
     val engine = Engine()
     val playerInputSystem: PlayerInputSystem get() = engine.getSystem(PlayerInputSystem::class.java)
+    val playerRenderSystem = PlayerRenderSystem(this)
     val playerInventory get() = player[playerM]!!.inventory
     private val players = allOf(PlayerComponent::class).get()
 
@@ -188,6 +189,7 @@ class GameScreen(
         engine.addSystem(netSystem)
         engine.addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
         engine.addSystem(DayTimeSystem())
+        engine.addSystem(playerRenderSystem)
     }
 
     // Initialize everything not render-related
@@ -224,6 +226,7 @@ class GameScreen(
         // 2D / Stage
         stage.addActor(gameplayPanel)
         stage.addActor(uiPanels)
+        stage.addActor(playerRenderSystem.getActor())
 
         // Sound
         registerBlockChangeListener(client, world)
