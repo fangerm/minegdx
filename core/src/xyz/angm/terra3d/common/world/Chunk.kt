@@ -122,8 +122,7 @@ open class Chunk private constructor(
         private val colorVec get() = colorLocal.get()
     }
 
-    /** Custom chunk serializer. It's about 3x faster than regular serialization with a chunk filled with the same block, but is 3x SLOWER than
-     * the default when the chunk is generated from random noise. Since most chunks are not random, the speed is still faster on average. */
+    /** Custom chunk serializer using RLE to be much faster. */
     class FSTChunkSerializer : FSTBasicObjectSerializer() {
 
         /** Write the chunk */
@@ -170,7 +169,6 @@ open class Chunk private constructor(
             val zero: Short = 0 // Why, Kotlin...
             var left = input.codec.readFShort()
             var current = input.codec.readFInt()
-
             for (i in 0 until CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE) {
                 if (left == zero) {
                     left = input.codec.readFShort()

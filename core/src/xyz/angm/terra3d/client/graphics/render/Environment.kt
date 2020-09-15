@@ -135,7 +135,7 @@ internal class Environment : Disposable {
     }
 
     override fun dispose() {
-        sun.model.disposeSafely() // Sometimes complains about buffers?
+        sun.model.disposeSafely() // Sometimes complains about buffers with normal dispose?
         moon.model.disposeSafely() // ^^^
         shadowBatch.dispose()
         shadowLight.dispose()

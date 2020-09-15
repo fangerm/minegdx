@@ -19,17 +19,25 @@ object PlayerInteractions {
     private val listeners = ObjectMap<Pair<ItemType, Event>, (EventContext) -> Unit>()
 
     init {
-        setListener("furnace", Event.BLOCK_CLICKED) { ctx ->
+        fun add(item: ItemType, type: Event, listener: (EventContext) -> Unit) {
+            listeners[Pair(item, type)] = listener
+        }
+
+        fun add(item: String, type: Event, listener: (EventContext) -> Unit) =
+            add(Item.Properties.fromIdentifier(item).type, type, listener)
+
+
+        add("furnace", Event.BLOCK_CLICKED) { ctx ->
             ctx.screen.pushPanel(FurnacePanel(ctx.screen, ctx.block!!))
         }
 
-        setListener("chest", Event.BLOCK_CLICKED) { ctx ->
+        add("chest", Event.BLOCK_CLICKED) { ctx ->
             ctx.screen.pushPanel(ChestPanel(ctx.screen, ctx.block!!))
         }
 
         for (item in Item.Properties.allItems) {
             if (item.hunger != 0) {
-                setListener(item.type, Event.ITEM_CLICKED) { ctx ->
+                add(item.type, Event.ITEM_CLICKED) { ctx ->
                     if (ctx.screen.player[playerM]!!.hunger < MAX_HUNGER) {
                         ctx.screen.player[playerM]!!.hunger += item.hunger
                         ctx.screen.playerInventory.subtractFromHeldItem(1)
@@ -37,22 +45,6 @@ object PlayerInteractions {
                 }
             }
         }
-    }
-
-    /** Sets a listener.
-     * @param item The type of item to listen upon
-     * @param type The type of event to listen upon
-     * @param listener The listener to execute */
-    private fun setListener(item: String, type: Event, listener: (EventContext) -> Unit) {
-        listeners[Pair(Item.Properties.fromIdentifier(item).type, type)] = listener
-    }
-
-    /** Sets a listener.
-     * @param item The type of item to listen upon
-     * @param type The type of event to listen upon
-     * @param listener The listener to execute */
-    private fun setListener(item: ItemType, type: Event, listener: (EventContext) -> Unit) {
-        listeners[Pair(item, type)] = listener
     }
 
     /** Returns the listener registered. */

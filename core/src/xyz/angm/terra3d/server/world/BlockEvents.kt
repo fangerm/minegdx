@@ -22,11 +22,23 @@ object BlockEvents {
 
     // Adds all listeners and block entities on init.
     init {
+        /** Sets the listener executed when a certain event happens.
+         * @param item The type of block to act upon */
+        fun listener(item: String, type: Event, listener: (World, Block) -> Unit) {
+            listeners[Pair(Item.Properties.fromIdentifier(item).type, type)] = listener
+        }
+
+        /** Register a block entity for a block type. Every block of the specified type will then have a copy of the entity added to them.
+         * @param type The type of block to register an entity for */
+        fun blockEntity(type: String, entity: BlockComponent) {
+            blockEntities[Item.Properties.fromIdentifier(type).type] = entity
+        }
+
         // ##### Furnace #####
-        setListener("furnace", Event.BLOCK_PLACED) { _, blockPlaced ->
+        listener("furnace", Event.BLOCK_PLACED) { _, blockPlaced ->
             blockPlaced.metadata = FurnaceMetadata()
         }
-        addBlockEntity("furnace", BlockComponent(tickInterval = 20) { world, block ->
+        blockEntity("furnace", BlockComponent(tickInterval = 20) { world, block ->
             val meta = block.metadata as FurnaceMetadata
             if (meta.burnTime > 10) meta.burnTime -= -10
             else {
@@ -47,7 +59,7 @@ object BlockEvents {
         })
 
         // ##### Chest #####
-        setListener("chest", Event.BLOCK_PLACED) { world, blockPlaced ->
+        listener("chest", Event.BLOCK_PLACED) { world, blockPlaced ->
             blockPlaced.metadata = blockPlaced.metadata ?: ChestMetadata()
             world.metadataChanged(blockPlaced)
         }
@@ -61,22 +73,10 @@ object BlockEvents {
             meta.inventory += Item(ore ?: return@BlockComponent)
             world.metadataChanged(chest)
         }
-        addBlockEntity("stone_miner", component)
-        addBlockEntity("iron_miner", component.copy(tickInterval = 50))
-        addBlockEntity("gold_miner", component.copy(tickInterval = 20))
-        addBlockEntity("diamond_miner", component.copy(tickInterval = 5))
-    }
-
-    /** Sets the listener executed when a certain event happens.
-     * @param item The type of block to act upon */
-    private fun setListener(item: String, type: Event, listener: (World, Block) -> Unit) {
-        listeners[Pair(Item.Properties.fromIdentifier(item).type, type)] = listener
-    }
-
-    /** Register a block entity for a block type. Every block of the specified type will then have a copy of the entity added to them.
-     * @param type The type of block to register an entity for */
-    private fun addBlockEntity(type: String, entity: BlockComponent) {
-        blockEntities[Item.Properties.fromIdentifier(type).type] = entity
+        blockEntity("stone_miner", component)
+        blockEntity("iron_miner", component.copy(tickInterval = 50))
+        blockEntity("gold_miner", component.copy(tickInterval = 20))
+        blockEntity("diamond_miner", component.copy(tickInterval = 5))
     }
 
     /** Returns the appropriate listener for the event. */

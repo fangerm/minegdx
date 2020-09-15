@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import xyz.angm.terra3d.client.resources.ResourceManager
 
-/** Renders everything related to the local player, like the skybox or the block selector.
+/** Renders everything related to the local player, currently only the block selector.
  * @property blockSelector The block selector model. */
 class PlayerRenderComponent : RenderableComponent {
 

@@ -71,7 +71,7 @@ object CommandHandler {
             dispatcher.execute(command.trim(' '), screen)
             returnMessage
         } catch (e: CommandSyntaxException) {
-            "[RED]Invalid command. Check the syntax obtained by calling without arguments."
+            "[RED]Invalid command."
         }
     }
 

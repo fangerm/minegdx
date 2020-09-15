@@ -18,7 +18,7 @@ import xyz.angm.terra3d.common.ecs.velocity
 data class PlayerAction(
     val type: String,
     val keyDown: (GameScreen) -> Unit,
-    val keyUp: (GameScreen) -> Unit = {}
+    val keyUp: (GameScreen) -> Unit
 )
 
 /** The object that contains all actions and allows retrieving them. */
@@ -27,39 +27,41 @@ object PlayerActions {
     val actions = ObjectMap<String, PlayerAction>()
 
     init {
-        addAction(PlayerAction("walkForward", { it.player[velocity]!!.x++ }, { it.player[velocity]!!.x-- }))
-        addAction(PlayerAction("walkBackward", { it.player[velocity]!!.x-- }, { it.player[velocity]!!.x++ }))
-        addAction(PlayerAction("walkRight", { it.player[velocity]!!.z++ }, { it.player[velocity]!!.z-- }))
-        addAction(PlayerAction("walkLeft", { it.player[velocity]!!.z-- }, { it.player[velocity]!!.z++ }))
+        fun add(name: String, down: (GameScreen) -> Unit, up: (GameScreen) -> Unit) {
+            actions[name] = PlayerAction(name, down, up)
+        }
 
-        addAction(PlayerAction("jump", { it.playerInputSystem.jump() }))
-        addAction(PlayerAction("sneak", { it.playerInputSystem.sneak(true) }, { it.playerInputSystem.sneak(false) }))
-        addAction(PlayerAction("sprint", { it.playerInputSystem.sprint(true) }, { it.playerInputSystem.sprint(false) }))
-        addAction(PlayerAction("dropItem", { it.playerInputSystem.dropItem() }))
+        fun add(name: String, down: (GameScreen) -> Unit) = add(name, down, {})
 
-        addAction(PlayerAction("debugInfo", { it.gameplayPanel.toggleDebugInfo() }))
-        addAction(PlayerAction("pauseMenu", { it.pushPanel(PausePanel(it)) }))
-        addAction(PlayerAction("onlinePlayers", { it.gameplayPanel.toggleOnlinePlayers() }, { it.gameplayPanel.toggleOnlinePlayers() }))
+        add("walkForward", { it.player[velocity]!!.x++ }, { it.player[velocity]!!.x-- })
+        add("walkBackward", { it.player[velocity]!!.x-- }, { it.player[velocity]!!.x++ })
+        add("walkRight", { it.player[velocity]!!.z++ }, { it.player[velocity]!!.z-- })
+        add("walkLeft", { it.player[velocity]!!.z-- }, { it.player[velocity]!!.z++ })
 
-        addAction(PlayerAction("chat", { it.pushPanel(ChatPanel(it)) }))
-        addAction(PlayerAction("openInventory", { it.pushPanel(PlayerInventoryPanel(it)) }))
-        addAction(PlayerAction("fullscreen", {
+        add("jump") { it.playerInputSystem.jump() }
+        add("sneak", { it.playerInputSystem.sneak(true) }, { it.playerInputSystem.sneak(false) })
+        add("sprint", { it.playerInputSystem.sprint(true) }, { it.playerInputSystem.sprint(false) })
+        add("dropItem") { it.playerInputSystem.dropItem() }
+
+        add("debugInfo") { it.gameplayPanel.toggleDebugInfo() }
+        add("pauseMenu") { it.pushPanel(PausePanel(it)) }
+        add("onlinePlayers", { it.gameplayPanel.toggleOnlinePlayers() }, { it.gameplayPanel.toggleOnlinePlayers() })
+
+        add("chat") { it.pushPanel(ChatPanel(it)) }
+        add("openInventory") { it.pushPanel(PlayerInventoryPanel(it)) }
+        add("fullscreen") {
             if (Gdx.graphics.isFullscreen) Gdx.graphics.setWindowedMode(Gdx.graphics.displayMode.width, Gdx.graphics.displayMode.height)
             else Gdx.graphics.setFullscreenMode(Gdx.graphics.displayMode)
-        }))
+        }
 
         for (i in 1..9) {
-            addAction(PlayerAction("hotbarSlot$i", {
+            add("hotbarSlot$i") {
                 it.player[playerM]!!.inventory.hotbarPosition = i - 1
                 it.gameplayPanel.updateHotbarSelector(it.player[playerM]!!.inventory.hotbarPosition)
-            }))
+            }
         }
     }
 
     /** Get an action. */
     operator fun get(type: String): PlayerAction? = actions[type]
-
-    private fun addAction(action: PlayerAction) {
-        actions[action.type] = action
-    }
 }

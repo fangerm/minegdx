@@ -159,10 +159,10 @@ class ModelCache {
             val material = Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(type.texture)))
             material.set(BlendingAttribute())
             model = builder.createRect(
-                -0.2f, -0.2f, -0.2f,
-                -0.2f, -0.2f, 0.2f,
-                0.2f, -0.2f, 0.2f,
-                0.2f, -0.2f, -0.2f,
+                -0.2f, 0.01f, -0.2f,
+                -0.2f, 0.01f, 0.2f,
+                0.2f, 0.01f, 0.2f,
+                0.2f, 0.01f, -0.2f,
                 0f, 1f, 0f,
                 material, attributes
             )
