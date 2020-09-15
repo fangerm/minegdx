@@ -11,6 +11,7 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.utils.PerformanceCounter
 import com.badlogic.gdx.utils.viewport.FitViewport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -78,6 +79,7 @@ class GameScreen(
 ) : ScreenAdapter(), Screen {
 
     private val coScope = CoroutineScope(Dispatchers.Default)
+    val bench = PerformanceCounter("render")
 
     // 3D Graphics
     val inputHandler = PlayerInputHandler(this)
@@ -109,6 +111,9 @@ class GameScreen(
     }
 
     override fun render(delta: Float) {
+        // Uncomment this and the stop call at the end to enable performance profiling.
+        // startBench(delta)
+
         client.lock()
         world.update()
         engine.update(delta)
@@ -117,6 +122,14 @@ class GameScreen(
         renderer.render()
         stage.act()
         stage.draw()
+
+        // bench.stop()
+    }
+
+    @Suppress("unused")
+    private fun startBench(delta: Float) {
+        bench.tick(delta)
+        bench.start()
     }
 
     override fun pushPanel(panel: Panel) {
