@@ -154,11 +154,24 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * @param direction Direction of the one looking
      * @param newBlock Block to be placed. Null will destroy the block instead
      * @return If there was a block to be placed/removed and the operation was successful */
-    fun updateBlockRaycast(position: VectoredComponent, direction: VectoredComponent, newBlock: Item?): Boolean {
-        if (newBlock?.properties?.isBlock == false) return false
-        val blockPosition = getBlockRaycast(position, direction, newBlock != null) ?: return false
-        setBlock(blockPosition, newBlock)
+    fun updateBlockRaycast(position: VectoredComponent, direction: VectoredComponent, newBlock: Item): Boolean {
+        if (!newBlock.properties.isBlock) return false
+        val blockPosition = getBlockRaycast(position, direction, true) ?: return false
+        setBlock(blockPosition, newBlock, getOrientationFromRaycast())
         return true
+    }
+
+    private fun getOrientationFromRaycast(): Block.Orientation {
+        val d = raycast.minus(last)
+        return when {
+            d.y == -1 -> Block.Orientation.UP
+            d.y == 1 -> Block.Orientation.DOWN
+            d.x == -1 -> Block.Orientation.NORTH
+            d.x == 1 -> Block.Orientation.SOUTH
+            d.z == -1 -> Block.Orientation.EAST
+            d.z == 1 -> Block.Orientation.WEST
+            else -> throw RuntimeException("Block orientation is invalid")
+        }
     }
 
     /** Gets block.
@@ -224,8 +237,8 @@ class World(private val client: Client, override val seed: String) : Disposable,
         }
     }
 
-    private fun setBlock(position: IntVector3, item: Item?) {
-        val block = if (item != null) Block(item, position) else Block(0, position)
+    private fun setBlock(position: IntVector3, item: Item?, orientation: Block.Orientation) {
+        val block = if (item != null) Block(item, position, orientation) else Block(0, position, orientation = orientation)
         setBlock(block)
     }
 

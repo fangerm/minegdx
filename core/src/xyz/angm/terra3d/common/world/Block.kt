@@ -26,7 +26,7 @@ class Block(
     val properties get() = Item.Properties.fromType(type)
 
     /** Alternative constructor for constructing from an item instead of values directly. */
-    constructor(item: Item, position: IntVector3) : this(item.type, position, item.metadata)
+    constructor(item: Item, position: IntVector3, orientation: Orientation) : this(item.type, position, item.metadata, orientation)
 
     constructor(type: ItemType, position: IntVector3, metadata: IMetadata?, orientation: Int)
             : this(type, position, metadata, Orientation.fromId(orientation))
