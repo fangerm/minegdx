@@ -8,6 +8,7 @@ import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.client.networking.LocalServer
+import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.client.world.RENDER_TIME_LOAD
 import xyz.angm.terra3d.client.world.World
@@ -17,6 +18,11 @@ import xyz.angm.terra3d.common.networking.JoinPacket
 import xyz.angm.terra3d.common.world.WorldSaveManager
 import kotlin.system.exitProcess
 
+/** If the game should immediately load the first world in singleplayer as
+ * fast as possible.
+ * Used for debugging with the --quicklaunch argument. */
+var quickLaunch = false
+
 /** The game itself. Only sets the screen, everything else is handled per-screen. */
 class Terra3D : Game() {
 
@@ -24,7 +30,15 @@ class Terra3D : Game() {
     override fun create() {
         Bullet.init()
         VisUI.load()
-        setScreen(MenuScreen(this))
+        if (quickLaunch) quickLaunch()
+        else setScreen(MenuScreen(this))
+    }
+
+    /** See [quickLaunch] */
+    private fun quickLaunch() {
+        ResourceManager.init()
+        ResourceManager.finishLoading()
+        localServer(WorldSaveManager.getWorlds().first())
     }
 
     /** Connects to a server and switches to the game screen.
@@ -51,8 +65,12 @@ class Terra3D : Game() {
         client.clearListeners() // Remove the collectWorld listener
         val world = World(client, data.seed)
         world.addChunks(data.world, false)
-        (screen as MenuScreen).setWorldLoading(world)
-        Gdx.app.postRunnable { updateWorld(client, world, data) }
+
+        if (quickLaunch) Gdx.app.postRunnable { startGame(client, world, data) }
+        else {
+            (screen as MenuScreen).setWorldLoading(world)
+            Gdx.app.postRunnable { updateWorld(client, world, data) }
+        }
     }
 
     private fun updateWorld(client: Client, world: World, data: InitPacket) {

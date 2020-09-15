@@ -5,6 +5,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
 import xyz.angm.terra3d.client.Terra3D
+import xyz.angm.terra3d.client.quickLaunch
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.level
 import xyz.angm.terra3d.common.log
@@ -19,7 +20,8 @@ val game = Terra3D()
 
 /** Initialize and launch the game. */
 fun main(arg: Array<String>) {
-    log.level = if (arg.isNotEmpty() && arg[0] == "--debug") Level.ALL else Level.WARN
+    log.level = if (arg.contains("--debug")) Level.ALL else Level.WARN
+    quickLaunch = arg.contains("--quicklaunch")
     Thread.setDefaultUncaughtExceptionHandler(::handleException)
 
     setConfiguration()

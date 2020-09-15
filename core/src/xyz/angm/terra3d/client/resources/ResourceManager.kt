@@ -91,6 +91,10 @@ object ResourceManager {
         return assets.progress
     }
 
+    /** Will load all game assets and return. This function can block for multiple seconds!
+     * Used for quick launch debugging. */
+    fun finishLoading() = assets.finishLoading()
+
     private fun loadGameAssets() {
         for (item in Item.Properties.allItems) {
             load<Texture>(item.texture)
