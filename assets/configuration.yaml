@@ -30,7 +30,7 @@ resourcePack:
   sizeMod: 1.0
 video:
   blend: true
-  shadowQuality: 2.0
+  shadowQuality: 2
 servers:
   "angm.xyz": "angm.xyz"
   "Local": "127.0.0.1"

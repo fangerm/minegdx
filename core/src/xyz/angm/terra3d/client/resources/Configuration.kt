@@ -13,6 +13,7 @@ import xyz.angm.terra3d.client.actions.PlayerAction
 import xyz.angm.terra3d.client.actions.PlayerActions
 import xyz.angm.terra3d.common.yaml
 import kotlin.collections.set
+import kotlin.math.pow
 
 val configuration = {
     val file = file("configuration.yaml")
@@ -130,7 +131,7 @@ class Configuration {
     @Serializable
     class VideoOptions {
         var blend = true
-        var shadowQuality = 1f
-        val shadowFBO get() = (shadowQuality * 8192).toInt()
+        var shadowQuality = 2
+        val shadowFBO get() = (2f.pow(shadowQuality).toInt() * 2048)
     }
 }

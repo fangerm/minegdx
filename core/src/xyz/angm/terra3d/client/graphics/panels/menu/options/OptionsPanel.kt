@@ -5,7 +5,10 @@ import ktx.actors.onClick
 import ktx.actors.onKey
 import ktx.actors.plusAssign
 import ktx.scene2d.scene2d
-import ktx.scene2d.vis.*
+import ktx.scene2d.vis.visLabel
+import ktx.scene2d.vis.visSelectBoxOf
+import ktx.scene2d.vis.visTable
+import ktx.scene2d.vis.visTextField
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.panels.menu.MainMenuPanel
@@ -26,6 +29,11 @@ class OptionsPanel(screen: Screen, parent: MainMenuPanel? = null) : Panel(screen
         this += scene2d.visTable {
             // Only show certain options on menu screen
             if (screen is MenuScreen) {
+                visTextButton(I18N["options.video"]) {
+                    it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
+                    onClick { screen.pushPanel(VideoOptionsPanel(screen)) }
+                }
+
                 visTextButton(I18N["options.resourcepack"]) {
                     it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).pad(20f).colspan(2).row()
                     onClick { screen.pushPanel(ResourcePackPanel(screen)) }
