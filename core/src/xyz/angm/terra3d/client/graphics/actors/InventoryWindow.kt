@@ -7,7 +7,6 @@ import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.common.items.Inventory
-import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
 
 
@@ -63,7 +62,7 @@ class PlayerInventoryWindow(panel: InventoryPanel, private val playerInv: Invent
 }
 
 
-class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : InventoryWindow(panel, Item.Properties.fromIdentifier("furnace").name) {
+class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : InventoryWindow(panel, "furnace") {
 
     private val fuelItem = ItemGroup(this, Inventory(1), row = 1, column = 1)
     private val burntItem = ItemGroup(this, Inventory(1), row = 1, column = 1)
@@ -73,7 +72,8 @@ class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : Inventor
         updateNetInventory(metadata)
         add(burntItem).padRight(50f)
         add(resultItem).row()
-        add(fuelItem)
+        add(fuelItem).padRight(50f)
+        add()
         pack()
         setPosition(WORLD_WIDTH / 2, (WORLD_HEIGHT / 3) * 2, Align.center)
     }
