@@ -6,6 +6,7 @@ import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.ChestMetadata
 import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
+import xyz.angm.terra3d.common.items.metadata.IMetadata
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
 
@@ -34,10 +35,16 @@ object BlockEvents {
             blockEntities[Item.Properties.fromIdentifier(type).type] = entity
         }
 
-        // ##### Furnace #####
-        listener("furnace", Event.BLOCK_PLACED) { _, blockPlaced ->
-            blockPlaced.metadata = FurnaceMetadata()
+        /** Simple listener that attaches metadata if none is attached; runs on block placement*/
+        fun attachMeta(type: String, inst: () -> IMetadata) {
+            listener(type, Event.BLOCK_PLACED) { world, blockPlaced ->
+                blockPlaced.metadata = blockPlaced.metadata ?: inst()
+                world.metadataChanged(blockPlaced)
+            }
         }
+
+        // ##### Furnace #####
+        attachMeta("furnace") { FurnaceMetadata() }
         blockEntity("furnace", BlockComponent(tickInterval = 20) { world, block ->
             val meta = block.metadata as FurnaceMetadata
             if (meta.burnTime > 10) meta.burnTime -= -10
@@ -59,10 +66,7 @@ object BlockEvents {
         })
 
         // ##### Chest #####
-        listener("chest", Event.BLOCK_PLACED) { world, blockPlaced ->
-            blockPlaced.metadata = blockPlaced.metadata ?: ChestMetadata()
-            world.metadataChanged(blockPlaced)
-        }
+        attachMeta("chest") { ChestMetadata() }
 
         // #### Miners ####
         val component = BlockComponent(tickInterval = 100) { world, block ->
