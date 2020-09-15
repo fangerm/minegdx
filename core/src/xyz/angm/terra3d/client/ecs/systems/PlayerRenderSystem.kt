@@ -48,8 +48,6 @@ class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Dispo
 
     init {
         camera.far = 10f
-        camera.position.set(0f, 0f, 0f)
-        camera.up.set(0f, 1f, 0f) // Frame buffers are inverted by default, invert the cam to counter
         camera.lookAt(0f, -1f, 0f)
         camera.update()
 
