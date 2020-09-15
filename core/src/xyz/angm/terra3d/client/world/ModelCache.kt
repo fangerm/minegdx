@@ -88,7 +88,7 @@ class ModelCache {
         }
     }
 
-    private fun getItemModel(type: ItemType) = itemModels[type - 1] ?: addItemModelToCache(Item.Properties.fromType(type)!!)
+    fun getItemModel(type: ItemType) = itemModels[type - 1] ?: addItemModelToCache(Item.Properties.fromType(type)!!)
 
     /** Takes a block type and returns the texture to use for it when displaying in inventories. */
     fun itemImage(type: ItemType) = itemImages[type]!!

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
+import com.badlogic.gdx.graphics.g3d.ModelInstance
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
@@ -16,10 +17,12 @@ import ktx.ashley.get
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.playerRender
+import xyz.angm.terra3d.common.items.ItemType
 
 /** A system used to render the player hand, which is rendered
- * into it's own framebuffer that is then rendered on top of the back buffer. */
+ * into it's own framebuffer that is then rendered on top of the back/display buffer. */
 class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Disposable {
 
     private val batch = ModelBatch()
@@ -27,6 +30,21 @@ class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Dispo
     private val fbo = FrameBuffer(Pixmap.Format.RGBA8888, WORLD_WIDTH.toInt(), WORLD_HEIGHT.toInt(), true)
     private val environment = Environment()
     private val pRender get() = screen.player[playerRender]!!
+
+    private var modelBacking: ModelInstance? = null // Model inst of held item, if any
+    private var modelType: ItemType = 0 // Item type of modelBacking
+
+    private val handModel: ModelInstance
+        get() {
+            val heldItem = screen.playerInventory.heldItem
+            heldItem ?: return pRender.hand
+            if (modelType == heldItem.type) return modelBacking!!
+
+            val model = ResourceManager.models.getItemModel(heldItem.type)
+            modelBacking = ModelInstance(model)
+            modelType = heldItem.type
+            return modelBacking!!
+        }
 
     init {
         camera.far = 10f
@@ -45,10 +63,11 @@ class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Dispo
         Gdx.gl.glClearColor(0f, 0f, 0f, 0f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
-        pRender.hand.transform.setToTranslation(0.593f, -1.8f, -0.678f)
-        pRender.hand.transform.rotate(-0.982f, 0.08f, 0.368f, 222f)
+        val model = handModel
+        model.transform.setToTranslation(0.593f, -1.8f, -0.678f)
+        model.transform.rotate(-0.982f, 0.08f, 0.368f, 222f)
         batch.begin(camera)
-        batch.render(pRender.hand, environment)
+        batch.render(model, environment)
         batch.end()
 
         fbo.end()
