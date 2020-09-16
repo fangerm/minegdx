@@ -98,8 +98,12 @@ class PlayerSystem(
     private fun checkPickedUpItems() {
         if (playerC.isDead) return
         engine.getEntitiesFor(allDroppedItems).forEach {
-            if (it[item]!!.pickupTimeout <= 0f && tmpV.set(it[position]!!).dst2(tmpV2.set(pPosition)) < 4f) {
-                playerC.inventory += it[item]!!.item
+            // For some reason these can be null sometimes?
+            val item = it[item] ?: return@forEach
+            val pos = it[position] ?: return@forEach
+
+            if (item.pickupTimeout <= 0f && tmpV.set(pos).dst2(tmpV2.set(pPosition)) < 4f) {
+                playerC.inventory += item.item
                 RemoveFlag.flag(it)
             }
         }
