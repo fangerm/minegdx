@@ -189,6 +189,7 @@ class GameScreen(
         engine.addSystem(netSystem)
         engine.addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
         engine.addSystem(DayTimeSystem())
+        engine.addSystem(PhysicsInterpolationSystem())
         engine.addSystem(playerRenderSystem)
     }
 

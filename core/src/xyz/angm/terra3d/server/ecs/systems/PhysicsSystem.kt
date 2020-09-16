@@ -136,10 +136,10 @@ class PhysicsSystem(
         FULL, HALF_LOWER, HALF_UPPER, NONE;
     }
 
-    private companion object {
+    companion object {
 
         /** The gravity multiplier for all entities. */
-        private const val GRAVITY = 8f
+        const val GRAVITY = 8f
 
         private val itemSize = Vector3(0.2f, 0.2f, 0.2f)
         private val humanoidSize = Vector3(0.4f, 1.85f, 0.4f)
