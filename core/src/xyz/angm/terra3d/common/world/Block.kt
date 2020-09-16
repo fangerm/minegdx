@@ -37,6 +37,9 @@ data class Block(
         orientation = properties?.block?.orientation?.get(orientation) ?: orientation
     }
 
+    /** Returns the raw data of this block to be used for [Chunk.setBlock(IntVector3, ItemType)]. */
+    fun toRaw() = type or (orientation.toId() shl ORIENTATION_SHIFT) or (fluidLevel shl FLUID_LEVEL_SHIFT)
+
     /** Orientation of a block. */
     enum class Orientation {
         NORTH, UP, EAST, SOUTH, DOWN, WEST;

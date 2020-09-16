@@ -1,14 +1,13 @@
-package xyz.angm.terra3d.server.world
+package xyz.angm.terra3d.common.world
 
 import com.badlogic.gdx.utils.Queue
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.world.Block
 
 /** A BFS search algorithm used to make fluids flow through the world.
  * This alg is abridged from the one in [BfsLight] with a few differences to support
  * stepping and other related features needed for fluids.
  * This implementation is NOT thread safe. */
-class BfsFluid(private val world: World) {
+class BfsFluid(private val world: WorldInterface) {
 
     // Fluid queues to empty each tick
     private var fluidQ = Queue<FluidNode>()
@@ -37,15 +36,13 @@ class BfsFluid(private val world: World) {
         // Check if fluid source was removed
         if ((oldBlock?.fluidLevel ?: 0) != 0) {
             removeQNext.addLast(FRemoveNode(block.position, oldBlock!!.fluidLevel))
-            block.fluidLevel = 0
-            world.setBlock(block.position, block)
         }
 
         // Check if new block is a fluid that needs to flow
         // (the == 0 check prevents this method calling itself via the world)
         if (block.fluidLevel == 0 && block.properties?.block?.fluid == true) {
             block.fluidLevel = block.properties?.block!!.fluidReach
-            world.setBlock(block.position, block)
+            world.setBlockRaw(block.position, block.toRaw())
             fluidQNext.addLast(FluidNode(block.position))
         }
     }
@@ -54,7 +51,8 @@ class BfsFluid(private val world: World) {
         while (fluidQ.notEmpty()) {
             val node = fluidQ.removeFirst() ?: continue // this is null sometimes??
             val block = world.getBlock(node) ?: continue
-            val level = block.fluidLevel - 1
+            val level = block.fluidLevel
+            block.fluidLevel--
 
             node.y--
             val below = world.getBlock(node)
@@ -83,21 +81,20 @@ class BfsFluid(private val world: World) {
 
     private fun visitBlock(pos: IntVector3, neighbor: Block, level: Int) {
         val block = world.getBlock(pos)
-        if (block == null) {
+        if (block == null && level > 1) {
             fluidQNext.addLast(FluidNode(pos))
-            world.setBlock(pos, neighbor.copy(position = pos, fluidLevel = level))
-        } else if (block.fluidLevel + 2 <= level && neighbor.type == block.type) {
+            world.setBlockRaw(pos, neighbor.toRaw())
+        } else if (block != null && block.fluidLevel + 2 <= level && neighbor.type == block.type) {
             block.fluidLevel = level - 1
             fluidQNext.addLast(FluidNode(pos))
-            world.setBlock(pos, block)
+            world.setBlockRaw(pos, block.toRaw())
         }
     }
 
     private fun emptyRemoveQueue() {
         while (removeQ.notEmpty()) {
             val node = removeQ.removeFirst() ?: continue // this is null sometimes??
-            val block = world.getBlock(node) ?: continue
-            val level = block.fluidLevel
+            val level = node.level
 
             node.x--
             visitBlockRemove(node, level)
@@ -122,13 +119,11 @@ class BfsFluid(private val world: World) {
 
     private fun visitBlockRemove(pos: IntVector3, neighborLevel: Int) {
         val block = world.getBlock(pos) ?: return
-        if (block.fluidLevel != 0 && block.fluidLevel < neighborLevel) {
-            block.fluidLevel = 0
-            removeQNext.addLast(FRemoveNode(pos, neighborLevel))
-            world.setBlock(pos, block)
-
-            if (block.fluidLevel >= neighborLevel && neighborLevel != 0)
-                fluidQNext.addLast(FluidNode(pos))
+        if (block.fluidLevel >= neighborLevel && neighborLevel != 0) {
+            fluidQNext.addLast(FluidNode(pos))
+        } else if (block.fluidLevel != 0 && block.fluidLevel < neighborLevel) {
+            removeQNext.addLast(FRemoveNode(pos, block.fluidLevel))
+            world.setBlockRaw(pos, 0)
         }
     }
 }

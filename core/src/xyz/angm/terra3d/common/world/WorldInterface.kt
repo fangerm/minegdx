@@ -25,6 +25,9 @@ interface WorldInterface {
      * Returns success (false if no chunk generated at given position yet) */
     fun setBlockRaw(position: IntVector3, type: ItemType): Boolean
 
+    /** Returns block at the given position, if it is loaded. */
+    fun getBlock(position: IntVector3): Block?
+
     /** @return Local light at the given block.
      * THE VECTOR RETURNED MIGHT BE REUSED FOR EVERY CALL. Copy it if you need it to persist. */
     fun getLocalLight(position: IntVector3): IntVector3?

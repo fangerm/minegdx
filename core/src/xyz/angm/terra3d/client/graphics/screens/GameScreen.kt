@@ -43,6 +43,7 @@ import xyz.angm.terra3d.common.ecs.dayTime
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.DayTimeSystem
+import xyz.angm.terra3d.common.ecs.systems.FluidSystem
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.networking.BlockUpdate
@@ -192,6 +193,7 @@ class GameScreen(
         engine.addSystem(DayTimeSystem())
         engine.addSystem(PhysicsInterpolationSystem())
         engine.addSystem(playerRenderSystem)
+        engine.addSystem(FluidSystem(world.fluid))
     }
 
     // Initialize everything not render-related

@@ -16,10 +16,7 @@ import xyz.angm.terra3d.common.ecs.systems.DayTimeSystem
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.schedule
-import xyz.angm.terra3d.common.world.BfsLight
-import xyz.angm.terra3d.common.world.Block
-import xyz.angm.terra3d.common.world.Chunk
-import xyz.angm.terra3d.common.world.WorldInterface
+import xyz.angm.terra3d.common.world.*
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
 import xyz.angm.terra3d.server.ecs.systems.BlockEntitySystem
@@ -103,7 +100,7 @@ class World(private val server: Server) : WorldInterface {
     }
 
     /** Returns a block at the specified position, or null if there is none. */
-    fun getBlock(position: IntVector3): Block? {
+    override fun getBlock(position: IntVector3): Block? {
         val chunk = database.getChunk(position)
         return chunk?.getBlock(tmpIV.set(position).minus(chunk.position))
     }

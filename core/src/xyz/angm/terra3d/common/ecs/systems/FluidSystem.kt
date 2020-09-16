@@ -1,7 +1,7 @@
-package xyz.angm.terra3d.server.ecs.systems
+package xyz.angm.terra3d.common.ecs.systems
 
 import com.badlogic.ashley.core.EntitySystem
-import xyz.angm.terra3d.server.world.BfsFluid
+import xyz.angm.terra3d.common.world.BfsFluid
 
 /** A very simple system that ticks fluids. */
 class FluidSystem(private val alg: BfsFluid) : EntitySystem() {

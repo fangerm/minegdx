@@ -17,10 +17,7 @@ import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.networking.BlockUpdate
 import xyz.angm.terra3d.common.networking.ChunkRequest
 import xyz.angm.terra3d.common.networking.ChunksLine
-import xyz.angm.terra3d.common.world.BfsLight
-import xyz.angm.terra3d.common.world.Block
-import xyz.angm.terra3d.common.world.Chunk
-import xyz.angm.terra3d.common.world.WorldInterface
+import xyz.angm.terra3d.common.world.*
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 
 const val RENDER_DIST_CHUNKS = 3
@@ -51,6 +48,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
     private val chunksWaitingForRender = Queue<RenderableChunk>(400)
     private val generator = TerrainGenerator(this)
     private val lighting = BfsLight(this)
+    internal val fluid = BfsFluid(this)
 
     val chunksLoaded: Int get() = chunks.size
     val waitingForRender: Int get() = chunksWaitingForRender.size
@@ -66,6 +64,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
                     chunk.setBlock(packet.position, packet)
                     packet.position.add(chunk.position) // Restore state, listeners should not modify
                     lighting.blockSet(packet, oldBlock)
+                    fluid.blockSet(packet, oldBlock)
 
                     // Put it at the other end of the list to ensure it gets
                     // rendered first on the next frame
@@ -176,7 +175,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
     /** Gets block.
      * @param position Position of the block in world coordinates
      * @return Block at specified location; can be null */
-    fun getBlock(position: IntVector3): Block? {
+    override fun getBlock(position: IntVector3): Block? {
         val chunk = getChunk(position)
         return chunk?.getBlock(tmpIV1.set(position).minus(chunk.position))
     }
