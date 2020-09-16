@@ -73,6 +73,11 @@ object CommandHandler {
 
         dispatcher.register(literal<GameScreen>("day").executes { it.setTime(0.5f) })
         dispatcher.register(literal<GameScreen>("night").executes { it.setTime(MathUtils.PI + 0.5f) })
+
+        dispatcher.register(literal<GameScreen>("tool").executes {
+            execute("give ultratool", it.source)
+            1
+        })
     }
 
     /** Executes the command given by the user. The leading $ should be cut. */

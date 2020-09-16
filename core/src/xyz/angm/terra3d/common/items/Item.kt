@@ -195,7 +195,8 @@ data class Item(
             val isBlend get() = blend && configuration.video.blend
 
             /** Returns the actual time required to break a block, given the tool's properties. */
-            fun getBreakTime(tool: ToolProperties?) = breakTime * (if (tool != null && tool.type == prefTool) tool.multiplier else 1f)
+            fun getBreakTime(tool: ToolProperties?) =
+                breakTime * (if (tool != null && (tool.type == "ALL" || tool.type == prefTool)) tool.multiplier else 1f)
 
             /** All orientations this block can be placed. Any non-allowed ones get coerced. */
             @Serializable
@@ -224,7 +225,7 @@ data class Item(
         data class ToolProperties(
             val type: String,
             val multiplier: Float,
-            val durability: Int,
+            val durability: Int = 0,
             val level: Int = 0
         )
     }

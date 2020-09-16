@@ -297,3 +297,10 @@ water:
   texture: textures/blocks/water.png
   block:
     blend: true
+
+ultratool:
+  texture: textures/items/wood_hoe.png
+  tool:
+    type: ALL
+    multiplier: 0.0001
+    level: 999
