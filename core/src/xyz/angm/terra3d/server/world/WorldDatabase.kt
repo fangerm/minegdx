@@ -142,7 +142,7 @@ internal class WorldDatabase(private val server: Server) {
     /** Saves all chunks to DB. Called at regular intervals; as well as on shutdown. */
     internal fun flushChunks() {
         transaction {
-            newChunks.filter { changedChunks.contains(it.key) }.forEach { chunk ->
+            newChunks.filter { changedChunks.containsKey(it.key) }.forEach { chunk ->
                 Chunks.insert {
                     it[x] = chunk.key.x
                     it[y] = chunk.key.y
@@ -150,7 +150,7 @@ internal class WorldDatabase(private val server: Server) {
                     it[data] = ExposedBlob(fst.asByteArray(chunk.value))
                 }
             }
-            changedChunks.filter { !newChunks.contains(it.key) }.forEach { chunk ->
+            changedChunks.filter { !newChunks.containsKey(it.key) }.forEach { chunk ->
                 Chunks.update({ (Chunks.x eq chunk.key.x) and (Chunks.y eq chunk.key.y) and (Chunks.z eq chunk.key.z) }) {
                     it[data] = ExposedBlob(fst.asByteArray(chunk.value))
                 }
