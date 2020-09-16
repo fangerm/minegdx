@@ -205,8 +205,8 @@ class PlayerPhysicsSystem(
         }
     }
 
-    var sprinting = false
-    private var sneaking = false
+    internal var sprinting = false
+    internal var sneaking = false
     private var glideSpeed = GLIDE_START_SPEED
 
     /** Toggle the player sneaking. Reduces player's height and makes their fall speed very low, allowing for a 'gliding' effect */

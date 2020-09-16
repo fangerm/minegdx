@@ -84,8 +84,10 @@ class PlayerInputSystem(
         val context = EventContext(screen = screen, item = playerC.inventory.heldItem, block = blockLookedAt)
 
         if (blockLookedAt != null) {
-            val blockE = PlayerInteractions.get(blockLookedAt, Event.BLOCK_CLICKED)
-            if (blockE?.invoke(context) != null) return // Block event triggered, done here
+            if (!physicsSystem.sneaking) { // Don't trigger block events when sneaking
+                val blockE = PlayerInteractions.get(blockLookedAt, Event.BLOCK_CLICKED)
+                if (blockE?.invoke(context) != null) return // Block event triggered, done here
+            }
 
             // Try placing a block
             val block = playerC.inventory.heldItem ?: return
