@@ -106,7 +106,7 @@ class Client() {
         // Kick this off on a coroutine to prevent locking main thread
         scope.launch {
             while (!locked && !queued.isEmpty) {
-                packetChannel.send(queued.pop())
+                packetChannel.send(queued.pop() ?: continue) // this is null sometimes??
             }
         }
     }

@@ -26,7 +26,7 @@ class TerrainGenerator(val world: WorldInterface) {
     fun generateChunks(position: IntVector3): Array<Chunk> {
         position.chunk().y = 0
         val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
-        val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z, biomeMap)
+        val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z)
 
         val chunks = Array(WORLD_HEIGHT_IN_CHUNKS) {
             val chunk = Chunk(chunkPosition = IntVector3(position.x, it * CHUNK_SIZE, position.z))
@@ -45,7 +45,7 @@ class TerrainGenerator(val world: WorldInterface) {
     @Synchronized
     fun generateMissing(alreadyCreated: GdxArray<Chunk>?, position: IntVector3) {
         val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
-        val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z, biomeMap)
+        val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z)
 
         for (chunkIndex in 0 until WORLD_HEIGHT_IN_CHUNKS) {
             position.y = chunkIndex * CHUNK_SIZE

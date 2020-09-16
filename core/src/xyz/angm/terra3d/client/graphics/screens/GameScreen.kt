@@ -116,12 +116,13 @@ class GameScreen(
         // startBench(delta)
 
         client.lock()
+        Terra3D.execRunnables()
         world.update()
         engine.update(delta)
+        stage.act()
         client.unlock()
 
         renderer.render()
-        stage.act()
         stage.draw()
 
         // bench.stop()
@@ -177,7 +178,7 @@ class GameScreen(
         val physicsSystem = PlayerPhysicsSystem(world::blockExists, player)
         engine.addSystem(physicsSystem)
         client.addListener {
-            if (it is BlockUpdate) Gdx.app.postRunnable(physicsSystem::blockChanged)
+            if (it is BlockUpdate) Terra3D.postRunnable(physicsSystem::blockChanged)
         }
 
         engine.addSystem(PlayerInputSystem(this, player, engine.getSystem(PlayerPhysicsSystem::class.java), inputHandler))
@@ -199,7 +200,7 @@ class GameScreen(
         val netSystem = engine.getSystem(NetworkSystem::class.java)
         client.addListener { if (it is EntityData) netSystem.receive(it) }
 
-        client.disconnectListener = { Gdx.app.postRunnable { returnToMenu(I18N["disconnected-from-server"]) } }
+        client.disconnectListener = { Terra3D.postRunnable { returnToMenu(I18N["disconnected-from-server"]) } }
         client.send(ChatMessagePacket("[CYAN]${player[playerM]!!.name}[LIGHT_GRAY] ${I18N["joined-game"]}"))
 
         // Input
@@ -208,7 +209,7 @@ class GameScreen(
 
         // Chunk loading
         schedule(2000, 1000, coScope) {
-            Gdx.app.postRunnable { world.updateLoadedChunks(IntVector3(player[position]!!)) }
+            Terra3D.postRunnable { world.updateLoadedChunks(IntVector3(player[position]!!)) }
         }
     }
 

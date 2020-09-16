@@ -1,6 +1,5 @@
 package xyz.angm.terra3d.client.world
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
@@ -68,9 +67,9 @@ class World(private val client: Client, override val seed: String) : Disposable,
                     packet.position.add(chunk.position) // Restore state, listeners should not modify
                     lighting.blockSet(packet, oldBlock)
 
-                    // Do this immediately instead of queueing to prevent other
-                    // chunks holding up the queue and the user noticing a delay
-                    Gdx.app.postRunnable { chunk.mesh(this) }
+                    // Put it at the other end of the list to ensure it gets
+                    // rendered first on the next frame
+                    if (!chunk.isQueued) chunksWaitingForRender.addLast(chunk)
                     queueNeighbors(chunk)
                 }
                 is ChunksLine -> addChunks(packet.chunks)

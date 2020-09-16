@@ -97,7 +97,7 @@ internal class WorldDatabase(private val server: Server) {
     }
 
     /** Get a chunk from one of the caches, if they have it. */
-    internal fun getCachedChunk(pos: IntVector3): Chunk? = newChunks[pos] ?: changedChunks[pos] ?: unchangedChunks[pos]
+    internal fun getCachedChunk(pos: IntVector3): Chunk? = changedChunks[pos] ?: unchangedChunks[pos] ?: newChunks[pos]
 
     /** Sets the block. Does not do other needed things like firing events or updating block entities.
      * @param position The position to place it at

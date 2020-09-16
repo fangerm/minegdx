@@ -3,9 +3,9 @@ package xyz.angm.terra3d.client.ecs.systems
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.EntityListener
 import com.badlogic.ashley.systems.IteratingSystem
-import com.badlogic.gdx.Gdx
 import ktx.ashley.allOf
 import ktx.ashley.get
+import xyz.angm.terra3d.client.Terra3D
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
@@ -25,7 +25,7 @@ class RenderSystem : IteratingSystem(allOf(ModelRenderComponent::class, Position
     /** Add the entities model. */
     override fun entityAdded(entity: Entity) {
         if (hasModel(entity)) {
-            Gdx.app.postRunnable {
+            Terra3D.postRunnable {
                 val component = ModelRenderComponent()
                 component.model = ResourceManager.models.getEntityModelInstance(entity)
                 entity.add(component)

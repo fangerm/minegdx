@@ -33,9 +33,9 @@ class BfsLight(private val world: WorldInterface) {
     }
 
     private fun emptyLightQueue() {
-        while (!lightQ.isEmpty) {
+        while (lightQ.notEmpty()) {
             val node = lightQ.removeFirst()
-            val light = tmpColor.set(world.getLocalLight(node) ?: return)
+            val light = tmpColor.set(world.getLocalLight(node) ?: continue)
 
             node.x--
             visitBlockLight(node, light)
@@ -81,7 +81,7 @@ class BfsLight(private val world: WorldInterface) {
     }
 
     private fun emptyRemoveQueue() {
-        while (!removeQ.isEmpty) {
+        while (removeQ.notEmpty()) {
             val node = removeQ.removeFirst()
             tmpColor.delinearize(node.color, (RED_LIGHT shr RED_LIGHT_SHIFT) + 1)
             val light = tmpColor

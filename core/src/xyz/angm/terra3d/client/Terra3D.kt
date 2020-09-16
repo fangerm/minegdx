@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.physics.bullet.Bullet
 import com.kotcrab.vis.ui.VisUI
+import ktx.collections.*
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
 import xyz.angm.terra3d.client.networking.Client
@@ -87,4 +88,25 @@ class Terra3D : Game() {
         setScreen(GameScreen(this, client, world, data.player.toEntity(), EntityData.toEntities(data.entities)))
 
     override fun dispose() = exitProcess(0)
+
+    companion object {
+
+        private val runnables = GdxArray<() -> Unit>(10)
+
+        /** Post a runnable to be run on the main thread on the next frame.
+         * This is a replacement for `Gdx.app.postRunnable` provided by
+         * libGDX, which cannot be used as it does not allow for running code
+         * each frame before the runnables - which is needed to lock the client
+         * and prevent race conditions.
+         * Only works while in-game - MenuScreen does not process this!
+         * For menus and other things that might be called while not
+         * in-game you should simply use the libGDX provided method. */
+        fun postRunnable(runnable: () -> Unit) = runnables.add(runnable)
+
+        /** Called once per frame by [GameScreen], executes all runnables. */
+        fun execRunnables() {
+            runnables.forEach { it() }
+            runnables.clear()
+        }
+    }
 }

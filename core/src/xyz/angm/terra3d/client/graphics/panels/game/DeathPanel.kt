@@ -1,12 +1,12 @@
 package xyz.angm.terra3d.client.graphics.panels.game
 
-import com.badlogic.gdx.Gdx
 import ktx.actors.onClick
 import ktx.actors.plusAssign
 import ktx.ashley.get
 import ktx.scene2d.scene2d
 import ktx.scene2d.vis.visLabel
 import ktx.scene2d.vis.visTable
+import xyz.angm.terra3d.client.Terra3D
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
@@ -31,7 +31,7 @@ class DeathPanel(screen: GameScreen) : Panel(screen) {
                     screen.player[localPlayer]!!.teleport(screen.player[playerM]!!.spawnPosition)
                     screen.player[health]!!.restore()
                     screen.player[playerM]!!.hunger = MAX_HUNGER
-                    Gdx.app.postRunnable { // Need a slight delay to prevent item pickup race conditions...
+                    Terra3D.postRunnable { // Need a slight delay to prevent item pickup race conditions...
                         screen.player[playerM]!!.isDead = false
                         screen.popAllPanels()
                     }
