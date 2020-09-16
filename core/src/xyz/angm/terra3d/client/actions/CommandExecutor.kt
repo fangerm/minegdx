@@ -1,5 +1,6 @@
 package xyz.angm.terra3d.client.actions
 
+import com.badlogic.gdx.math.MathUtils
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType.getInteger
 import com.mojang.brigadier.arguments.IntegerArgumentType.integer
@@ -12,9 +13,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException
 import ktx.ashley.get
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.ecs.health
-import xyz.angm.terra3d.common.ecs.localPlayer
-import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.items.Item
 
 /** Responsible for parsing commands entered by the user.
@@ -63,6 +62,17 @@ object CommandHandler {
                     1
                 }
         )
+
+        fun CommandContext<GameScreen>.setTime(time: Float): Int {
+            val dtE = source.engine.entities.find { it[dayTime] != null }!!
+            dtE[dayTime]!!.time = time
+            dtE[network]!!.needsSync = true
+            returnMessage = "[GREEN]Set time."
+            return 1
+        }
+
+        dispatcher.register(literal<GameScreen>("day").executes { it.setTime(0.5f) })
+        dispatcher.register(literal<GameScreen>("night").executes { it.setTime(MathUtils.PI + 0.5f) })
     }
 
     /** Executes the command given by the user. The leading $ should be cut. */
