@@ -10,8 +10,12 @@ import xyz.angm.terra3d.common.networking.BlockUpdate
 fun registerBlockChangeListener(client: Client, world: World) {
     client.addListenerPriority {
         if (it is BlockUpdate) {
-            val sound = if (it.type == 0) world.getBlock(it.position)?.properties?.block?.destroySound
-            else it.properties?.block?.placedSound
+            val previous = world.getBlock(it.position)
+            val sound = when {
+                it.type == 0 -> previous?.properties?.block?.destroySound
+                previous == null -> it.properties?.block?.placedSound
+                else -> return@addListenerPriority // Block type did not change, probably just metadata change
+            }
             soundPlayer.playSound3D(sound ?: return@addListenerPriority, it.position.toV3())
         }
     }
