@@ -15,12 +15,14 @@ const val NOTHING = 0
  * @property position Position of the block; origin is the world origin
  * @property orientation The orientation of the block. Not all blocks can be rotated.
  * @property metadata The blocks metadata, can contain information specific to the instance of the block
+ * @property fluidLevel The fluid level, if this block is a fluid.
  * @property properties Properties of this item type */
-class Block(
+data class Block(
     val type: ItemType = 0,
     val position: IntVector3 = IntVector3(),
     var metadata: IMetadata? = null,
     var orientation: Orientation = Orientation.UP,
+    var fluidLevel: Int = 0
 ) : Serializable {
 
     val properties get() = Item.Properties.fromType(type)
@@ -28,8 +30,8 @@ class Block(
     /** Alternative constructor for constructing from an item instead of values directly. */
     constructor(item: Item, position: IntVector3, orientation: Orientation) : this(item.type, position, item.metadata, orientation)
 
-    constructor(type: ItemType, position: IntVector3, metadata: IMetadata?, orientation: Int)
-            : this(type, position, metadata, Orientation.fromId(orientation))
+    constructor(type: ItemType, position: IntVector3, metadata: IMetadata?, orientation: Int, fluidLevel: Int)
+            : this(type, position, metadata, Orientation.fromId(orientation), fluidLevel)
 
     init {
         orientation = properties?.block?.orientation?.get(orientation) ?: orientation

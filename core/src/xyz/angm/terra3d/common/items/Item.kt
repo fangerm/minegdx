@@ -163,6 +163,9 @@ data class Item(
          * @property greenLight Green light strength, 0-15; only matters if `emitsLight == true`
          * @property blueLight Blue light strength, 0-15; only matters if `emitsLight == true`
          *
+         * @property fluid If this block is a fluid. Will cause render behavior to change and the block to spead/flow.
+         * @property fluidReach The
+         *
          * @property placedSound Sound played when the block is placed by a player.
          * @property hitSound Sound played when the block is hit by a player.
          * @property destroySound Sound played when a block is broken by a player.
@@ -186,6 +189,9 @@ data class Item(
             val redLight: Int = 0,
             val greenLight: Int = 0,
             val blueLight: Int = 0,
+
+            val fluid: Boolean = false,
+            val fluidReach: Int = 15,
 
             val placedSound: String = "step/stone1",
             val hitSound: String = "dig/stone1",

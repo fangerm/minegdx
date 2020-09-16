@@ -41,6 +41,7 @@ class World(private val server: Server) : WorldInterface {
     internal val generator = TerrainGenerator(this)
     private val blockEntitySystem = BlockEntitySystem(this)
     private val lighting = BfsLight(this)
+    internal val fluids = BfsFluid(this)
 
     private val channel = Channel<World.() -> Unit>()
 
@@ -131,7 +132,10 @@ class World(private val server: Server) : WorldInterface {
             if (blockEntity != null) blockEntitySystem.createBlockEntity(server.engine, blockEntity)
         }
 
-        sync { lighting.blockSet(block, oldBlock) }
+        sync {
+            lighting.blockSet(block, oldBlock)
+            fluids.blockSet(block, oldBlock)
+        }
         server.sendToAll(block)
 
         return true
@@ -159,7 +163,7 @@ class World(private val server: Server) : WorldInterface {
         val chunk = database.getChunk(position)
         tmpIV.set(position).minus(chunk?.position ?: return)
         database.markChunkChanged(chunk)
-        return chunk.setLocalLight(tmpIV.x, tmpIV.y, tmpIV.z, light)
+        chunk.setLocalLight(tmpIV.x, tmpIV.y, tmpIV.z, light)
     }
 
     /** This method always runs the given closures on the same thread.

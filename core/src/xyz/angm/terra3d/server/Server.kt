@@ -24,6 +24,7 @@ import xyz.angm.terra3d.common.log
 import xyz.angm.terra3d.common.networking.*
 import xyz.angm.terra3d.common.schedule
 import xyz.angm.terra3d.common.world.WorldSaveManager
+import xyz.angm.terra3d.server.ecs.systems.FluidSystem
 import xyz.angm.terra3d.server.ecs.systems.ItemSystem
 import xyz.angm.terra3d.server.networking.Connection
 import xyz.angm.terra3d.server.networking.LocalServerSocket
@@ -59,6 +60,7 @@ class Server(
         engine {
             addSystem(ItemSystem())
             addSystem(RemoveSystem())
+            addSystem(FluidSystem(world.fluids))
             val netSystem = NetworkSystem(::sendToAll)
             addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
             addSystem(netSystem)

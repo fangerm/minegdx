@@ -9,7 +9,8 @@ import xyz.angm.terra3d.common.networking.BlockUpdate
 
 fun registerBlockChangeListener(client: Client, world: World) {
     client.addListenerPriority {
-        if (it is BlockUpdate) {
+        // Fluids do not produce noise here
+        if (it is BlockUpdate && it.properties?.block?.fluid == false) {
             val previous = world.getBlock(it.position)
             val sound = when {
                 it.type == 0 -> previous?.properties?.block?.destroySound

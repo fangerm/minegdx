@@ -37,6 +37,10 @@ const val BLUE_LIGHT = 0b1111 shl BLUE_LIGHT_SHIFT
 /** Convenience mask containing all lighting */
 const val LIGHTING = (RED_LIGHT or GREEN_LIGHT or BLUE_LIGHT)
 
+/** The block's fluid height level, this only applies to blocks that are fluids. */
+const val FLUID_LEVEL_SHIFT = 27 // After blue
+const val FLUID_LEVEL = 0b1111 shl FLUID_LEVEL_SHIFT
+
 /** A chunk is a 3D array of blocks of size [CHUNK_SIZE]. It should only be used by the world itself, and not exposed to other classes.
  * @property position The chunk's origin.
  * @property blockData Array of all blocks in the chunk; XYZ. Lower 16 bits are type, higher are status bits - see above
@@ -64,7 +68,13 @@ open class Chunk private constructor(
     /** Returns the block at the specified location, or null if there is none. */
     fun getBlock(p: IntVector3): Block? {
         return if (p.isInBounds(0, CHUNK_SIZE) && this[p.x, p.y, p.z, TYPE] != 0) {
-            Block(this[p.x, p.y, p.z, TYPE], p.cpy().add(position), blockMetadata[p], this[p.x, p.y, p.z, ORIENTATION] shr ORIENTATION_SHIFT)
+            Block(
+                this[p.x, p.y, p.z, TYPE],
+                p.cpy().add(position),
+                blockMetadata[p],
+                this[p.x, p.y, p.z, ORIENTATION] shr ORIENTATION_SHIFT,
+                this[p.x, p.y, p.z, FLUID_LEVEL] shr FLUID_LEVEL_SHIFT
+            )
         } else null
     }
 
@@ -87,7 +97,7 @@ open class Chunk private constructor(
         val color = (c.x shl RED_LIGHT_SHIFT) or (c.y shl GREEN_LIGHT_SHIFT) or (c.z shl BLUE_LIGHT_SHIFT)
         val data = this[x, y, z, ALL]
         // Reset color channels to 0 so they can be set properly using bitwise or
-        val dataNoColor = data and ((RED_LIGHT or GREEN_LIGHT or BLUE_LIGHT) xor ALL)
+        val dataNoColor = data and (LIGHTING xor ALL)
         this[x, y, z] = dataNoColor or color
     }
 
@@ -103,7 +113,8 @@ open class Chunk private constructor(
     fun setBlock(position: IntVector3, block: Block?) {
         val id = block?.properties?.type ?: NOTHING
         val orient = (block?.orientation?.toId() ?: NOTHING) shl ORIENTATION_SHIFT
-        setBlock(position, id or orient)
+        val fluid = (block?.fluidLevel ?: 0) shl FLUID_LEVEL_SHIFT
+        setBlock(position, id or orient or fluid)
         if (block?.metadata != null) blockMetadata[position.cpy()] = block.metadata!!
     }
 

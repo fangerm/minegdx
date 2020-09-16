@@ -297,6 +297,8 @@ water:
   texture: textures/blocks/water.png
   block:
     blend: true
+    fluid: true
+    fluidReach: 7
 
 ultratool:
   texture: textures/items/wood_hoe.png
