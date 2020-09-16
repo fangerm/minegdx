@@ -129,7 +129,7 @@ class ModelCache {
             else material
         val materialFront =
             if (texFront != null) Material(TextureAttribute.createDiffuse(ResourceManager.get<Texture>(texFront)))
-            else material
+            else materialSide
 
         if (blend) {
             material.set(BlendingAttribute())
@@ -194,7 +194,7 @@ class ModelCache {
         // Modify these and mess up render positions, i dare you
         camera.far = 8f
         camera.zoom = 0.027f
-        camera.position.set(3f, 4f, 3f)
+        camera.position.set(-3f, 4f, -3f)
         camera.up.set(0f, -1f, 0f) // Frame buffers are inverted by default, invert the cam to counter
         camera.lookAt(Vector3.Y)
         camera.update()
