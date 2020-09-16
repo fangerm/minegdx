@@ -6,6 +6,7 @@ import ktx.collections.*
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.ChestPanel
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.FurnacePanel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.ecs.components.specific.MAX_HUNGER
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Item
@@ -41,6 +42,7 @@ object PlayerInteractions {
                     if (ctx.screen.player[playerM]!!.hunger < MAX_HUNGER) {
                         ctx.screen.player[playerM]!!.hunger += item.hunger
                         ctx.screen.playerInventory.subtractFromHeldItem(1)
+                        soundPlayer.playSound("random/eat1")
                     }
                 }
             }
