@@ -3,6 +3,9 @@ package xyz.angm.terra3d.server.world
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import com.badlogic.gdx.utils.ObjectMap
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import ktx.collections.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.statements.api.ExposedBlob
@@ -21,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 internal class WorldDatabase(private val server: Server) {
 
-    private val db: Database
     private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
     private val tmpIV get() = tmpIVLocal.get()
 
@@ -30,13 +32,27 @@ internal class WorldDatabase(private val server: Server) {
     private val changedChunks = ConcurrentHashMap<IntVector3, Chunk>()
     private val unchangedChunks = ConcurrentHashMap<IntVector3, Chunk>()
 
-    init {
-        db = dbs[server.save.location] ?: {
-            dbs[server.save.location] = Database.connect("jdbc:sqlite:${server.save.location}/world.sqlite3", "org.sqlite.JDBC")
-            dbs[server.save.location]!!
-        }()
+    // These channels are used to interact with the worker coroutine, which
+    // is the only coroutine with access the DB
+    private val channelTx = Channel<Transaction.() -> Any>()
+    private val channelRx = Channel<Any>()
 
+    init {
         TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
+
+        server.coScope.launch { // Worker/transaction thread
+            val db = dbs[server.save.location] ?: {
+                dbs[server.save.location] = Database.connect("jdbc:sqlite:${server.save.location}/world.sqlite3", "org.sqlite.JDBC")
+                dbs[server.save.location]!!
+            }()
+
+            while (true) {
+                val statement = channelTx.receive()
+                val res = org.jetbrains.exposed.sql.transactions.transaction(db, statement)
+                channelRx.send(res)
+            }
+        }
+
         transaction {
             SchemaUtils.create(Chunks)
             (exposedLogger as Logger).level = Level.ERROR
@@ -166,8 +182,10 @@ internal class WorldDatabase(private val server: Server) {
         return transaction { Chunks.select { (Chunks.x eq tmpIV.x) and (Chunks.y eq tmpIV.y) and (Chunks.z eq tmpIV.z) }.firstOrNull() }
     }
 
-    @Synchronized
-    private fun <T> transaction(statement: Transaction.() -> T) = org.jetbrains.exposed.sql.transactions.transaction(db, statement)
+    private fun <T> transaction(statement: Transaction.() -> T) = runBlocking {
+        channelTx.send(statement as Transaction.() -> Any)
+        channelRx.receive() as T
+    }
 
     private companion object {
         // https://github.com/JetBrains/Exposed/wiki/Transactions#working-with-a-multiple-databases
