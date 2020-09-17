@@ -11,6 +11,7 @@ import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.velocity
 import xyz.angm.terra3d.common.fst
 import xyz.angm.terra3d.common.networking.JoinPacket
 import xyz.angm.terra3d.common.yaml
@@ -63,6 +64,7 @@ object WorldSaveManager {
             } else PlayerComponent.create(engine, info.name, info.uuid)
 
             entity.remove(RemoveFlag::class.java) // Unsure why but this is here?
+            entity[velocity]!!.setZero() // See issue terra3d#97
             return entity
         }
 
