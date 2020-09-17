@@ -1,14 +1,13 @@
 package xyz.angm.terra3d.client.graphics.render
 
-import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.graphics.Camera
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.utils.DefaultShaderProvider
 import com.badlogic.gdx.utils.Disposable
-import ktx.ashley.allOf
-import ktx.ashley.get
 import ktx.assets.file
+import xyz.angm.rox.Entity
+import xyz.angm.rox.Family.Companion.allOf
 import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
@@ -24,7 +23,7 @@ class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity
     val cam = PerspectiveCamera(FOV, WORLD_WIDTH, WORLD_HEIGHT)
     private val env = Environment()
     private val modelBatch = ModelBatch(DefaultShaderProvider(file("shader/vertex.glsl"), file("shader/fragment.glsl")))
-    private val renderableEntities = allOf(ModelRenderComponent::class).get()
+    private val renderableEntities = allOf(ModelRenderComponent::class)
 
     init {
         cam.near = 0.15f
@@ -33,7 +32,7 @@ class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity
     }
 
     fun render() {
-        env.preRender(this, dayTimeEntity[dayTime]!!.time)
+        env.preRender(this, dayTimeEntity[dayTime].time)
         modelBatch.begin(cam)
         env.render(modelBatch)
         renderWorld(modelBatch, cam, env.environment)
@@ -45,8 +44,8 @@ class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity
     internal fun renderWorld(batch: ModelBatch, cam: Camera, environment: com.badlogic.gdx.graphics.g3d.Environment?) {
         screen.client.lock()
         screen.world.render(batch, cam, environment)
-        screen.player[playerRender]!!.render(batch, environment)
-        screen.engine.getEntitiesFor(renderableEntities).forEach { it[modelRender]!!.render(batch, environment) }
+        screen.player[playerRender].render(batch, environment)
+        screen.engine[renderableEntities].forEach { it[modelRender].render(batch, environment) }
         screen.client.unlock()
     }
 

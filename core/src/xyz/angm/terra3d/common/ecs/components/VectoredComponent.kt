@@ -1,7 +1,7 @@
 package xyz.angm.terra3d.common.ecs.components
 
-import com.badlogic.ashley.core.Component
 import com.badlogic.gdx.math.Vector3
+import xyz.angm.rox.Component
 
 /** A simple class for components containing a float vector.
  * @property x The first/X axis.

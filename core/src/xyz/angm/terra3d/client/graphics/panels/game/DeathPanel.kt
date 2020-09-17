@@ -2,7 +2,7 @@ package xyz.angm.terra3d.client.graphics.panels.game
 
 import ktx.actors.onClick
 import ktx.actors.plusAssign
-import ktx.ashley.get
+
 import ktx.scene2d.scene2d
 import ktx.scene2d.vis.visLabel
 import ktx.scene2d.vis.visTable
@@ -28,11 +28,11 @@ class DeathPanel(screen: GameScreen) : Panel(screen) {
             visTextButton(I18N["death.respawn"]) {
                 it.height(Skin.textButtonHeight).width(Skin.textButtonWidth).row()
                 onClick {
-                    screen.player[localPlayer]!!.teleport(screen.player[playerM]!!.spawnPosition)
-                    screen.player[health]!!.restore()
-                    screen.player[playerM]!!.hunger = MAX_HUNGER
+                    screen.player[localPlayer].teleport(screen.player[playerM].spawnPosition)
+                    screen.player[health].restore()
+                    screen.player[playerM].hunger = MAX_HUNGER
                     Terra3D.postRunnable { // Need a slight delay to prevent item pickup race conditions...
-                        screen.player[playerM]!!.isDead = false
+                        screen.player[playerM].isDead = false
                         screen.popAllPanels()
                     }
                 }

@@ -1,7 +1,7 @@
 package xyz.angm.terra3d.client.graphics.panels.game.inventory
 
 import com.badlogic.gdx.utils.Align
-import ktx.ashley.get
+
 import xyz.angm.terra3d.client.graphics.actors.GenericInventoryWindow
 import xyz.angm.terra3d.client.graphics.actors.PlayerInventoryWindow
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
@@ -19,7 +19,7 @@ class ChestPanel(screen: GameScreen, private val chest: Block) : NetworkInventor
     private val chestInv = Inventory(54)
 
     init {
-        addActor(PlayerInventoryWindow(this, screen.player[playerM]!!.inventory).apply { setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 3, Align.center) })
+        addActor(PlayerInventoryWindow(this, screen.player[playerM].inventory).apply { setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 3, Align.center) })
         val blockInv = (chest.metadata as ChestMetadata).inventory
         copyToInv(blockInv)
         addActor(GenericInventoryWindow(this, chestInv))

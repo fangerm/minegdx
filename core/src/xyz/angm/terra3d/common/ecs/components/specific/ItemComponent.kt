@@ -1,10 +1,8 @@
 package xyz.angm.terra3d.common.ecs.components.specific
 
-import com.badlogic.ashley.core.Component
-import com.badlogic.ashley.core.Engine
 import com.badlogic.gdx.math.Vector3
-import ktx.ashley.entity
-import ktx.ashley.with
+import xyz.angm.rox.Component
+import xyz.angm.rox.Engine
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.VelocityComponent
@@ -26,7 +24,7 @@ class ItemComponent : Component {
 
         private val random = Random(System.currentTimeMillis())
 
-        fun create(engine: Engine, item: Item, position: Vector3, pickupTime: Float = 0f) =
+        fun create(engine: Engine, item: Item, position: Vector3, pickupTime: Float = 0f) {
             engine.entity {
                 with<PositionComponent> { set(position) }
                 with<VelocityComponent> {
@@ -40,6 +38,8 @@ class ItemComponent : Component {
                     pickupTimeout = pickupTime
                 }
                 with<NetworkSyncComponent>()
+
             }
+        }
     }
 }

@@ -1,7 +1,6 @@
 package xyz.angm.terra3d.client.actions
 
 import com.badlogic.gdx.utils.ObjectMap
-import ktx.ashley.get
 import ktx.collections.*
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.ChestPanel
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.FurnacePanel
@@ -39,8 +38,8 @@ object PlayerInteractions {
         for (item in Item.Properties.allItems) {
             if (item.hunger != 0) {
                 add(item.type, Event.ITEM_CLICKED) { ctx ->
-                    if (ctx.screen.player[playerM]!!.hunger < MAX_HUNGER) {
-                        ctx.screen.player[playerM]!!.hunger += item.hunger
+                    if (ctx.screen.player[playerM].hunger < MAX_HUNGER) {
+                        ctx.screen.player[playerM].hunger += item.hunger
                         ctx.screen.playerInventory.subtractFromHeldItem(1)
                         soundPlayer.playSound("random/eat1")
                     }

@@ -1,17 +1,13 @@
 package xyz.angm.terra3d.server
 
-import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.utils.IntMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import ktx.ashley.allOf
-import ktx.ashley.entity
-import ktx.ashley.get
-import ktx.ashley.with
 import ktx.collections.*
+import xyz.angm.rox.Entity
+import xyz.angm.rox.Family.Companion.allOf
 import xyz.angm.terra3d.common.TICK_RATE
-import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.DayTimeComponent
@@ -46,29 +42,30 @@ class Server(
     internal val coScope = CoroutineScope(Dispatchers.Default)
 
     val engine = ConcurrentEngine(coScope)
+    val netSystem = NetworkSystem(::sendToAll)
     val world = World(this)
     private val players = IntMap<Entity>() // Key is the connection id
-    private val playerFamily = allOf(PlayerComponent::class).get()
-    private val networkedFamily = allOf(NetworkSyncComponent::class).get()
+    private val playerFamily = allOf(PlayerComponent::class)
+    private val networkedFamily = allOf(NetworkSyncComponent::class)
 
     init {
         schedule(2000, 1000 / TICK_RATE, coScope, ::tick)
         schedule(30000, 30000, coScope) {
-            engine { world.updateLoadedChunksByPlayers(getEntitiesFor(playerFamily)) }
+            engine { world.updateLoadedChunksByPlayers(this[playerFamily]) }
         }
 
         engine {
-            addSystem(ItemSystem())
-            addSystem(RemoveSystem())
-            addSystem(FluidSystem(world.fluids))
-            val netSystem = NetworkSystem(::sendToAll)
-            addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
-            addSystem(netSystem)
+            add(ItemSystem())
+            add(FluidSystem(world.fluids))
+            add(allOf(NetworkSyncComponent::class), netSystem)
+            add(netSystem, last = true)
+            add(RemoveSystem(), last = true)
+
             save.getAllEntities(this)
 
             // If this is the first launch, add the DayTime entity used for
             // keeping track of the time
-            if (entities.size() == 0) {
+            if (entities.isEmpty) {
                 entity {
                     with<DayTimeComponent>()
                     with<NetworkSyncComponent>()
@@ -99,9 +96,9 @@ class Server(
             is ChunkRequest -> send(connection, ChunksLine(packet.position, world.getChunkLine(packet.position)))
             is ChatMessagePacket -> sendToAll(packet)
             is JoinPacket -> registerPlayer(connection, packet)
-            is EntityData -> {
+            is Entity -> {
                 engine {
-                    getSystem(NetworkSystem::class.java).receive(packet)
+                    netSystem.receive(packet)
                     sendToAll(packet) // Ensure it syncs to all players
                 }
             }
@@ -120,19 +117,19 @@ class Server(
 
     private fun registerPlayer(connection: Connection, packet: JoinPacket) {
         engine {
-            val entities = EntityData.from(getEntitiesFor(networkedFamily))
+            val entities = this[networkedFamily].toArray()
             val playerEntity = save.getPlayer(this, packet)
             players[connection.id] = playerEntity
 
-            send(connection, InitPacket(EntityData.from(playerEntity), entities, world.getInitData(playerEntity[position]!!), world.seed))
-            playerEntity[network]!!.needsSync = true // Ensure player gets synced next tick
+            send(connection, InitPacket(world.seed, playerEntity, entities, world.getInitData(playerEntity[position])))
+            playerEntity[network].needsSync = true // Ensure player gets synced next tick
         }
     }
 
     internal fun onDisconnected(connection: Connection) {
         val player = players[connection.id] ?: return
         save.savePlayer(player)
-        RemoveFlag.flag(player)
+        engine { RemoveFlag.flag(this, player) }
         log.info { "[SERVER] Disconnected from connection id ${connection.id}." }
     }
 

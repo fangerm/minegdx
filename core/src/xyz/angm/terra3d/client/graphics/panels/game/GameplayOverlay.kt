@@ -15,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.utils.Align
-import ktx.ashley.get
+
 import xyz.angm.terra3d.client.graphics.actors.Chat
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.actors.ItemTooltip
@@ -50,12 +50,12 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
             ResourceManager.getTextureRegion(icons, 32, 0, 18, 18),
             ResourceManager.getTextureRegion(icons, 122, 0, 18, 18),
             ResourceManager.getTextureRegion(icons, 104, 0, 18, 18)
-        ) { screen.player[health]!!.health }
+        ) { screen.player[health].health }
         val hungerBar = IconGroup(
             ResourceManager.getTextureRegion(icons, 32, 54, 18, 18),
             ResourceManager.getTextureRegion(icons, 122, 54, 18, 18),
             ResourceManager.getTextureRegion(icons, 104, 54, 18, 18)
-        ) { screen.player[playerM]!!.hunger }
+        ) { screen.player[playerM].hunger }
 
         addActor(hotbar)
         addActor(hotbarSelected)
@@ -86,7 +86,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
 
         debugLabel.isVisible = false
         onlinePlayers.isVisible = false
-        updateHotbarSelector(screen.player[playerM]!!.inventory.hotbarPosition)
+        updateHotbarSelector(screen.player[playerM].inventory.hotbarPosition)
         background = null
     }
 
@@ -95,7 +95,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         if (debugLabel.isVisible) debugLabel.setText(getDebugLabelString())
         if (onlinePlayers.isVisible) updateOnlinePlayers()
 
-        val block = screen.world.getBlock(screen.player[localPlayer]!!.blockLookingAt)
+        val block = screen.world.getBlock(screen.player[localPlayer].blockLookingAt)
         blockTooltip.update(block)
         blockTooltip.setPosition(0f, WORLD_HEIGHT, Align.topLeft)
     }
@@ -151,7 +151,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         OpenGL ${Gdx.graphics.glVersion.majorVersion}: ${Gdx.graphics.glVersion.rendererString}
         Display: ${Gdx.graphics.displayMode}
 
-        Player position: ${screen.player[position]!!.toStringFloor()} / ${screen.player[position]!!}
+        Player position: ${screen.player[position].toStringFloor()} / ${screen.player[position]}
         Camera direction: ${screen.cam.direction}
         
         Chunks loaded: ${screen.world.chunksLoaded}

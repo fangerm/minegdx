@@ -1,9 +1,9 @@
 package xyz.angm.terra3d.server
 
-import com.badlogic.ashley.core.Engine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
+import xyz.angm.rox.Engine
 
 /** A simple wrapper around an Ashley engine that only
  * accesses from a single thread to prevent race conditions.

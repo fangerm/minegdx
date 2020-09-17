@@ -1,10 +1,8 @@
 package xyz.angm.terra3d.common.ecs.components.specific
 
-import com.badlogic.ashley.core.Component
-import com.badlogic.ashley.core.Engine
 import com.badlogic.gdx.math.Vector3
-import ktx.ashley.entity
-import ktx.ashley.with
+import xyz.angm.rox.Component
+import xyz.angm.rox.Engine
 import xyz.angm.terra3d.common.ecs.components.*
 import xyz.angm.terra3d.common.items.Inventory
 

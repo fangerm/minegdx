@@ -1,53 +1,52 @@
 package xyz.angm.terra3d.common.ecs.systems
 
-import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.core.EntityListener
-import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.utils.IntMap
-import ktx.ashley.get
-import xyz.angm.terra3d.common.ecs.EntityData
+import xyz.angm.rox.Entity
+import xyz.angm.rox.EntityListener
+import xyz.angm.rox.EntitySystem
 import xyz.angm.terra3d.common.ecs.ignoreSync
 import xyz.angm.terra3d.common.ecs.network
 
 /** A system that keeps track of all entities registered and gives each a unique ID.
  *
  * It also automatically manages all entities sent via network by adding them to the engine automatically;
- * entities that request network update are sent automatically as well. */
-class NetworkSystem(
-    private val send: (EntityData) -> Unit
-) : EntitySystem(Int.MAX_VALUE - 1), EntityListener {
+ * entities that request network update are sent automatically as well.
+ *
+ * REGISTER AS SECOND LAST!. */
+class NetworkSystem(private val send: (Entity) -> Unit) : EntitySystem(), EntityListener {
 
     private val entities = IntMap<Entity>()
 
     /** Send any entities that require updating. */
-    override fun update(deltaTime: Float) {
+    override fun update(delta: Float) {
         entities.values().forEach { entity ->
-            if (entity[network]!!.needsSync) {
-                entity[network]!!.needsSync = false
-                send(EntityData.from(entity))
+            if (entity[network].needsSync) {
+                entity[network].needsSync = false
+                send(entity)
             }
         }
     }
 
     /** Either add the new entity or update the local one.
      * Called when entity was received over network. */
-    fun receive(data: EntityData) {
-        if (!entities.containsKey(data.network.id)) {
-            engine.addEntity(data.toEntity())
+    fun receive(netE: Entity) {
+        val network = netE.c(network) ?: return
+        if (!entities.containsKey(network.id)) {
+            engine.add(netE)
         } else {
-            val localEntity = entities[data.network.id]
-            if (localEntity[ignoreSync] != null) return // Things with this flag shouldn't be synced
-            data.components.forEach { localEntity.add(it) }
+            val localEntity = entities[network.id]
+            if (localEntity has ignoreSync) return // Things with this flag shouldn't be synced
+            localEntity.addAll(engine, netE)
         }
     }
 
     /** Keep track of all entities. */
     override fun entityAdded(entity: Entity) {
-        entities.put(entity[network]!!.id, entity)
+        entities.put(entity[network].id, entity)
     }
 
     /** Keep track of all entities. */
     override fun entityRemoved(entity: Entity) {
-        entities.remove(entity[network]!!.id)
+        entities.remove(entity[network].id)
     }
 }

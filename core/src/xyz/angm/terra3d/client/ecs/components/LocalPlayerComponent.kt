@@ -1,8 +1,8 @@
 package xyz.angm.terra3d.client.ecs.components
 
-import com.badlogic.ashley.core.Component
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
+import xyz.angm.rox.Component
 import xyz.angm.terra3d.common.IntVector3
 
 const val FOV = 75f

@@ -1,7 +1,5 @@
 package xyz.angm.terra3d.client.ecs.systems
 
-import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Matrix4.M33
@@ -15,7 +13,8 @@ import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSol
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState
 import com.badlogic.gdx.utils.Disposable
-import ktx.ashley.get
+import xyz.angm.rox.Entity
+import xyz.angm.rox.EntitySystem
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
@@ -76,7 +75,7 @@ class PlayerPhysicsSystem(
         }
     }
 
-    private val playerTransform = player[localPlayer]!!.transform
+    private val playerTransform = player[localPlayer].transform
     private var playerHeight = PLAYER_HEIGHT
     private var lastPosition = Vector3(0f, -1000f, 0f) // The last position blocks were updated at
 
@@ -104,7 +103,7 @@ class PlayerPhysicsSystem(
         world.gravity = Vector3(0f, -9.78f, 0f)
 
         blocks.forEach { x -> x.forEach { y -> y.forEach { world.addRigidBody(it) } } }
-        playerTransform.setToTranslation(tmpV2.set(player[position]!!))
+        playerTransform.setToTranslation(tmpV2.set(player[position]))
 
         world.debugDrawer = debugDrawer
         debugDrawer.debugMode = DBG_MAX_DEBUG_DRAW_MODE
@@ -124,7 +123,7 @@ class PlayerPhysicsSystem(
 
     private fun createPlayerController(): btKinematicCharacterController {
         playerGhostObj.collisionShape = playerShape
-        playerGhostObj.worldTransform = playerTransform.setTranslation(tmpV.set(player[position]!!))
+        playerGhostObj.worldTransform = playerTransform.setTranslation(tmpV.set(player[position]))
         playerGhostObj.collisionFlags = btCollisionObject.CollisionFlags.CF_CHARACTER_OBJECT
         val playerController = btKinematicCharacterController(playerGhostObj, playerShape, 0.55f, Vector3.Y)
         playerController.setMaxJumpHeight(1.5f)
@@ -161,8 +160,8 @@ class PlayerPhysicsSystem(
 
         world.stepSimulation(delta, 2, 1f / 60f)
         playerGhostObj.getWorldTransform(playerTransform)
-        player[position]!!.set(playerTransform.getTranslation(tmpV))
-        player[position]!!.y += playerHeight
+        player[position].set(playerTransform.getTranslation(tmpV))
+        player[position].y += playerHeight
     }
 
     /** Call when a block changed by a user.
@@ -175,11 +174,11 @@ class PlayerPhysicsSystem(
     private fun updateBlockCollisionEntities() {
         // Only update once the last update position
         // is more than a block away
-        val dist = player[position]!!.dst2(lastPosition)
+        val dist = player[position].dst2(lastPosition)
         if (dist < 4f) return
-        lastPosition.set(player[position]!!)
+        lastPosition.set(player[position])
 
-        tmpV.set(player[position]!!).sub(0f, playerHeight, 0f)
+        tmpV.set(player[position]).sub(0f, playerHeight, 0f)
         tmpIV.set(tmpV).minus(2, 2, 2)
 
         blocks.forEachIndexed { x, arrayX ->
@@ -245,8 +244,8 @@ class PlayerPhysicsSystem(
     /** Following code is abridged from libGDXs built-in FirstPersonCameraController
      * [com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController] */
     private fun getWalkDirection(delta: Float): Vector3 {
-        val velocity = player[velocity]!!
-        val direction = player[direction]!!
+        val velocity = player[velocity]
+        val direction = player[direction]
         tmpV.setZero()
 
         // Multiply speed if the player is currently sneaking in the air (gliding)

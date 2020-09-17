@@ -1,16 +1,14 @@
 package xyz.angm.terra3d.common.world
 
-import com.badlogic.ashley.core.Engine
-import com.badlogic.ashley.core.Entity
 import kotlinx.serialization.Serializable
-import ktx.ashley.allOf
-import ktx.ashley.exclude
-import ktx.ashley.get
 import ktx.assets.toLocalFile
-import xyz.angm.terra3d.common.ecs.EntityData
-import xyz.angm.terra3d.common.ecs.components.RemoveFlag
+import xyz.angm.rox.Engine
+import xyz.angm.rox.Entity
+import xyz.angm.rox.Family.Companion.allOf
+import xyz.angm.rox.Family.Companion.exclude
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.remove
 import xyz.angm.terra3d.common.ecs.velocity
 import xyz.angm.terra3d.common.fst
 import xyz.angm.terra3d.common.networking.JoinPacket
@@ -58,13 +56,13 @@ object WorldSaveManager {
         fun getPlayer(engine: Engine, info: JoinPacket): Entity {
             val player = "$location/players/${info.uuid}.bin".toLocalFile()
             val entity = if (player.exists()) {
-                val entity = (fst.asObject(player.readBytes()) as EntityData).toEntity()
-                engine.addEntity(entity)
+                val entity = fst.asObject(player.readBytes()) as Entity
+                engine.add(entity)
                 entity
             } else PlayerComponent.create(engine, info.name, info.uuid)
 
-            entity.remove(RemoveFlag::class.java) // Unsure why but this is here?
-            entity[velocity]!!.setZero() // See issue terra3d#97
+            entity.remove(engine, remove) // Unsure why but this is here?
+            entity[velocity].setZero() // See issue terra3d#97
             return entity
         }
 
@@ -72,20 +70,19 @@ object WorldSaveManager {
          * @param player The player to save */
         fun savePlayer(player: Entity) {
             "$location/players".toLocalFile().mkdirs()
-            "$location/players/${player[playerM]!!.clientUUID}.bin".toLocalFile().writeBytes(fst.asByteArray(EntityData.from(player)), false)
+            "$location/players/${player[playerM].clientUUID}.bin".toLocalFile().writeBytes(fst.asByteArray(player), false)
         }
 
         /** Will save all entities to disk, including players.
          * @param engine The engine to get the entities from. */
         fun saveAllEntities(engine: Engine) {
-            val playerFamily = allOf(PlayerComponent::class).get()
-            val otherFamily = exclude(PlayerComponent::class).get()
+            val playerFamily = allOf(PlayerComponent::class)
+            val otherFamily = exclude(PlayerComponent::class)
 
-            engine.getEntitiesFor(playerFamily).forEach { savePlayer(it) }
+            engine[playerFamily].forEach { savePlayer(it) }
 
-            val entities = engine.getEntitiesFor(otherFamily)
-            val entityData = Array(entities.size()) { EntityData.from(entities[it]) }
-            val rawData = fst.asByteArray(entityData)
+            val entities = engine[otherFamily]
+            val rawData = fst.asByteArray(entities.toArray())
             "$location/entities.bin".toLocalFile().writeBytes(rawData, false)
         }
 
@@ -95,8 +92,8 @@ object WorldSaveManager {
             val file = "$location/entities.bin".toLocalFile()
             if (!file.exists()) return // No entities to restore
             @Suppress("UNCHECKED_CAST")
-            val entities = fst.asObject(file.readBytes()) as Array<EntityData>
-            entities.forEach { engine.addEntity(it.toEntity()) }
+            val entities = fst.asObject(file.readBytes()) as Array<Entity>
+            entities.forEach { engine.add(it) }
         }
     }
 }

@@ -4,7 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.math.MathUtils
-import ktx.ashley.get
+
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.Configuration
 import xyz.angm.terra3d.client.resources.configuration
@@ -115,7 +115,7 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
             MathUtils.sin(yaw * DEG_TO_RAD) * MathUtils.cos(pitch * DEG_TO_RAD)
         ).nor()
         updateCamera()
-        screen.player[localPlayer]!!.transform.setFromEulerAngles(yaw, pitch, 0f)
+        screen.player[localPlayer].transform.setFromEulerAngles(yaw, pitch, 0f)
         return true
     }
 
@@ -129,8 +129,8 @@ class PlayerInputHandler(private val screen: GameScreen) : InputAdapter() {
 
     /** Scrolls players hotbar position. */
     override fun scrolled(amount: Int): Boolean {
-        screen.player[playerM]!!.inventory.scrollHotbarPosition(amount)
-        screen.gameplayPanel.updateHotbarSelector(screen.player[playerM]!!.inventory.hotbarPosition)
+        screen.player[playerM].inventory.scrollHotbarPosition(amount)
+        screen.gameplayPanel.updateHotbarSelector(screen.player[playerM].inventory.hotbarPosition)
         return true
     }
 }

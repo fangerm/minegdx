@@ -3,7 +3,7 @@ package xyz.angm.terra3d.client.graphics.panels.game
 import com.badlogic.gdx.Input
 import com.kotcrab.vis.ui.widget.VisTextField
 import ktx.actors.onKeyDown
-import ktx.ashley.get
+
 import xyz.angm.terra3d.client.actions.CommandHandler
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
@@ -34,5 +34,5 @@ class ChatPanel(private val screen: GameScreen) : Panel(screen) {
         screen.popPanel()
     }
 
-    private fun formatMessage(message: String) = "<[CYAN]${screen.player[playerM]!!.name}[WHITE]> $message"
+    private fun formatMessage(message: String) = "<[CYAN]${screen.player[playerM].name}[WHITE]> $message"
 }

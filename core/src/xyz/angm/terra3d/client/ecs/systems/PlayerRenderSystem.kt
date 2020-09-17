@@ -1,6 +1,5 @@
 package xyz.angm.terra3d.client.ecs.systems
 
-import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
@@ -13,7 +12,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.utils.Disposable
-import ktx.ashley.get
+import xyz.angm.rox.EntitySystem
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
@@ -29,7 +28,7 @@ class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Dispo
     private val camera = PerspectiveCamera(40f, WORLD_WIDTH, WORLD_HEIGHT)
     private val fbo = FrameBuffer(Pixmap.Format.RGBA8888, WORLD_WIDTH.toInt(), WORLD_HEIGHT.toInt(), true)
     private val environment = Environment()
-    private val pRender get() = screen.player[playerRender]!!
+    private val pRender get() = screen.player[playerRender]
 
     private var modelBacking: ModelInstance? = null // Model inst of held item, if any
     private var modelType: ItemType = 0 // Item type of modelBacking

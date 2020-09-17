@@ -1,8 +1,9 @@
 package xyz.angm.terra3d.common.ecs.components
 
-import com.badlogic.ashley.core.Component
-import com.badlogic.ashley.core.Entity
-import ktx.ashley.get
+import xyz.angm.rox.Component
+import xyz.angm.rox.Engine
+import xyz.angm.rox.Entity
+
 import xyz.angm.terra3d.common.ecs.network
 
 
@@ -19,9 +20,9 @@ class RemoveFlag private constructor() : Component {
     companion object {
         /** Mark an entity to be scheduled for removal.
          * Will also ensure it syncs if needed. */
-        fun flag(entity: Entity) {
-            entity.add(RemoveFlag())
-            entity[network]?.needsSync = true
+        fun flag(engine: Engine, entity: Entity) {
+            entity.add(engine, RemoveFlag())
+            entity[network].needsSync = true
         }
     }
 }

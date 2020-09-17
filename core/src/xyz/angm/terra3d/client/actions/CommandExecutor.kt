@@ -10,7 +10,6 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.CommandSyntaxException
-import ktx.ashley.get
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.*
@@ -42,7 +41,7 @@ object CommandHandler {
                             argument<GameScreen, Int>("y", integer())
                                 .then(argument<GameScreen, Int>("z", integer()).executes {
                                     val pos = IntVector3(getInteger(it, "x"), getInteger(it, "y"), getInteger(it, "z"))
-                                    it.source.player[localPlayer]!!.teleport(pos.toV3())
+                                    it.source.player[localPlayer].teleport(pos.toV3())
                                     returnMessage = "[GREEN]Teleported to $pos"
                                     1
                                 })
@@ -57,16 +56,16 @@ object CommandHandler {
         dispatcher.register(
             literal<GameScreen>("kill")
                 .executes {
-                    it.source.player[health]!!.health = 0
+                    it.source.player[health].health = 0
                     returnMessage = "[ORANGE]You died."
                     1
                 }
         )
 
         fun CommandContext<GameScreen>.setTime(time: Float): Int {
-            val dtE = source.engine.entities.find { it[dayTime] != null }!!
-            dtE[dayTime]!!.time = time
-            dtE[network]!!.needsSync = true
+            val dtE = source.engine.entities.find { it has dayTime }!!
+            dtE[dayTime].time = time
+            dtE[network].needsSync = true
             returnMessage = "[GREEN]Set time."
             return 1
         }
@@ -107,7 +106,7 @@ object CommandHandler {
 
         val itemProps = Item.Properties.tryFromIdentifier(itemIdent)
         if (itemProps != null) {
-            context.source.player[playerM]!!.inventory += Item(itemProps.type, itemAmount)
+            context.source.player[playerM].inventory += Item(itemProps.type, itemAmount)
             returnMessage = "[GREEN]Given ${itemAmount}x ${itemProps.name}"
         } else returnMessage = "[RED]Not a known item type."
         return 1

@@ -2,7 +2,6 @@ package xyz.angm.terra3d.client.actions
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.utils.ObjectMap
-import ktx.ashley.get
 import ktx.collections.*
 import xyz.angm.terra3d.client.graphics.panels.game.ChatPanel
 import xyz.angm.terra3d.client.graphics.panels.game.PausePanel
@@ -33,10 +32,10 @@ object PlayerActions {
 
         fun add(name: String, down: (GameScreen) -> Unit) = add(name, down, {})
 
-        add("walkForward", { it.player[velocity]!!.x++ }, { it.player[velocity]!!.x-- })
-        add("walkBackward", { it.player[velocity]!!.x-- }, { it.player[velocity]!!.x++ })
-        add("walkRight", { it.player[velocity]!!.z++ }, { it.player[velocity]!!.z-- })
-        add("walkLeft", { it.player[velocity]!!.z-- }, { it.player[velocity]!!.z++ })
+        add("walkForward", { it.player[velocity].x++ }, { it.player[velocity].x-- })
+        add("walkBackward", { it.player[velocity].x-- }, { it.player[velocity].x++ })
+        add("walkRight", { it.player[velocity].z++ }, { it.player[velocity].z-- })
+        add("walkLeft", { it.player[velocity].z-- }, { it.player[velocity].z++ })
 
         add("jump") { it.playerInputSystem.jump() }
         add("sneak", { it.playerInputSystem.sneak(true) }, { it.playerInputSystem.sneak(false) })
@@ -56,8 +55,8 @@ object PlayerActions {
 
         for (i in 1..9) {
             add("hotbarSlot$i") {
-                it.player[playerM]!!.inventory.hotbarPosition = i - 1
-                it.gameplayPanel.updateHotbarSelector(it.player[playerM]!!.inventory.hotbarPosition)
+                it.player[playerM].inventory.hotbarPosition = i - 1
+                it.gameplayPanel.updateHotbarSelector(it.player[playerM].inventory.hotbarPosition)
             }
         }
     }

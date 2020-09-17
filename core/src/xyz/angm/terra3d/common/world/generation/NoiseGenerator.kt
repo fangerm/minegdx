@@ -39,7 +39,6 @@ class NoiseGenerator(seed: Long) {
     /** Returns the terrain height for a chunk.
      * @param posX Chunk X position
      * @param posZ Chunk Y position
-     * @param biomeMap Biome map for the chunk
      * @return Height map for chunk*/
     fun generateChunkHeightMap(posX: Int, posZ: Int): Array<IntArray> {
         val result = Array(CHUNK_SIZE) {

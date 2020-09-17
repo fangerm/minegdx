@@ -1,11 +1,10 @@
 package xyz.angm.terra3d.server.world
 
-import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.math.Vector3
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import ktx.ashley.get
 import ktx.collections.*
+import xyz.angm.rox.Entity
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
@@ -45,9 +44,9 @@ class World(private val server: Server) : WorldInterface {
     init {
         schedule(60000, 60000, server.coScope, database::flushChunks)
         server.engine {
-            addSystem(blockEntitySystem)
-            addSystem(PhysicsSystem(this@World::getBlock))
-            addSystem(DayTimeSystem())
+            add(blockEntitySystem)
+            add(PhysicsSystem(this@World::getBlock))
+            add(DayTimeSystem())
         }
         server.coScope.launch {
             while (true) channel.receive()(this@World)
@@ -56,7 +55,7 @@ class World(private val server: Server) : WorldInterface {
 
     /** Updates pre-generated chunks around the player.
      * @param players A list of all players */
-    fun updateLoadedChunksByPlayers(players: Iterable<Entity>) = players.forEach { database.generateChunks(tmpIV.set(it[position]!!), generator) }
+    fun updateLoadedChunksByPlayers(players: Iterable<Entity>) = players.forEach { database.generateChunks(tmpIV.set(it[position]), generator) }
 
     /** Adds the specified chunk to the world; does not save it to disk. */
     override fun addChunk(chunk: Chunk) = database.addChunk(chunk)

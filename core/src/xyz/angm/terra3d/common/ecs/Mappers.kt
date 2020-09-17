@@ -1,6 +1,6 @@
 package xyz.angm.terra3d.common.ecs
 
-import ktx.ashley.mapperFor
+import xyz.angm.rox.mapperFor
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
@@ -30,5 +30,7 @@ val localPlayer = mapperFor<LocalPlayerComponent>()
 
 val network = mapperFor<NetworkSyncComponent>()
 val ignoreSync = mapperFor<IgnoreSyncFlag>()
+val remove = mapperFor<RemoveFlag>()
+val noPhysics = mapperFor<NoPhysicsFlag>()
 
 val modelRender = mapperFor<ModelRenderComponent>()

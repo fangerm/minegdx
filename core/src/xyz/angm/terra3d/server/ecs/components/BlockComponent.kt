@@ -1,6 +1,6 @@
 package xyz.angm.terra3d.server.ecs.components
 
-import com.badlogic.ashley.core.Component
+import xyz.angm.rox.Component
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.server.world.World

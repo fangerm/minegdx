@@ -1,7 +1,7 @@
 package xyz.angm.terra3d.client.graphics.panels.game.inventory
 
 import com.badlogic.gdx.utils.Align
-import ktx.ashley.get
+
 import xyz.angm.terra3d.client.graphics.actors.FurnaceWindow
 import xyz.angm.terra3d.client.graphics.actors.PlayerInventoryWindow
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
@@ -17,7 +17,7 @@ class FurnacePanel(screen: GameScreen, private val furnace: Block) : NetworkInve
     private val window = FurnaceWindow(this, furnace.metadata as FurnaceMetadata)
 
     init {
-        addActor(PlayerInventoryWindow(this, screen.player[playerM]!!.inventory).apply { setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 3, Align.center) })
+        addActor(PlayerInventoryWindow(this, screen.player[playerM].inventory).apply { setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 3, Align.center) })
         addActor(window)
     }
 

@@ -1,11 +1,9 @@
 package xyz.angm.terra3d.client.ecs.systems
 
-import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.gdx.math.Vector3
-import ktx.ashley.allOf
-import ktx.ashley.exclude
-import ktx.ashley.get
+import xyz.angm.rox.Entity
+import xyz.angm.rox.Family.Companion.allOf
+import xyz.angm.rox.IteratingSystem
 import xyz.angm.terra3d.common.ecs.components.NoPhysicsFlag
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.VelocityComponent
@@ -21,31 +19,31 @@ class PhysicsInterpolationSystem : IteratingSystem(
     allOf(
         PositionComponent::class,
         VelocityComponent::class
-    ).exclude(NoPhysicsFlag::class).get()
+    ).exclude(NoPhysicsFlag::class)
 ) {
 
     private val tmpV = Vector3()
 
-    override fun processEntity(entity: Entity, delta: Float) {
-        val direction = entity[direction]
+    override fun process(entity: Entity, delta: Float) {
+        val direction = entity.c(direction)
         if (direction == null) {
-            entity[position]!!.add(this.tmpV.set(entity[velocity]!!).scl(delta))
+            entity[position].add(this.tmpV.set(entity[velocity]).scl(delta))
             return
         }
 
-        entity[position]!!.y += entity[velocity]!!.y * delta * (PhysicsSystem.GRAVITY / 2)
+        entity[position].y += entity[velocity].y * delta * (PhysicsSystem.GRAVITY / 2)
 
         // Following code is abridged from libGDXs built-in FirstPersonCameraController
         // (https://github.com/libgdx/libgdx/blob/master/gdx/src/com/badlogic/gdx/graphics/g3d/utils/FirstPersonCameraController.java)
-        if (entity[velocity]!!.x != 0f) {
+        if (entity[velocity].x != 0f) {
             tmpV.set(direction)
             tmpV.y = 0f
-            tmpV.nor().scl(entity[velocity]!!.x * delta * entity[velocity]!!.speedModifier)
-            entity[position]!!.add(tmpV)
+            tmpV.nor().scl(entity[velocity].x * delta * entity[velocity].speedModifier)
+            entity[position].add(tmpV)
         }
-        if (entity[velocity]!!.z != 0f) {
-            tmpV.set(direction).crs(0f, 1f, 0f).nor().scl(entity[velocity]!!.z * delta * entity[velocity]!!.speedModifier)
-            entity[position]!!.add(tmpV)
+        if (entity[velocity].z != 0f) {
+            tmpV.set(direction).crs(0f, 1f, 0f).nor().scl(entity[velocity].z * delta * entity[velocity].speedModifier)
+            entity[position].add(tmpV)
         }
     }
 }

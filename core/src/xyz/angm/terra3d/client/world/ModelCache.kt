@@ -1,6 +1,5 @@
 package xyz.angm.terra3d.client.world
 
-import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g3d.*
@@ -15,12 +14,11 @@ import com.badlogic.gdx.graphics.glutils.PixmapTextureData
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.IntMap
 import com.badlogic.gdx.utils.ScreenUtils
-import ktx.ashley.get
 import ktx.collections.*
+import xyz.angm.rox.Entity
 import xyz.angm.terra3d.client.resources.ResourceManager
-import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
-import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.item
+import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.log
@@ -74,11 +72,8 @@ class ModelCache {
      * @return The entities ModelInstance. */
     fun getEntityModelInstance(entity: Entity): ModelInstance {
         return when {
-            entity.getComponent(ItemComponent::class.java) != null ->
-                ModelInstance(getItemModel(entity[item]!!.item.type))
-
-            entity.getComponent(PlayerComponent::class.java) != null ->
-                ModelInstance(playerModel)
+            entity has item -> ModelInstance(getItemModel(entity[item].item.type))
+            entity has playerM -> ModelInstance(playerModel)
 
             else -> {
                 log.error { "[CACHE] Unknown entity type; can't create model!" }

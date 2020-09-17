@@ -6,8 +6,6 @@
 
 package xyz.angm.terra3d.client.graphics.screens
 
-import com.badlogic.ashley.core.Engine
-import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -16,9 +14,11 @@ import com.badlogic.gdx.utils.viewport.FitViewport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import ktx.ashley.allOf
-import ktx.ashley.exclude
-import ktx.ashley.get
+import xyz.angm.rox.Engine
+import xyz.angm.rox.Entity
+import xyz.angm.rox.EntitySystem
+import xyz.angm.rox.Family.Companion.allOf
+import xyz.angm.rox.Family.Companion.exclude
 import xyz.angm.terra3d.client.Terra3D
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
@@ -35,7 +35,6 @@ import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.world.World
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.IgnoreSyncFlag
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
@@ -84,29 +83,31 @@ class GameScreen(
 
     // 3D Graphics
     val inputHandler = PlayerInputHandler(this)
-    private val renderer = Renderer(this, entities.find { it[dayTime] != null }!!)
+    private val renderer = Renderer(this, entities.find { it has dayTime }!!)
     val cam get() = renderer.cam
 
     // Entities
     val engine = Engine()
-    val playerInputSystem: PlayerInputSystem get() = engine.getSystem(PlayerInputSystem::class.java)
+    lateinit var playerInputSystem: PlayerInputSystem
+        private set
     val playerRenderSystem = PlayerRenderSystem(this)
-    val playerInventory get() = player[playerM]!!.inventory
-    private val players = allOf(PlayerComponent::class).get()
+    val playerInventory get() = player[playerM].inventory
+    private val players = allOf(PlayerComponent::class)
 
     // 2D Graphics
     private val stage = Stage(FitViewport(WORLD_WIDTH, WORLD_HEIGHT))
     private val uiPanels = PanelStack()
     val gameplayPanel = GameplayOverlay(this)
 
-    val entitiesLoaded get() = engine.entities.size()
-    val systemsActive get() = engine.systems.size()
-    val onlinePlayers get() = engine.getEntitiesFor(players).map { it[playerM]!!.name }
+    val entitiesLoaded get() = engine.entities.size
+    val systemsActive get() = engine.systems.size
+    val onlinePlayers get() = engine[players].map { it[playerM].name }
 
     init {
         initSystems()
-        engine.addEntity(player)
-        entities.forEach { engine.addEntity(it) }
+        // TODO: This pointlessly recalculates family bits, maybe improve in Rox
+        engine.add(player)
+        entities.forEach { engine.add(it) }
 
         initState()
         initRender()
@@ -162,7 +163,7 @@ class GameScreen(
      * Returns to the menu screen.
      * @param message The message to display. Defaults to no message which will return to menu screen immediately. */
     fun returnToMenu(message: String? = null) {
-        client.send(EntityData.from(player)) // Make sure the player is up-to-date on the server
+        client.send(player) // Make sure the player is up-to-date on the server
         client.disconnectListener = {} // Prevent it from showing the 'disconnected' message when it shouldn't
         game.screen = MenuScreen(game)
         dispose()
@@ -174,36 +175,38 @@ class GameScreen(
     // Initialize all ECS systems
     private fun initSystems() {
         addLocalPlayerComponents()
-        engine.addSystem(PlayerSystem(this, player))
+        engine.add(PlayerSystem(this, player))
 
         val physicsSystem = PlayerPhysicsSystem(world::blockExists, player)
-        engine.addSystem(physicsSystem)
+        engine.add(physicsSystem)
         client.addListener {
             if (it is BlockUpdate) Terra3D.postRunnable(physicsSystem::blockChanged)
         }
 
-        engine.addSystem(PlayerInputSystem(this, player, engine.getSystem(PlayerPhysicsSystem::class.java), inputHandler))
-        engine.addSystem(RemoveSystem())
-        val netSystem = NetworkSystem(client::send)
+        playerInputSystem = PlayerInputSystem(this, player, physicsSystem, inputHandler)
+        engine.add(playerInputSystem)
         val renderSystem = RenderSystem()
-        engine.addSystem(renderSystem)
-        engine.addEntityListener(exclude(LocalPlayerComponent::class).get(), 1, renderSystem)
-        engine.addSystem(netSystem)
-        engine.addEntityListener(allOf(NetworkSyncComponent::class).get(), netSystem)
-        engine.addSystem(DayTimeSystem())
-        engine.addSystem(PhysicsInterpolationSystem())
-        engine.addSystem(playerRenderSystem)
-        engine.addSystem(FluidSystem(world.fluid))
+        engine.add(renderSystem as EntitySystem)
+        engine.add(exclude(LocalPlayerComponent::class), renderSystem)
+        engine.add(DayTimeSystem())
+        engine.add(PhysicsInterpolationSystem())
+        engine.add(playerRenderSystem)
+        engine.add(FluidSystem(world.fluid))
+
+        val netSystem = NetworkSystem(client::send)
+        client.addListener { if (it is Entity) netSystem.receive(it) }
+        engine.add(netSystem, last = true)
+        engine.add(allOf(NetworkSyncComponent::class), netSystem)
+
+        engine.add(RemoveSystem(), last = true)
     }
 
     // Initialize everything not render-related
     private fun initState() {
         // Network
-        val netSystem = engine.getSystem(NetworkSystem::class.java)
-        client.addListener { if (it is EntityData) netSystem.receive(it) }
 
         client.disconnectListener = { Terra3D.postRunnable { returnToMenu(I18N["disconnected-from-server"]) } }
-        client.send(ChatMessagePacket("[CYAN]${player[playerM]!!.name}[LIGHT_GRAY] ${I18N["joined-game"]}"))
+        client.send(ChatMessagePacket("[CYAN]${player[playerM].name}[LIGHT_GRAY] ${I18N["joined-game"]}"))
 
         // Input
         Gdx.input.inputProcessor = inputHandler
@@ -211,15 +214,15 @@ class GameScreen(
 
         // Chunk loading
         schedule(2000, 1000, coScope) {
-            Terra3D.postRunnable { world.updateLoadedChunks(IntVector3(player[position]!!)) }
+            Terra3D.postRunnable { world.updateLoadedChunks(IntVector3(player[position])) }
         }
     }
 
     // Adds local components to the player entity.
     private fun addLocalPlayerComponents() {
-        player.add(LocalPlayerComponent())
-        player.add(PlayerRenderComponent())
-        player.add(IgnoreSyncFlag())
+        player.add(engine, LocalPlayerComponent())
+        player.add(engine, PlayerRenderComponent())
+        player.add(engine, IgnoreSyncFlag())
     }
 
     // Initialize all rendering components
@@ -248,6 +251,6 @@ class GameScreen(
         renderer.dispose()
         gameplayPanel.dispose()
         uiPanels.dispose()
-        engine.getSystem(PlayerPhysicsSystem::class.java).dispose()
+        engine[PlayerPhysicsSystem::class].dispose()
     }
 }

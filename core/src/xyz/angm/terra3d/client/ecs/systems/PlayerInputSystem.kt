@@ -1,9 +1,8 @@
 package xyz.angm.terra3d.client.ecs.systems
 
-import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.math.Vector3
-import ktx.ashley.get
+import xyz.angm.rox.Entity
+import xyz.angm.rox.EntitySystem
 import xyz.angm.terra3d.client.actions.Event
 import xyz.angm.terra3d.client.actions.EventContext
 import xyz.angm.terra3d.client.actions.PlayerInteractions
@@ -36,8 +35,8 @@ class PlayerInputSystem(
 ) : EntitySystem() {
 
     private val tmpV = Vector3()
-    private val localPlayerC = player[localPlayer]!!
-    private val playerC = player[playerM]!!
+    private val localPlayerC = player[localPlayer]
+    private val playerC = player[playerM]
     private var breakSound = 0
     private var breakType = 0
 
@@ -91,7 +90,7 @@ class PlayerInputSystem(
 
             // Try placing a block
             val block = playerC.inventory.heldItem ?: return
-            if (screen.world.updateBlockRaycast(player[position]!!, player[direction]!!, block))
+            if (screen.world.updateBlockRaycast(player[position], player[direction], block))
                 playerC.inventory.subtractFromHeldItem(1)
         }
 
@@ -103,7 +102,7 @@ class PlayerInputSystem(
      * @param sprint If the player should sprint (else will stop sprinting) */
     fun sprint(sprint: Boolean) {
         physicsSystem.sprinting = sprint
-        player[localPlayer]!!.fov = if (sprint) SPRINT_FOV else FOV
+        player[localPlayer].fov = if (sprint) SPRINT_FOV else FOV
     }
 
     /** Causes the player to jump. */
@@ -115,7 +114,7 @@ class PlayerInputSystem(
 
     /** Causes the player to drop the item they are currently holding. */
     fun dropItem() {
-        ItemComponent.create(engine, playerC.inventory.heldItem?.copy() ?: return, tmpV.set(player[position]!!), 4f)
+        ItemComponent.create(engine, playerC.inventory.heldItem?.copy() ?: return, tmpV.set(player[position]), 4f)
         playerC.inventory.subtractFromHeldItem(Int.MAX_VALUE)
     }
 }

@@ -1,11 +1,9 @@
 package xyz.angm.terra3d.client.ecs.systems
 
-import com.badlogic.ashley.core.Entity
-import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.gdx.math.Vector3
-import ktx.ashley.allOf
-import ktx.ashley.exclude
-import ktx.ashley.get
+import xyz.angm.rox.Entity
+import xyz.angm.rox.EntitySystem
+import xyz.angm.rox.Family.Companion.allOf
 import xyz.angm.terra3d.client.graphics.panels.game.DeathPanel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.ResourceManager
@@ -29,14 +27,14 @@ class PlayerSystem(
     private val player: Entity
 ) : EntitySystem() {
 
-    private val pPosition = player[position]!!
-    private val pDirection = player[direction]!!
-    private val localPlayerC = player[localPlayer]!!
-    private val playerC = player[playerM]!!
-    private val pRender = player[playerRender]!!
-    private val pHealth = player[health]!!
+    private val pPosition = player[position]
+    private val pDirection = player[direction]
+    private val localPlayerC = player[localPlayer]
+    private val playerC = player[playerM]
+    private val pRender = player[playerRender]
+    private val pHealth = player[health]
 
-    private val allDroppedItems = allOf(ItemComponent::class, PositionComponent::class).exclude(RemoveFlag::class).get()
+    private val allDroppedItems = allOf(ItemComponent::class, PositionComponent::class).exclude(RemoveFlag::class)
     private var timeSinceSync = 0f
     private var hungerLeft = 1f // 1 hunger point is removed when this reaches 0
     private var starveTime = 1f // Time until the player takes starving damage again
@@ -53,7 +51,7 @@ class PlayerSystem(
         timeSinceSync += delta
         if (timeSinceSync > NETWORK_SYNC_TIME) {
             timeSinceSync = 0f
-            player[network]!!.needsSync = true
+            player[network].needsSync = true
         }
     }
 
@@ -97,14 +95,13 @@ class PlayerSystem(
 
     private fun checkPickedUpItems() {
         if (playerC.isDead) return
-        engine.getEntitiesFor(allDroppedItems).forEach {
-            // For some reason these can be null sometimes?
-            val item = it[item] ?: return@forEach
-            val pos = it[position] ?: return@forEach
+        engine[allDroppedItems].forEach {
+            val item = it[item]
+            val pos = it[position]
 
             if (item.pickupTimeout <= 0f && tmpV.set(pos).dst2(tmpV2.set(pPosition)) < 4f) {
                 playerC.inventory += item.item
-                RemoveFlag.flag(it)
+                RemoveFlag.flag(engine, it)
             }
         }
     }

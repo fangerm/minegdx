@@ -1,6 +1,6 @@
 package xyz.angm.terra3d.common.ecs.components
 
-import com.badlogic.ashley.core.Component
+import xyz.angm.rox.Component
 
 /** A component for all entities with a health.
  * @property maxHealth The maximum health the entity can have.

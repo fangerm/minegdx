@@ -1,11 +1,12 @@
 package xyz.angm.terra3d.common
 
-import com.badlogic.ashley.core.Component
 import com.badlogic.gdx.math.Vector3
 import com.charleskorn.kaml.Yaml
 import org.nustaq.serialization.FSTConfiguration
+import xyz.angm.rox.Component
+import xyz.angm.rox.Entity
+import xyz.angm.rox.FSTEntitySerializer
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
-import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.ecs.components.*
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
@@ -43,7 +44,7 @@ private fun createFST(vararg classes: KClass<out Any>): FSTConfiguration {
     val fst = FSTConfiguration.createDefaultConfiguration()
     classes.forEach { fst.registerClass(it.java) }
 
-    fst.registerSerializer(EntityData::class.java, EntityData.FSTEntitySerializer(), true)
+    fst.registerSerializer(Entity::class.java, FSTEntitySerializer(), true)
     fst.registerSerializer(Chunk::class.java, Chunk.FSTChunkSerializer(), true)
     fst.registerSerializer(IntVector3::class.java, IntVector3.FSTVectorSerializer(), true)
     return fst

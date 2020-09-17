@@ -1,7 +1,7 @@
 package xyz.angm.terra3d.common.networking
 
+import xyz.angm.rox.Entity
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.ecs.EntityData
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
 import java.io.Serializable
@@ -38,10 +38,10 @@ typealias BlockUpdate = Block
 /** A packet sent on first connect as a response to [JoinPacket].
  * Contains all data required by the client to begin init and world loading. */
 class InitPacket(
-    val player: EntityData = EntityData(),
-    val entities: Array<EntityData> = emptyArray(),
+    val seed: String,
+    val player: Entity = Entity(),
+    val entities: Array<Entity> = emptyArray(),
     val world: Array<Chunk> = emptyArray(),
-    val seed: String
 ) : Packet
 
 
