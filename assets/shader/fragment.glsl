@@ -145,27 +145,35 @@ void main() {
 		vec4 emissive = texture2D(u_emissiveTexture, v_emissiveUV);
 	#elif defined(emissiveColorFlag)
 		vec4 emissive = u_emissiveColor;
-	#else
-		vec4 emissive = vec4(0.0);
+		#else
+	vec4 emissive = vec4(0.0);
 	#endif
 
 	#if (!defined(lightingFlag))
-		gl_FragColor.rgb = diffuse.rgb + emissive.rgb;
+	gl_FragColor.rgb = diffuse.rgb + emissive.rgb;
 	#elif (!defined(specularFlag))
-		#if defined(ambientFlag) && defined(separateAmbientFlag)
-			#ifdef shadowMapFlag
-				#ifdef colorFlag
-					gl_FragColor.rgb = (diffuse.rgb * (v_ambientLight + v_color.rgb + getShadow() * v_lightDiffuse)) + emissive.rgb;
-				#else
-					gl_FragColor.rgb = (diffuse.rgb * (v_ambientLight + getShadow() * v_lightDiffuse)) + emissive.rgb;
-				#endif
-			#else
-				gl_FragColor.rgb = (diffuse.rgb * (v_ambientLight + v_lightDiffuse)) + emissive.rgb;
-			#endif //shadowMapFlag
-		#else
-			#ifdef shadowMapFlag
-				gl_FragColor.rgb = getShadow() * (diffuse.rgb * v_lightDiffuse) + emissive.rgb;
-			#else
+	#if defined(ambientFlag) && defined(separateAmbientFlag)
+	#ifdef shadowMapFlag
+	#ifdef colorFlag
+	// !! vvv THIS IS USED FOR CHUNKS vvv !!
+	// TODO: A lot of code in these shaders is not actually used by the game.
+	// Should consider removing it, although probably not worth the time?
+
+	// ColorPacked attribute packs the color and has to trunc alpha to 254 for
+	// this, so revert that truncation by interpolating
+	float occlusion = (v_color.a * (255.0 / 254.0));
+
+	gl_FragColor.rgb = (diffuse.rgb * (v_ambientLight + v_color.rgb + getShadow() * v_lightDiffuse) * occlusion) + emissive.rgb;
+	#else
+	gl_FragColor.rgb = (diffuse.rgb * (v_ambientLight + getShadow() * v_lightDiffuse)) + emissive.rgb;
+	#endif
+	#else
+	gl_FragColor.rgb = (diffuse.rgb * (v_ambientLight + v_lightDiffuse)) + emissive.rgb;
+	#endif//shadowMapFlag
+	#else
+	#ifdef shadowMapFlag
+	gl_FragColor.rgb = getShadow() * (diffuse.rgb * v_lightDiffuse) + emissive.rgb;
+	#else
 				gl_FragColor.rgb = (diffuse.rgb * v_lightDiffuse) + emissive.rgb;
 			#endif //shadowMapFlag
 		#endif
