@@ -8,6 +8,8 @@ fun main() {
     dayTime
     val fam = allOf(DayTimeComponent::class)
     val engine = Engine()
-    engine.entity { with<DayTimeComponent>() }
+    val e = engine.entity { with<DayTimeComponent>() }
+    engine.remove(e)
+    val ed = engine.entity { with<DayTimeComponent>() }
     println(engine[fam])
 }

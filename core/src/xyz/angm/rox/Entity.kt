@@ -87,7 +87,7 @@ class FSTEntitySerializer : FSTBasicObjectSerializer() {
                 output.writeObject(entity.components[i])
             }
         }
-        output.writeInt(-1)
+        output.writeInt(-2342)
     }
 
     override fun instantiate(
@@ -99,7 +99,7 @@ class FSTEntitySerializer : FSTBasicObjectSerializer() {
     ): Any {
         val components = Bag(16)
         var lastI = input.readInt()
-        while (lastI != -1) {
+        while (lastI != -2342) {
             val component = input.readObject() as Component
             components[lastI] = component
             lastI = input.readInt()

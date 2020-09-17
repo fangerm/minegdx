@@ -27,6 +27,10 @@ class Family private constructor() {
         }
     }
 
+    internal fun entityRemoved(entity: Entity) {
+        if (entity partOf this) entities.removeValue(entity, true)
+    }
+
     internal fun entityChanged(entity: Entity) {
         val matched = entity.familyBits[index]
         val matches = this matches entity

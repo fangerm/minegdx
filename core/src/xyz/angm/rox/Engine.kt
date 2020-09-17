@@ -10,10 +10,9 @@ class Engine {
 
     val entities = GdxArray<Entity>(false, 200)
     val entitySet = GdxSet<Entity>(200)
-    val systems = GdxArray<EntitySystem>(false, 20)
+    val systems = GdxArray<EntitySystem>(true, 20)
     private val families = GdxArray<Family>(20)
-    private val listeners = GdxArray<EntityListener>(5)
-    private val filteredListeners = GdxArray<Pair<Family, EntityListener>>(5)
+    private val listeners = GdxArray<Pair<Family, EntityListener>>(5)
 
     fun update(delta: Float) {
         systems.forEach { it.update(delta) }
@@ -24,8 +23,7 @@ class Engine {
         entities.add(entity)
         entitySet.add(entity)
         updateFamilies(entity)
-        listeners.forEach { it.entityAdded(entity) }
-        filteredListeners.forEach { if (entity partOf it.first) it.second.entityAdded(entity) }
+        listeners.forEach { if (entity partOf it.first) it.second.entityAdded(entity) }
     }
 
     fun add(system: EntitySystem, last: Boolean = true) {
@@ -33,18 +31,16 @@ class Engine {
         if (last) systems.add(system) else systems.insert(0, system)
     }
 
-    fun add(listener: EntityListener) = listeners.add(listener)
-
     fun add(family: Family, listener: EntityListener) {
         if (family.index < 0) registerFamily(family)
-        filteredListeners.add(Pair(family, listener))
+        listeners.add(Pair(family, listener))
     }
 
     fun remove(entity: Entity) {
         if (!entitySet.remove(entity)) return
         entities.removeValue(entity, true)
-        listeners.forEach { it.entityRemoved(entity) }
-        filteredListeners.forEach { if (entity partOf it.first) it.second.entityRemoved(entity) }
+        families.forEach { it.entityRemoved(entity) }
+        listeners.forEach { if (entity partOf it.first) it.second.entityRemoved(entity) }
     }
 
     operator fun get(family: Family): GdxArray<Entity> {
@@ -63,7 +59,6 @@ class Engine {
     }
 
     internal fun updateFamilies(entity: Entity) {
-        entity.familyBits.clear()
         for (family in families) {
             family.entityChanged(entity)
         }

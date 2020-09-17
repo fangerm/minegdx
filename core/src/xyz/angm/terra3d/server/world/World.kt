@@ -55,7 +55,9 @@ class World(private val server: Server) : WorldInterface {
 
     /** Updates pre-generated chunks around the player.
      * @param players A list of all players */
-    fun updateLoadedChunksByPlayers(players: Iterable<Entity>) = players.forEach { database.generateChunks(tmpIV.set(it[position]), generator) }
+    fun updateLoadedChunksByPlayers(players: Iterable<Entity>) = players.forEach {
+        database.generateChunks(tmpIV.set(it[position]), generator)
+    }
 
     /** Adds the specified chunk to the world; does not save it to disk. */
     override fun addChunk(chunk: Chunk) = database.addChunk(chunk)

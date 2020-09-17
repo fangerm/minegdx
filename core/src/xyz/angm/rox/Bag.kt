@@ -1,5 +1,7 @@
 package xyz.angm.rox
 
+import kotlin.math.max
+
 class Bag(internal var data: Array<Component?>) {
 
     val capacity get() = data.size
@@ -14,7 +16,7 @@ class Bag(internal var data: Array<Component?>) {
 
     operator fun set(index: Int, component: Component?) {
         if (index >= data.size) grow(index * 2)
-        size = index + 1
+        size = max(index + 1, size)
         data[index] = component
     }
 
