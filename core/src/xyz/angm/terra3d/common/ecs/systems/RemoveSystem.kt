@@ -7,7 +7,7 @@ import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 
 /** A system that removes all entities with a [RemoveFlag].
  * ALWAYS ADD LAST TO ENSURE IT GETS EXECUTED AT THE END OF A CYCLE. */
-class RemoveSystem : IteratingSystem(allOf(RemoveFlag::class)) {
+class RemoveSystem : IteratingSystem(allOf(RemoveFlag::class), Int.MAX_VALUE) {
     /** Removes all entities with [RemoveFlag]. */
     override fun process(entity: Entity, delta: Float) = engine.remove(entity)
 }

@@ -1,6 +1,7 @@
 package xyz.angm.terra3d.common
 
 import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.utils.IntSet
 import com.charleskorn.kaml.Yaml
 import org.nustaq.serialization.FSTConfiguration
 import xyz.angm.rox.Component
@@ -10,6 +11,10 @@ import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.common.ecs.components.*
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
+import xyz.angm.terra3d.common.ecs.ignoreSync
+import xyz.angm.terra3d.common.ecs.localPlayer
+import xyz.angm.terra3d.common.ecs.modelRender
+import xyz.angm.terra3d.common.ecs.playerRender
 import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.networking.*
@@ -32,7 +37,7 @@ val fst = createFST(
     HealthComponent::class, ItemComponent::class,
     NetworkSyncComponent::class,
     PositionComponent::class, VelocityComponent::class, DirectionComponent::class,
-    NoPhysicsFlag::class, RemoveFlag::class,
+    NoPhysicsFlag::class,
 
     // Various
     IntVector3::class, Vector3::class,
@@ -44,7 +49,13 @@ private fun createFST(vararg classes: KClass<out Any>): FSTConfiguration {
     val fst = FSTConfiguration.createDefaultConfiguration()
     classes.forEach { fst.registerClass(it.java) }
 
-    fst.registerSerializer(Entity::class.java, FSTEntitySerializer(), true)
+    val ignore = IntSet()
+    ignore.add(localPlayer.index)
+    ignore.add(modelRender.index)
+    ignore.add(playerRender.index)
+    ignore.add(ignoreSync.index)
+    fst.registerSerializer(Entity::class.java, FSTEntitySerializer(ignore), true)
+
     fst.registerSerializer(Chunk::class.java, Chunk.FSTChunkSerializer(), true)
     fst.registerSerializer(IntVector3::class.java, IntVector3.FSTVectorSerializer(), true)
     return fst

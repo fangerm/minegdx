@@ -6,6 +6,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import ktx.collections.*
 import xyz.angm.rox.Entity
+import xyz.angm.rox.EntityListener
+import xyz.angm.rox.EntitySystem
 import xyz.angm.rox.Family.Companion.allOf
 import xyz.angm.terra3d.common.TICK_RATE
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
@@ -57,9 +59,9 @@ class Server(
         engine {
             add(ItemSystem())
             add(FluidSystem(world.fluids))
-            add(allOf(NetworkSyncComponent::class), netSystem)
-            add(netSystem, last = true)
-            add(RemoveSystem(), last = true)
+            add(netSystem as EntityListener)
+            add(netSystem as EntitySystem)
+            add(RemoveSystem())
 
             save.getAllEntities(this)
 

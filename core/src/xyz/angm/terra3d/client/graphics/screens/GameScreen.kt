@@ -16,9 +16,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import xyz.angm.rox.Engine
 import xyz.angm.rox.Entity
+import xyz.angm.rox.EntityListener
 import xyz.angm.rox.EntitySystem
 import xyz.angm.rox.Family.Companion.allOf
-import xyz.angm.rox.Family.Companion.exclude
 import xyz.angm.terra3d.client.Terra3D
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
@@ -36,7 +36,6 @@ import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.world.World
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.components.IgnoreSyncFlag
-import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.dayTime
 import xyz.angm.terra3d.common.ecs.playerM
@@ -187,7 +186,7 @@ class GameScreen(
         engine.add(playerInputSystem)
         val renderSystem = RenderSystem()
         engine.add(renderSystem as EntitySystem)
-        engine.add(exclude(LocalPlayerComponent::class), renderSystem)
+        engine.add(renderSystem as EntityListener)
         engine.add(DayTimeSystem())
         engine.add(PhysicsInterpolationSystem())
         engine.add(playerRenderSystem)
@@ -195,10 +194,9 @@ class GameScreen(
 
         val netSystem = NetworkSystem(client::send)
         client.addListener { if (it is Entity) netSystem.receive(it) }
-        engine.add(netSystem, last = true)
-        engine.add(allOf(NetworkSyncComponent::class), netSystem)
-
-        engine.add(RemoveSystem(), last = true)
+        engine.add(netSystem as EntitySystem)
+        engine.add(netSystem as EntityListener)
+        engine.add(RemoveSystem())
     }
 
     // Initialize everything not render-related
@@ -251,6 +249,6 @@ class GameScreen(
         renderer.dispose()
         gameplayPanel.dispose()
         uiPanels.dispose()
-        engine[PlayerPhysicsSystem::class].dispose()
+        engine[PlayerPhysicsSystem::class]?.dispose()
     }
 }

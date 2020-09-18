@@ -4,6 +4,8 @@ import com.badlogic.gdx.utils.IntMap
 import xyz.angm.rox.Entity
 import xyz.angm.rox.EntityListener
 import xyz.angm.rox.EntitySystem
+import xyz.angm.rox.Family
+import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.ignoreSync
 import xyz.angm.terra3d.common.ecs.network
 
@@ -13,8 +15,9 @@ import xyz.angm.terra3d.common.ecs.network
  * entities that request network update are sent automatically as well.
  *
  * REGISTER AS SECOND LAST!. */
-class NetworkSystem(private val send: (Entity) -> Unit) : EntitySystem(), EntityListener {
+class NetworkSystem(private val send: (Entity) -> Unit) : EntitySystem(Int.MAX_VALUE - 1), EntityListener {
 
+    override val family = Family.allOf(NetworkSyncComponent::class)
     private val entities = IntMap<Entity>()
 
     /** Send any entities that require updating. */

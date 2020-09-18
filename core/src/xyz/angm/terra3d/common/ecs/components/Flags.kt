@@ -22,7 +22,7 @@ class RemoveFlag private constructor() : Component {
          * Will also ensure it syncs if needed. */
         fun flag(engine: Engine, entity: Entity) {
             entity.add(engine, RemoveFlag())
-            entity[network].needsSync = true
+            entity.c(network)?.needsSync = true
         }
     }
 }

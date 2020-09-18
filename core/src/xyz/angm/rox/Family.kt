@@ -6,6 +6,10 @@ import ktx.collections.*
 import xyz.angm.rox.ComponentMapper.Companion.getMapper
 import kotlin.reflect.KClass
 
+/** A family is a set of entities with all share a set of
+ * components. Families are used to filter entities.
+ * Create a new family with [Family.allOf] or [Family.exclude].
+ * You can also chain `exclude` after `allOf`. */
 class Family private constructor() {
 
     internal var index = -1
@@ -13,6 +17,8 @@ class Family private constructor() {
     private var exclude: Int = -1
     internal val entities = GdxArray<Entity>(false, 5, Entity::class.java)
 
+    /** Sets the component to exclude; an entity will not be considered
+     * part of this family if it has this component. */
     fun exclude(component: KClass<out Component>): Family {
         exclude = getMapper(component)
         return this
@@ -48,6 +54,7 @@ class Family private constructor() {
         entity.componentBits.containsAll(include) && (exclude == -1 || !entity.componentBits.get(exclude))
 
     companion object {
+        /** Creates a new family that requires entities to contain all given components. */
         fun allOf(vararg components: KClass<out Component>): Family {
             val family = Family()
             for (component in components) {
@@ -56,6 +63,7 @@ class Family private constructor() {
             return family
         }
 
+        /** Creates a new family that requires entities to not contain the given component. */
         fun exclude(component: KClass<out Component>): Family {
             val family = Family()
             family.exclude(component)
