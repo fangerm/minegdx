@@ -1,6 +1,5 @@
 package xyz.angm.rox
 
-import com.badlogic.gdx.utils.Bits
 import ktx.collections.*
 import xyz.angm.rox.ComponentMapper.Companion.getMapper
 import kotlin.reflect.KClass
@@ -22,6 +21,7 @@ class Engine {
     val systems = GdxArray<EntitySystem>(true, 20)
     private val families = GdxArray<Family>(20)
     private val listeners = GdxArray<EntityListener>(5)
+    private val builder = EntityBuilder()
 
     var updating = false
         private set
@@ -72,7 +72,8 @@ class Engine {
     }
 
     /** Remove the entity from the system.
-     * Delays until end of update cycle if inside of one. */
+     * Delays until end of update cycle if inside of one.
+     * Note that any reference to this entity will become invalid after this call. */
     fun remove(entity: Entity) {
         if (updating) pendingRemove.add(entity)
         else removeInternal(entity)
@@ -91,9 +92,8 @@ class Engine {
      * This is a custom DSL to make entity creation easier.
      * @see [EntityBuilder] */
     fun entity(init: EntityBuilder.() -> Unit): Entity {
-        val builder = EntityBuilder()
         init(builder)
-        val entity = Entity(builder.components, builder.componentBits)
+        val entity = builder.get()
         add(entity)
         return entity
     }
@@ -121,13 +121,13 @@ class Engine {
         entities.removeValue(entity, true)
         families.forEach { it.entityRemoved(entity) }
         listeners.forEach { if (entity partOf it.family) it.entityRemoved(entity) }
+        Entity.free(entity)
     }
 
     /** This class is used for the entity builder DSL. */
     class EntityBuilder {
 
-        var components = Bag(15)
-        var componentBits = Bits()
+        var entity = Entity.get()
 
         /** Add a component of the given class to the entity.
          * Class must have an empty constructor for this method to work.
@@ -142,8 +142,14 @@ class Engine {
         inline fun <reified T : Component> add(component: T, init: T.() -> Unit = {}) {
             init(component)
             val index = getMapper(T::class)
-            components[index] = component
-            componentBits.set(index)
+            entity.components[index] = component
+            entity.componentBits.set(index)
+        }
+
+        internal fun get(): Entity {
+            val e = entity
+            entity = Entity.get()
+            return e
         }
     }
 }

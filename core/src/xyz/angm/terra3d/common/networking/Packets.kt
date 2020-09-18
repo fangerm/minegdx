@@ -39,7 +39,7 @@ typealias BlockUpdate = Block
  * Contains all data required by the client to begin init and world loading. */
 class InitPacket(
     val seed: String,
-    val player: Entity = Entity(),
+    val player: Entity? = null, // never actually null, just there to allow empty constructor
     val entities: Array<Entity> = emptyArray(),
     val world: Array<Chunk> = emptyArray(),
 ) : Packet

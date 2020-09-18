@@ -2,6 +2,7 @@ package xyz.angm.rox
 
 import com.badlogic.gdx.utils.Bits
 import com.badlogic.gdx.utils.IntSet
+import ktx.collections.*
 import org.nustaq.serialization.FSTBasicObjectSerializer
 import org.nustaq.serialization.FSTClazzInfo
 import org.nustaq.serialization.FSTObjectInput
@@ -16,21 +17,18 @@ import java.io.Serializable
  * For creating a new entity, use [Engine.entity]. Additionally,
  * you can serialize entities - see [FSTEntitySerializer].
  *
+ * Note that entities are bound to their ECS/Engine and should not be
+ * used outside of it - they are pooled by default, and [Engine.remove]
+ * will return an entity to the pool, meaning that it can no longer
+ * be used.
+ *
  * @property components The components in this entity. Do not modify directly! */
-class Entity internal constructor(val components: Bag, internal val componentBits: Bits) : Serializable {
+class Entity private constructor() : Serializable {
 
     // TODO This seems overkill...
+    val components = Bag(15)
+    val componentBits = Bits()
     internal val familyBits = Bits()
-
-    internal constructor(components: Bag) : this(components, Bits()) {
-        for (i in 0 until components.size) {
-            componentBits.set(getMapper((components[i] ?: continue)::class))
-        }
-    }
-
-    /** This constructor is only to satisfy the need of [Serializable] and should
-     * not be used for creating actual entities. */
-    constructor() : this(Bag(0), Bits())
 
     /** Returns the component of the given type in this entity.
      * @throws NullPointerException If this entity does not contain that
@@ -79,6 +77,22 @@ class Entity internal constructor(val components: Bag, internal val componentBit
 
     /** @return If this entity is part of the given family. */
     infix fun partOf(family: Family) = familyBits[family.index]
+
+    companion object {
+
+        private val free = GdxArray<Entity>(false, 20)
+
+        @Synchronized
+        fun get() = if (free.isEmpty) Entity() else free.pop()!!
+
+        @Synchronized
+        fun free(entity: Entity) {
+            entity.components.clear()
+            entity.componentBits.clear()
+            entity.familyBits.clear()
+            free.add(entity)
+        }
+    }
 }
 
 /** A simple entity serializer for the FST framework.
@@ -112,13 +126,15 @@ class FSTEntitySerializer(private val ignore: IntSet) : FSTBasicObjectSerializer
         referencee: FSTClazzInfo.FSTFieldInfo,
         streamPosition: Int
     ): Any {
-        val components = Bag(16)
+        val entity = Entity.get()
+        val components = entity.components
         var lastI = input.readInt()
         while (lastI != -2342) {
             val component = input.readObject() as Component
             components[lastI] = component
+            entity.componentBits.set(lastI)
             lastI = input.readInt()
         }
-        return Entity(components)
+        return entity
     }
 }

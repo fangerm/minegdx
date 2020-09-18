@@ -84,7 +84,7 @@ class Terra3D : Game() {
     }
 
     private fun startGame(client: Client, world: World, data: InitPacket) =
-        setScreen(GameScreen(this, client, world, data.player, data.entities))
+        setScreen(GameScreen(this, client, world, data.player!!, data.entities))
 
     override fun dispose() = exitProcess(0)
 

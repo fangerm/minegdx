@@ -40,6 +40,7 @@ class NetworkSystem(private val send: (Entity) -> Unit) : EntitySystem(Int.MAX_V
             val localEntity = entities[network.id]
             if (localEntity has ignoreSync) return // Things with this flag shouldn't be synced
             localEntity.addAll(engine, netE)
+            Entity.free(netE)
         }
     }
 
