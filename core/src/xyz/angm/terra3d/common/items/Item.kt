@@ -1,11 +1,12 @@
 package xyz.angm.terra3d.common.items
 
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.utils.OrderedMap
+import com.badlogic.gdx.utils.ObjectMap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import ktx.assets.file
+import ktx.collections.*
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.configuration
@@ -102,15 +103,20 @@ data class Item(
         }
 
         companion object {
-            private val items = OrderedMap<String, Properties>(200)
+            private val items = ObjectMap<String, Properties>(200)
+            private val itemsArr: Array<Properties>
 
             init {
-                for (entry in yaml.decodeFromString(MapSerializer(String.serializer(), serializer()), file("items.yaml").readString())) {
+                val entries = yaml.decodeFromString(MapSerializer(String.serializer(), serializer()), file("items.yaml").readString())
+                val arr = GdxArray<Properties>(true, entries.size, Properties::class.java)
+                for (entry in entries) {
                     entry.value.type = items.size + 1
                     entry.value.ident = entry.key
                     entry.value.init()
                     items.put(entry.key, entry.value)
+                    arr.add(entry.value)
                 }
+                itemsArr = arr.items
             }
 
             /** All items in the game */
@@ -122,7 +128,7 @@ data class Item(
             fun tryFromIdentifier(type: String): Properties? = items[type]
 
             /** Get properties by type. */
-            fun fromType(type: ItemType) = if (type == 0) null else items[items.orderedKeys()[type - 1]]
+            fun fromType(type: ItemType) = if (type == 0) null else itemsArr[type - 1]
 
             /** Returns the type. Looks in I18N first, defaults to pretty printed identifier otherwise. */
             private fun getName(string: String): String {

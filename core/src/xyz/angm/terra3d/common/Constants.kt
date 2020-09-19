@@ -7,8 +7,10 @@ package xyz.angm.terra3d.common
 /** World constants */
 
 /** Size of 1 chunk in all 3 directions.
- * Must be a power of 2; [IntVector3.chunk] needs adjustment if not. */
+ * Must be a power of 2; [CHUNK_MASK] uses need adjustment if not. */
 const val CHUNK_SIZE = 32
+const val CHUNK_SHIFT = 5
+const val CHUNK_MASK = (CHUNK_SIZE - 1) and Int.MAX_VALUE
 
 /** World height in chunks, multiply with CHUNK_SIZE for world height in blocks */
 const val WORLD_HEIGHT_IN_CHUNKS = 8

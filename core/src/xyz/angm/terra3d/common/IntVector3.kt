@@ -101,7 +101,7 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
 
     /** Normalize this vector to multiples of chunk positions. */
     fun chunk(): IntVector3 {
-        val mask = (CHUNK_SIZE - 1) xor Int.MAX_VALUE
+        val mask = CHUNK_MASK xor Int.MAX_VALUE
         x = x and mask
         y = y and mask
         z = z and mask

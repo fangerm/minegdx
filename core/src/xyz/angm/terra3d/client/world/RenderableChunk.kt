@@ -2,17 +2,16 @@ package xyz.angm.terra3d.client.world
 
 import com.badlogic.gdx.graphics.*
 import com.badlogic.gdx.graphics.g3d.*
-import com.badlogic.gdx.graphics.g3d.ModelCache
 import com.badlogic.gdx.graphics.g3d.attributes.BlendingAttribute
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute
-import com.badlogic.gdx.graphics.g3d.model.Node
+import com.badlogic.gdx.graphics.g3d.model.MeshPart
 import com.badlogic.gdx.graphics.g3d.model.NodePart
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo
-import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
+import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Disposable
-import com.badlogic.gdx.utils.ObjectMap
+import com.badlogic.gdx.utils.OrderedMap
+import com.badlogic.gdx.utils.Pool
 import ktx.collections.*
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.configuration
@@ -25,13 +24,15 @@ import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.TYPE
 
 
-/** A chunk capable of rendering itself. Constructed from a regular chunk sent by the server. */
+/** A chunk capable of rendering itself. Constructed from a regular chunk sent by the server.
+ * Do be warned that this rendering code is written to be as optimized as possible.
+ * In other words, it's unreadable and you should not bother. */
 internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChunk), Disposable {
 
     private val positionCentered = position.toV3().add(CHUNK_SIZE / 2f, CHUNK_SIZE / 2f, CHUNK_SIZE / 2f)
 
     @Transient
-    private var model = ModelCache()
+    private lateinit var renderable: ChunkRenderable
 
     /** If this chunk has a mesh and needs to be rendered.
      * This can still be false even after [RenderableChunk.mesh()]
@@ -42,120 +43,138 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     internal var isQueued = false
 
     /** Renders itself. */
-    fun render(modelBatch: ModelBatch, environment: Environment?) = modelBatch.render(model, environment)
+    fun render(modelBatch: ModelBatch, environment: Environment?) = modelBatch.render(renderable, environment)
 
-    override fun dispose() = model.dispose()
+    override fun dispose() {
+        if (hasMesh) {
+            for (part in renderable.nodeParts) {
+                meshPartPool.free(part.meshPart)
+                nodePartPool.free(part)
+            }
+            renderable.nodeParts[0].meshPart.mesh.dispose()
+        }
+    }
 
     /** Called when the chunk is in the rendering queue. Will create the model.
      * This is a greedy meshing implementation. It's abridged from https://eddieabbondanz.io/post/voxel/greedy-mesh/. */
     internal fun mesh(world: World) {
         hasMesh = false
-        model.begin()
-        Builder.begin()
 
         // Render each face separately
         for (face in 0 until 6) {
-            // If this face is a 'back' face, needing it's position & OGL calls adjusted.
-            // This is an integer/modifier used when needing to move 1 block forward from the face.
-            val backFaceM = if (face > 2) -1 else 1
-            val direction = face % 3 // The axis of the face.
-            val workAxis1 = (direction + 1) % 3 // The first other axis
-            val workAxis2 = (direction + 2) % 3 // The second other axis
+            meshFace(world, face)
+        }
 
-            // For each plane in the given direction...
-            startPos[direction] = -1
-            while (++startPos[direction] < CHUNK_SIZE) {
+        if (hasMesh) {
+            renderable = Builder.end()
+            position.toV3(renderable.position)
+        }
+        isQueued = false
+    }
 
-                resetMerged() // Reset the faces merged
+    private fun meshFace(world: World, face: Int) {
+        // If this face is a 'back' face, needing it's position & OGL calls adjusted.
+        // This is an integer/modifier used when needing to move 1 block forward from the face.
+        val backFaceM = if (face > 2) -1 else 1
+        val direction = face % 3 // The axis of the face.
+        val workAxis1 = (direction + 1) % 3 // The first other axis
+        val workAxis2 = (direction + 2) % 3 // The second other axis
 
-                startPos[workAxis1] = -1
-                while (++startPos[workAxis1] < CHUNK_SIZE) {
+        // For each plane in the given direction...
+        startPos[direction] = -1
+        while (++startPos[direction] < CHUNK_SIZE) {
 
-                    startPos[workAxis2] = -1
-                    while (++startPos[workAxis2] < CHUNK_SIZE) {
+            resetMerged() // Reset the faces merged
 
-                        val block = getFromAIV3(startPos) and TYPE
-                        // Skip this block if it's been merged already, is air, or isn't visible
-                        if (isMerged(startPos[workAxis1], startPos[workAxis2]) || block == 0 || !faceVisible(world, startPos, direction, backFaceM))
-                            continue
+            startPos[workAxis1] = -1
+            while (++startPos[workAxis1] < CHUNK_SIZE) {
 
-                        setColor(world, direction, backFaceM) // Set the blocks ambient color to be used by the vertex
+                startPos[workAxis2] = -1
+                while (++startPos[workAxis2] < CHUNK_SIZE) {
 
-                        quadSize.reset() // Making a new quad, reset
+                    val block = getFromAIV3(startPos) and TYPE
+                    // Skip this block if it's been merged already, is air, or isn't visible
+                    if (isMerged(startPos[workAxis1], startPos[workAxis2])
+                        || block == 0
+                        || !faceVisible(world, startPos, direction, backFaceM)
+                    )
+                        continue
 
-                        // Figure out width & save
-                        currPos.set(startPos)
+                    setColor(world, direction, backFaceM) // Set the blocks ambient color to be used by the vertex
+
+                    quadSize.reset() // Making a new quad, reset
+
+                    // Figure out width & save
+                    currPos.set(startPos)
+                    while (currPos[workAxis2] < CHUNK_SIZE
+                        && !isMerged(currPos[workAxis1], currPos[workAxis2])
+                        && canMerge(world, direction, backFaceM)
+                    ) currPos[workAxis2]++
+                    quadSize[workAxis2] = currPos[workAxis2] - startPos[workAxis2]
+
+                    // Figure out height & save
+                    currPos.set(startPos)
+                    while (currPos[workAxis1] < CHUNK_SIZE
+                        && !isMerged(currPos[workAxis1], currPos[workAxis2])
+                        && canMerge(world, direction, backFaceM)
+                    ) {
+                        currPos[workAxis2] = startPos[workAxis2]
                         while (currPos[workAxis2] < CHUNK_SIZE
-                            && canMerge(world, direction, backFaceM)
                             && !isMerged(currPos[workAxis1], currPos[workAxis2])
+                            && canMerge(world, direction, backFaceM)
                         ) currPos[workAxis2]++
-                        quadSize[workAxis2] = currPos[workAxis2] - startPos[workAxis2]
 
-                        // Figure out height & save
-                        currPos.set(startPos)
-                        while (currPos[workAxis1] < CHUNK_SIZE
-                            && canMerge(world, direction, backFaceM)
-                            && !isMerged(currPos[workAxis1], currPos[workAxis2])
-                        ) {
-                            currPos[workAxis2] = startPos[workAxis2]
-                            while (currPos[workAxis2] < CHUNK_SIZE
-                                && canMerge(world, direction, backFaceM)
-                                && !isMerged(currPos[workAxis1], currPos[workAxis2])
-                            ) currPos[workAxis2]++
+                        if (currPos[workAxis2] - startPos[workAxis2] < quadSize[workAxis2]) break
+                        else currPos[workAxis2] = startPos[workAxis2]
 
-                            if (currPos[workAxis2] - startPos[workAxis2] < quadSize[workAxis2]) break
-                            else currPos[workAxis2] = startPos[workAxis2]
+                        currPos[workAxis1]++
+                    }
+                    quadSize[workAxis1] = currPos[workAxis1] - startPos[workAxis1]
 
-                            currPos[workAxis1]++
-                        }
-                        quadSize[workAxis1] = currPos[workAxis1] - startPos[workAxis1]
+                    // Finally render the quad
+                    tmpAIV.set(startPos)
+                    tmpAIV[direction] += (backFaceM + 1) / 2 // if it's -1, make it 0
+                    tmpAIV.apply(corners[0])
 
-                        // Finally render the quad
-                        tmpAIV.set(startPos)
-                        tmpAIV[direction] += (backFaceM + 1) / 2 // if it's -1, make it 0
-                        tmpAIV.apply(corner1)
+                    m.reset()[workAxis1] = quadSize[workAxis1]
+                    n.reset()[workAxis2] = quadSize[workAxis2]
 
-                        m.reset()[workAxis1] = quadSize[workAxis1]
-                        n.reset()[workAxis2] = quadSize[workAxis2]
+                    m.apply(corners[1]).add(corners[0]) // corner2 = c1 + m
+                    m.apply(corners[2]).add(corners[0]).add(n.apply(tmpV3)) // corner3 = c1 + m + n
+                    n.apply(corners[3]).add(corners[0]) // corner4 = c1 + n
 
-                        m.apply(corner2).add(corner1) // corner2 = c1 + m
-                        m.apply(corner3).add(corner1).add(n.apply(tmpV3)) // corner3 = c1 + m + n
-                        n.apply(corner4).add(corner1) // corner4 = c1 + n
+                    // Normal is always orthogonal to the quad
+                    tmpAIV.reset()[direction] += backFaceM
+                    tmpAIV.apply(normal)
 
-                        // Normal is always orthogonal to the quad
-                        tmpAIV.reset()[direction] += backFaceM
-                        tmpAIV.apply(normal)
+                    val props = Item.Properties.fromType(block)!!
+                    val tex = props.texture
+                    val texture = when {
+                        face == 1 -> tex // Top face
+                        face == 4 -> props.block?.texBottom ?: tex // Bottom face
+                        Block.Orientation.isFront(face, getFromAIV3(startPos)) ->
+                            props.block?.texFront ?: props.block?.texSide ?: tex // Front face
+                        else -> props.block?.texSide ?: tex // Side face
+                    }
 
-                        val props = Item.Properties.fromType(block)!!
-                        val tex = props.texture
-                        val texture = when {
-                            face == 1 -> tex // Top face
-                            face == 4 -> props.block?.texBottom ?: tex // Bottom face
-                            Block.Orientation.isFront(face, getFromAIV3(startPos)) ->
-                                props.block?.texFront ?: props.block?.texSide ?: tex // Front face
-                            else -> props.block?.texSide ?: tex // Side face
-                        }
-                        Builder.drawRect(
-                            texture, props.block?.isBlend == true,
-                            quadSize[workAxis1].toFloat(), quadSize[workAxis2].toFloat(), backFaceM == -1, direction == 0
-                        )
-                        hasMesh = true
+                    Builder.drawRect(
+                        texture,
+                        props.block?.isBlend == true,
+                        quadSize[workAxis1].toFloat(),
+                        quadSize[workAxis2].toFloat(),
+                        backFaceM == -1,
+                        direction == 0
+                    )
+                    hasMesh = true
 
-                        for (f in 0 until quadSize[workAxis1]) {
-                            for (g in 0 until quadSize[workAxis2]) {
-                                markMerged(startPos[workAxis1] + f, startPos[workAxis2] + g)
-                            }
+                    for (f in 0 until quadSize[workAxis1]) {
+                        for (g in 0 until quadSize[workAxis2]) {
+                            markMerged(startPos[workAxis1] + f, startPos[workAxis2] + g)
                         }
                     }
                 }
             }
         }
-
-        val modelInst = ModelInstance(Builder.end())
-        modelInst.transform.setToTranslation(position.toV3(tmpV3))
-        model.add(modelInst)
-        model.end()
-        isQueued = false
     }
 
     /** Is this face visible and needs to be rendered? */
@@ -175,7 +194,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         return blockA == blockB
                 && blockB != 0
                 && faceVisible(world, currPos, axis, backFaceM)
-                && modAO(world, axis, true)
+                && checkAO(world, axis)
     }
 
     private fun getFromAIV3(pos: ArrIV3) = this[pos[0], pos[1], pos[2], ALL]
@@ -191,7 +210,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         color.g = localColor.y / 15f
         color.b = localColor.z / 15f
 
-        modAO(world, axis, false)
+        setAO(world, axis)
     }
 
     /** Will set AO to the value for the face at `tmpAIV[axis]+=backFaceM`, see
@@ -201,7 +220,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
      * This rather complicated AO implementation is based on these 2 blog posts:
      * https://0fps.net/2013/07/03/ambient-occlusion-for-minecraft-like-worlds/
      * http://mgerhardy.blogspot.com/2016/06/ambient-occlusion-for-polyvox.html */
-    private fun modAO(world: World, axis: Int, check: Boolean): Boolean {
+    private fun setAO(world: World, axis: Int) {
         val front = tmpAIV
         val workAxis1 = (axis + 1) % 3 // The first other axis
         val workAxis2 = (axis + 2) % 3 // The second other axis
@@ -230,22 +249,67 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         front[workAxis1]--
         front[workAxis2]++
 
-        fun getAO(sideA: Int, sideB: Int, corner: Int): Int {
-            if (sideA == 1 && sideB == 1) return 0
-            return 3 - (sideA + sideB + corner)
+        ao[0] = getAO(left, bottom, leftBottom)
+        ao[1] = getAO(right, bottom, rightBottom)
+        ao[2] = getAO(right, top, topRight)
+        ao[3] = getAO(left, top, topLeft)
+    }
+
+    private fun checkAO(world: World, axis: Int): Boolean {
+        val front = tmpAIV
+        val workAxis1 = (axis + 1) % 3 // The first other axis
+        val workAxis2 = (axis + 2) % 3 // The second other axis
+
+        // Left: X Negative
+        // Right: X Positive
+        // Top: Y Positive
+        // Bottom: Y Negative
+
+        front[workAxis1]--
+        val left = existsAIVOrWorld(world, front)
+        front[workAxis2]--
+        val leftBottom = existsAIVOrWorld(world, front)
+        front[workAxis1]++
+        val bottom = existsAIVOrWorld(world, front)
+        front[workAxis2] += 2
+
+        if (getAO(left, bottom, leftBottom) != ao[0]) {
+            front[workAxis2]--
+            return false
         }
 
-        tmpAo[0] = getAO(left, bottom, leftBottom)
-        tmpAo[1] = getAO(right, bottom, rightBottom)
-        tmpAo[2] = getAO(right, top, topRight)
-        tmpAo[3] = getAO(left, top, topLeft)
+        val top = existsAIVOrWorld(world, front)
+        front[workAxis1]--
+        val topLeft = existsAIVOrWorld(world, front)
+        front[workAxis1] += 2
 
-        return if (check) {
-            tmpAo.contentEquals(ao)
-        } else {
-            for (i in 0 until 4) ao[i] = tmpAo[i]
-            false // does not matter
+        if (getAO(left, top, topLeft) != ao[3]) {
+            front[workAxis1]--
+            front[workAxis2]--
+            return false
         }
+
+        val topRight = existsAIVOrWorld(world, front)
+        front[workAxis2]--
+        val right = existsAIVOrWorld(world, front)
+        front[workAxis2]--
+
+        if (getAO(right, top, topRight) != ao[2]) {
+            front[workAxis1]--
+            front[workAxis2]++
+            return false
+        }
+
+        val rightBottom = existsAIVOrWorld(world, front)
+        front[workAxis1]--
+        front[workAxis2]++
+
+        return getAO(right, bottom, rightBottom) == ao[1]
+    }
+
+    private fun getAO(sideA: Int, sideB: Int, corner: Int): Int {
+        if (sideA == 1 && sideB == 1) return 0
+        return 3 - (sideA + sideB + corner)
     }
 
     /** Returns 1 if block at given position exists, 0 if not. */
@@ -288,20 +352,16 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
          * with the final fragment color. */
         private const val attributes =
             VertexAttributes.Usage.Position.toLong() or
+                    VertexAttributes.Usage.ColorPacked.toLong() or
                     VertexAttributes.Usage.Normal.toLong() or
-                    VertexAttributes.Usage.TextureCoordinates.toLong() or
-                    VertexAttributes.Usage.ColorPacked.toLong()
+                    VertexAttributes.Usage.TextureCoordinates.toLong()
 
         private val aoVals = floatArrayOf(0.15f, 0.6f, 0.8f, 1f)
 
-        private val corner1 = Vector3()
-        private val corner2 = Vector3()
-        private val corner3 = Vector3()
-        private val corner4 = Vector3()
+        private val corners = Array(4) { Vector3() }
         private val normal = Vector3()
         private val color = Color()
-        private var ao = IntArray(4)
-        private var tmpAo = IntArray(4)
+        private val ao = IntArray(4) { 3 }
 
         private val tmpAIV = ArrIV3()
         private val tmpAIV2 = ArrIV3()
@@ -326,7 +386,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
         /** An array-backed integer vector used by the greedy meshing algorithm.
          * It's required as the it indexes the axes. */
-        private class ArrIV3 {
+        class ArrIV3 {
 
             val values = IntArray(3)
 
@@ -356,42 +416,77 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             }
         }
 
+        /** A builder for chunk meshes.
+         * Defers actually building the mesh to end(). */
         object Builder {
 
             private val builder = MeshBuilder()
-            private var model = Model()
-            private var node = Node()
-            private var materials = ObjectMap<String, Material>(50)
+            private val parts = OrderedMap<String, Part>(50)
+            private lateinit var vbo: Part
+            private var partsUsed = 0
 
-            fun begin() {
-                model = Model()
-                node = Node()
-                model.nodes.add(node)
+            fun end(): ChunkRenderable {
+                var nodes = GdxArray<NodePart>(partsUsed)
+
                 builder.begin(attributes)
-                node.id = "chunkNode"
-            }
+                for (part in parts) {
+                    val vbo = part.value
+                    if (vbo.size == 0) continue
 
-            fun end(): Model {
+                    val meshPart = builder.part("c", GL20.GL_TRIANGLES, meshPartPool.obtain())
+                    val nodePart = nodePartPool.obtain()
+                    nodePart.material = vbo.material
+                    nodePart.meshPart = meshPart
+                    nodes.add(nodePart)
+
+                    for (i in 0 until vbo.size) {
+                        val uvOff = (i * 2)
+                        val normOff = (i * 3)
+                        val colOff = (i * 7)
+                        color.set(vbo.colors[colOff], vbo.colors[colOff + 1], vbo.colors[colOff + 2], 0f)
+                        for (v in 0 until 4) {
+                            val posOff = (i * 3 * 4) + v * 3
+                            tmpV3.set(vbo.positions[posOff], vbo.positions[posOff + 1], vbo.positions[posOff + 2])
+                            normal.set(vbo.normals[normOff], vbo.normals[normOff + 1], vbo.normals[normOff + 2])
+                            color.a = vbo.colors[colOff + 3 + v]
+                            vertTmp[v].set(tmpV3, normal, color, null)
+                        }
+                        vertTmp[0].setUV(0f, vbo.texUVs[uvOff + 1])
+                        vertTmp[1].setUV(vbo.texUVs[uvOff], vbo.texUVs[uvOff + 1])
+                        vertTmp[2].setUV(vbo.texUVs[uvOff], 0f)
+                        vertTmp[3].setUV(0f, 0f)
+
+                        builder.rect(
+                            vertTmp[0],
+                            vertTmp[1],
+                            vertTmp[2],
+                            vertTmp[3],
+                        )
+                    }
+
+                    vbo.positions.clear()
+                    vbo.normals.clear()
+                    vbo.colors.clear()
+                    vbo.texUVs.clear()
+                    vbo.size = 0
+                }
+
+                partsUsed = 0
                 builder.end()
-                ModelBuilder.rebuildReferences(model)
-                return model
+                return ChunkRenderable(nodes)
             }
 
-            private val vertTmp1 = VertexInfo()
-            private val vertTmp2 = VertexInfo()
-            private val vertTmp3 = VertexInfo()
-            private val vertTmp4 = VertexInfo()
+            private val vertTmp = Array(4) { MeshPartBuilder.VertexInfo() }
 
             /** Draw a rectangle, using the positions inside corner1-4. */
             fun drawRect(texture: String, blend: Boolean, width: Float, height: Float, backFace: Boolean, xFace: Boolean) {
-                val meshPart = builder.part("c", GL20.GL_TRIANGLES)
-                val material = materials[texture] ?: getMaterial(texture, blend)
-                node.parts.add(NodePart(meshPart, material))
-
-                val ao1 = aoVals[ao[0]]
-                val ao2 = aoVals[ao[1]]
-                val ao3 = aoVals[ao[2]]
-                val ao4 = aoVals[ao[3]]
+                var part = parts[texture]
+                if (part == null) {
+                    part = Part(getMaterial(texture, blend))
+                    parts[texture] = part
+                }
+                vbo = part
+                if (vbo.size == 0) partsUsed++
 
                 // Back faces need their corners to be CCW, regular faces CW.
                 // This is per OpenGL spec to ensure OGL correctly assumes front faces.
@@ -403,25 +498,41 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 // Additionally, faces that are orthogonal to the X axis need
                 // their points rotated by -90 degrees.
                 if (xFace) {
-                    if (backFace) rect(corner1, corner4, corner3, corner2, ao1, ao4, ao3, ao2, height, width)
-                    else rect(corner4, corner1, corner2, corner3, ao4, ao1, ao2, ao3, height, width)
+                    if (backFace) rect(0, 3, 2, 1, height, width)
+                    else rect(3, 0, 1, 2, height, width)
                 } else {
-                    if (backFace) rect(corner2, corner1, corner4, corner3, ao2, ao1, ao4, ao3, width, height)
-                    else rect(corner1, corner2, corner3, corner4, ao1, ao2, ao3, ao4, width, height)
+                    if (backFace) rect(1, 0, 3, 2, width, height)
+                    else rect(0, 1, 2, 3, width, height)
                 }
             }
 
             private fun rect(
-                corner00: Vector3, corner10: Vector3, corner11: Vector3, corner01: Vector3,
-                ao1: Float, ao2: Float, ao3: Float, ao4: Float,
+                c1: Int, c2: Int, c3: Int, c4: Int,
                 width: Float, height: Float
             ) {
-                builder.rect(
-                    vertTmp1.set(corner00, normal, color.set(color.r, color.g, color.b, ao1), null).setUV(0f, height),
-                    vertTmp2.set(corner10, normal, color.set(color.r, color.g, color.b, ao2), null).setUV(width, height),
-                    vertTmp3.set(corner11, normal, color.set(color.r, color.g, color.b, ao3), null).setUV(width, 0f),
-                    vertTmp4.set(corner01, normal, color.set(color.r, color.g, color.b, ao4), null).setUV(0f, 0f)
-                )
+                vertex(corners[c1])
+                vertex(corners[c2])
+                vertex(corners[c3])
+                vertex(corners[c4])
+                vbo.normals.add(normal.x)
+                vbo.normals.add(normal.y)
+                vbo.normals.add(normal.z)
+                vbo.colors.add(color.r)
+                vbo.colors.add(color.g)
+                vbo.colors.add(color.b)
+                vbo.colors.add(aoVals[ao[c1]])
+                vbo.colors.add(aoVals[ao[c2]])
+                vbo.colors.add(aoVals[ao[c3]])
+                vbo.colors.add(aoVals[ao[c4]])
+                vbo.texUVs.add(width)
+                vbo.texUVs.add(height)
+                vbo.size++
+            }
+
+            private fun vertex(pos: Vector3) {
+                vbo.positions.add(pos.x)
+                vbo.positions.add(pos.y)
+                vbo.positions.add(pos.z)
             }
 
             private fun getMaterial(texture: String, blend: Boolean): Material {
@@ -429,8 +540,36 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 tex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
                 val mat = if (blend && configuration.video.blend) Material(TextureAttribute.createDiffuse(tex), BlendingAttribute())
                 else Material(TextureAttribute.createDiffuse(tex))
-                materials[texture] = mat
                 return mat
+            }
+
+            private class Part(val material: Material) {
+                val positions = GdxFloatArray(4 * 3 * 5)
+                val normals = GdxFloatArray(3 * 5)
+                val colors = GdxFloatArray(7 * 5)
+                val texUVs = GdxFloatArray(2 * 5)
+                var size = 0
+            }
+        }
+
+        private val meshPartPool: Pool<MeshPart> = object : Pool<MeshPart>() {
+            override fun newObject() = MeshPart()
+        }
+        private val nodePartPool: Pool<NodePart> = object : Pool<NodePart>() {
+            override fun newObject() = NodePart()
+        }
+
+        class ChunkRenderable(val nodeParts: GdxArray<NodePart>) : RenderableProvider {
+
+            val position = Vector3()
+
+            override fun getRenderables(renderables: GdxArray<Renderable>, pool: Pool<Renderable>) {
+                for (part in nodeParts) {
+                    val renderable = pool.obtain()
+                    part.setRenderable(renderable)
+                    renderable.worldTransform.setToTranslation(position)
+                    renderables.add(renderable)
+                }
             }
         }
     }

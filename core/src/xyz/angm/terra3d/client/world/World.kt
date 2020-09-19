@@ -7,6 +7,9 @@ import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Disposable
 import com.badlogic.gdx.utils.OrderedMap
 import com.badlogic.gdx.utils.Queue
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import ktx.collections.*
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.common.CHUNK_SIZE
@@ -37,6 +40,8 @@ const val RENDER_TIME_LOAD = 10
 /** The maximum distance a chunk can have to the player before being discarded. */
 private const val MAX_CHUNK_DIST = (RENDER_DIST_CHUNKS + 1) * CHUNK_SIZE
 
+private const val concurrentMeshing = 2
+
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
 class World(private val client: Client, override val seed: String) : Disposable, WorldInterface {
@@ -46,6 +51,8 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
     private val chunks = OrderedMap<IntVector3, RenderableChunk>()
     private val chunksWaitingForRender = Queue<RenderableChunk>(400)
+    private val meshingScope = CoroutineScope(Dispatchers.Default)
+    private val mainScope = CoroutineScope(Dispatchers.Main)
     private val generator = TerrainGenerator(this)
     private val lighting = BfsLight(this)
     internal val fluid = BfsFluid(this)
@@ -285,5 +292,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
     override fun dispose() {
         chunks.values().forEach { it.dispose() }
+        meshingScope.cancel()
+        mainScope.cancel()
     }
 }

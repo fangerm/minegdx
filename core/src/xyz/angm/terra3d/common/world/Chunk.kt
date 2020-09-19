@@ -4,6 +4,7 @@ import org.nustaq.serialization.FSTBasicObjectSerializer
 import org.nustaq.serialization.FSTClazzInfo
 import org.nustaq.serialization.FSTObjectInput
 import org.nustaq.serialization.FSTObjectOutput
+import xyz.angm.terra3d.common.CHUNK_SHIFT
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
@@ -58,11 +59,11 @@ open class Chunk private constructor(
     protected constructor(fromChunk: Chunk) : this(fromChunk.blockData, fromChunk.blockMetadata, fromChunk.position)
 
     @Suppress("NOTHING_TO_INLINE")
-    protected inline operator fun get(x: Int, y: Int, z: Int, mask: Int) = blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)] and mask
+    protected inline operator fun get(x: Int, y: Int, z: Int, mask: Int) = blockData[x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))] and mask
 
     @Suppress("NOTHING_TO_INLINE")
     protected inline operator fun set(x: Int, y: Int, z: Int, value: Int) {
-        blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)] = value
+        blockData[x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))] = value
     }
 
     /** Returns the block at the specified location, or null if there is none. */
@@ -79,7 +80,7 @@ open class Chunk private constructor(
     }
 
     /** Returns the block's collider. Used by physics systems (TODO...). */
-    fun getCollider(x: Int, y: Int, z: Int) = Item.Properties.fromType(blockData[x + (y * CHUNK_SIZE) + (z * CHUNK_SIZE * CHUNK_SIZE)])?.block?.collider
+    fun getCollider(x: Int, y: Int, z: Int) = Item.Properties.fromType(blockData[x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))])?.block?.collider
         ?: PhysicsSystem.BlockCollider.NONE
 
     fun isBlended(p: IntVector3) = Item.Properties.fromType(this[p.x, p.y, p.z, TYPE])?.block?.isBlend ?: true
