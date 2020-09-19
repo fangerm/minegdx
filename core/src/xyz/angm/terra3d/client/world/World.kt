@@ -14,7 +14,6 @@ import ktx.collections.*
 import xyz.angm.terra3d.client.networking.Client
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.networking.BlockUpdate
@@ -133,6 +132,8 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
     private val last = IntVector3()
     private val raycast = IntVector3()
+    private var currOrient = Block.Orientation.NORTH
+    private var lastOrient = Block.Orientation.NORTH
     private val tmpV1 = Vector3()
     private val tmpV2 = Vector3()
 
@@ -141,13 +142,19 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * @param direction Direction of the one looking
      * @param prev true returns block before the one being looked at (used for placing blocks, etc.)
      * @return Position of the block being looked at, or null if there is none */
-    fun getBlockRaycast(position: VectoredComponent, direction: VectoredComponent, prev: Boolean): IntVector3? {
+    fun getBlockRaycast(position: Vector3, direction: Vector3, prev: Boolean): IntVector3? {
+        last.set(position)
         for (i in 1 until (RAYCAST_REACH / RAYCAST_STEP).toInt()) {
             val dist = i * RAYCAST_STEP
             tmpV1.set(direction).nor().scl(dist)
             raycast.set(tmpV2.set(position).add(tmpV1))
 
-            if (blockExists(raycast)) return if (prev) last else raycast
+            if (raycast != last) {
+                if (blockExists(raycast)) return if (prev) last else raycast
+                val prevCurr = currOrient
+                currOrient = orientFromRay()
+                lastOrient = if (prevCurr != currOrient) currOrient else lastOrient
+            }
             last.set(raycast)
         }
         return null
@@ -159,23 +166,35 @@ class World(private val client: Client, override val seed: String) : Disposable,
      * @param direction Direction of the one looking
      * @param newBlock Block to be placed. Null will destroy the block instead
      * @return If there was a block to be placed/removed and the operation was successful */
-    fun updateBlockRaycast(position: VectoredComponent, direction: VectoredComponent, newBlock: Item): Boolean {
+    fun updateBlockRaycast(position: Vector3, direction: Vector3, newBlock: Item): Boolean {
         if (!newBlock.properties.isBlock) return false
         val blockPosition = getBlockRaycast(position, direction, true) ?: return false
-        setBlock(blockPosition, newBlock, getOrientationFromRaycast())
+        setBlock(blockPosition, newBlock, getOrientationFromRaycast(newBlock.properties.block!!.orientation))
         return true
     }
 
-    private fun getOrientationFromRaycast(): Block.Orientation {
-        val d = raycast.minus(last)
+    private fun getOrientationFromRaycast(mode: Item.Properties.BlockProperties.OrientationMode): Block.Orientation {
+        return when (mode) {
+            Item.Properties.BlockProperties.OrientationMode.DISABLE -> Block.Orientation.NORTH
+            Item.Properties.BlockProperties.OrientationMode.ALL -> orientFromRay()
+            Item.Properties.BlockProperties.OrientationMode.XZ -> {
+                val orient = orientFromRay()
+                if (orient == Block.Orientation.UP || orient == Block.Orientation.DOWN) lastOrient
+                else orient
+            }
+        }
+    }
+
+    private fun orientFromRay(): Block.Orientation {
+        val d = tmpIV1.set(raycast).minus(last)
         return when {
-            d.y == -1 -> Block.Orientation.UP
-            d.y == 1 -> Block.Orientation.DOWN
             d.x == -1 -> Block.Orientation.NORTH
             d.x == 1 -> Block.Orientation.SOUTH
             d.z == -1 -> Block.Orientation.EAST
             d.z == 1 -> Block.Orientation.WEST
-            else -> throw RuntimeException("Block orientation is invalid")
+            d.y == -1 -> Block.Orientation.UP
+            d.y == 1 -> Block.Orientation.DOWN
+            else -> throw RuntimeException("Invalid ray")
         }
     }
 
