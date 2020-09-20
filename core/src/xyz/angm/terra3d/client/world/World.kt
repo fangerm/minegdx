@@ -213,6 +213,12 @@ class World(private val client: Client, override val seed: String) : Disposable,
         return chunk[tmpIV1.x, tmpIV1.y, tmpIV1.z, ALL]
     }
 
+    fun getFluidLevel(position: IntVector3): Int {
+        val chunk = getChunk(position) ?: return 0
+        tmpIV1.set(position).minus(chunk.position)
+        return chunk[tmpIV1.x, tmpIV1.y, tmpIV1.z, FLUID_LEVEL] shr FLUID_LEVEL_SHIFT
+    }
+
     /** Returns the collider at the given position. */
     fun getCollider(position: IntVector3): PhysicsSystem.BlockCollider {
         val chunk = getChunk(tmpIV1.set(position)) ?: return PhysicsSystem.BlockCollider.NONE

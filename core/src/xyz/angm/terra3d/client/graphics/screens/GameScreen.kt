@@ -183,6 +183,7 @@ class GameScreen(
         }
 
         playerInputSystem = PlayerInputSystem(this, player, physicsSystem, inputHandler)
+        engine.add(PlayerFluidSystem(this, physicsSystem))
         engine.add(playerInputSystem)
         val renderSystem = RenderSystem()
         engine.add(renderSystem as EntitySystem)

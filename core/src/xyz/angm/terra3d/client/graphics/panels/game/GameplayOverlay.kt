@@ -7,6 +7,7 @@
 package xyz.angm.terra3d.client.graphics.panels.game
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Interpolation
@@ -15,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.utils.Align
+import ktx.actors.alpha
 
 import xyz.angm.terra3d.client.graphics.actors.Chat
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
@@ -29,6 +31,7 @@ import xyz.angm.terra3d.common.ecs.health
 import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.ecs.position
+import xyz.angm.terra3d.common.items.Item
 import kotlin.random.Random
 
 /** The HUD during gameplay. Contains everything that is 2D. */
@@ -41,6 +44,12 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
     private val debugLabel = Label("", skin, "monospace")
     private val onlinePlayers = Label("", skin, "default-24pt")
     private val chat = Chat(skin, screen.client)
+    private val fluidOverlay = Image(ResourceManager.get<Texture>(Item.Properties.fromIdentifier("water").texture))
+    var inFluid: Boolean
+        get() = fluidOverlay.isVisible
+        set(value) {
+            fluidOverlay.isVisible = value
+        }
 
     init {
         val icons = "textures/gui/icons.png"
@@ -68,10 +77,13 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         addActor(healthBar)
         addActor(hungerBar)
         addActor(chat)
+        addActor(fluidOverlay)
 
         hotbar.setSize(364f, 44f)
         hotbarSelected.setSize(48f, 48f)
         crosshair.setSize(32f, 32f)
+        fluidOverlay.setSize(WORLD_WIDTH, WORLD_HEIGHT)
+        fluidOverlay.alpha = 0.2f
 
         hotbar.setPosition(WORLD_WIDTH / 2, hotbar.height / 2, Align.center)
         hotbarSelected.setPosition(0f, hotbar.height / 2, Align.center)
@@ -83,9 +95,11 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         healthBar.setPosition(hotbar.x, hotbar.height + 6, Align.bottomLeft)
         hungerBar.setPosition(hotbar.x + hotbar.width + 16, hotbar.height + 6, Align.bottomRight)
         chat.setPosition(10f, 90f)
+        fluidOverlay.setPosition(0f, 0f)
 
         debugLabel.isVisible = false
         onlinePlayers.isVisible = false
+        fluidOverlay.isVisible = false
         updateHotbarSelector(screen.player[playerM].inventory.hotbarPosition)
         background = null
     }

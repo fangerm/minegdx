@@ -33,6 +33,9 @@ const val PLAYER_SPEED = 4.5f
 /** Same as above, but while sprinting. */
 const val SPRINT_SPEED = PLAYER_SPEED * 1.5f
 
+/** Same as above, but while in a fluid. */
+const val FLUID_SPEED = PLAYER_SPEED * 0.5f
+
 /** The amount the player shrinks when sneaking. */
 const val SNEAK_SIZE_MODIFIER = 0.05f
 
@@ -199,7 +202,7 @@ class PlayerPhysicsSystem(
         if (playerController.canJump() && !sneaking) {
             playerController.jump(jumpV)
             hasJumped = false
-        } else if (!hasJumped) {
+        } else if (!hasJumped || inFluid) {
             playerController.jump(doubleJumpV)
             hasJumped = true
         }
@@ -207,6 +210,7 @@ class PlayerPhysicsSystem(
 
     internal var sprinting = false
     internal var sneaking = false
+    internal var inFluid = false
     private var glideSpeed = GLIDE_START_SPEED
 
     /** Toggle the player sneaking. Reduces player's height and makes their fall speed very low, allowing for a 'gliding' effect */
@@ -259,7 +263,7 @@ class PlayerPhysicsSystem(
             sneaking -> delta * SNEAK_SPEED_MODIFIER
             else -> delta
         }
-        modifier *= if (sprinting) SPRINT_SPEED else PLAYER_SPEED
+        modifier *= if (inFluid) FLUID_SPEED else if (sprinting) SPRINT_SPEED else PLAYER_SPEED
 
         if (velocity.x != 0f) {
             tmpV2.set(direction)
