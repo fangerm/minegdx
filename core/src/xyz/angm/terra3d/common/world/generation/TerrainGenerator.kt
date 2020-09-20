@@ -4,6 +4,7 @@ import ktx.collections.*
 import xyz.angm.terra3d.common.*
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.Chunk
+import xyz.angm.terra3d.common.world.FLUID_LEVEL_SHIFT
 import xyz.angm.terra3d.common.world.WorldInterface
 import kotlin.random.Random
 
@@ -93,7 +94,8 @@ class TerrainGenerator(val world: WorldInterface) {
                 else -> "stone"
             }
 
-            chunk.setBlock(tmpIV.set(x, y, z), Item.Properties.fromIdentifier(type).type)
+            val block = maybeFluid(type)
+            chunk.setBlock(tmpIV.set(x, y, z), block)
         }
     }
 
@@ -108,6 +110,14 @@ class TerrainGenerator(val world: WorldInterface) {
                 }
             }
         }
+    }
+
+    private fun maybeFluid(type: String): Int {
+        val props = Item.Properties.fromIdentifier(type)
+        return if (props.block!!.fluid) {
+            val level = props.block.fluidReach shl FLUID_LEVEL_SHIFT
+            props.type or level
+        } else props.type
     }
 
     private fun isSurfaceChunk(chunkY: Int, surfaceHeight: Int) = (surfaceHeight - chunkY) < CHUNK_SIZE && (surfaceHeight - chunkY) >= 0
