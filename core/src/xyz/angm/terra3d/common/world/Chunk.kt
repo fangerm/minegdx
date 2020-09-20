@@ -59,7 +59,7 @@ open class Chunk private constructor(
     protected constructor(fromChunk: Chunk) : this(fromChunk.blockData, fromChunk.blockMetadata, fromChunk.position)
 
     @Suppress("NOTHING_TO_INLINE")
-    protected inline operator fun get(x: Int, y: Int, z: Int, mask: Int) = blockData[x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))] and mask
+    internal inline operator fun get(x: Int, y: Int, z: Int, mask: Int) = blockData[x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))] and mask
 
     @Suppress("NOTHING_TO_INLINE")
     protected inline operator fun set(x: Int, y: Int, z: Int, value: Int) {

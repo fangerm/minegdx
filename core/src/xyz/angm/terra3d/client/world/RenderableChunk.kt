@@ -18,10 +18,8 @@ import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
-import xyz.angm.terra3d.common.world.ALL
-import xyz.angm.terra3d.common.world.Block
-import xyz.angm.terra3d.common.world.Chunk
-import xyz.angm.terra3d.common.world.TYPE
+import xyz.angm.terra3d.common.world.*
+import kotlin.math.abs
 
 
 /** A chunk capable of rendering itself. Constructed from a regular chunk sent by the server.
@@ -92,13 +90,19 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 startPos[workAxis2] = -1
                 while (++startPos[workAxis2] < CHUNK_SIZE) {
 
-                    val block = getFromAIV3(startPos) and TYPE
+                    val all = getFromAIV3(startPos)
+                    val block = all and TYPE
+                    val fluidLevel = all and FLUID_LEVEL
+
                     // Skip this block if it's been merged already, is air, or isn't visible
                     if (isMerged(startPos[workAxis1], startPos[workAxis2])
                         || block == 0
-                        || !faceVisible(world, startPos, direction, backFaceM)
+                        || !faceVisible(world, startPos, direction, backFaceM, fluidLevel)
                     )
                         continue
+
+                    val props = Item.Properties.fromType(block)!!
+                    val blockP = props.block!!
 
                     setColor(world, direction, backFaceM) // Set the blocks ambient color to be used by the vertex
 
@@ -108,7 +112,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                     currPos.set(startPos)
                     while (currPos[workAxis2] < CHUNK_SIZE
                         && !isMerged(currPos[workAxis1], currPos[workAxis2])
-                        && canMerge(world, direction, backFaceM)
+                        && canMerge(world, direction, backFaceM, fluidLevel)
                     ) currPos[workAxis2]++
                     quadSize[workAxis2] = currPos[workAxis2] - startPos[workAxis2]
 
@@ -116,12 +120,12 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                     currPos.set(startPos)
                     while (currPos[workAxis1] < CHUNK_SIZE
                         && !isMerged(currPos[workAxis1], currPos[workAxis2])
-                        && canMerge(world, direction, backFaceM)
+                        && canMerge(world, direction, backFaceM, fluidLevel)
                     ) {
                         currPos[workAxis2] = startPos[workAxis2]
                         while (currPos[workAxis2] < CHUNK_SIZE
                             && !isMerged(currPos[workAxis1], currPos[workAxis2])
-                            && canMerge(world, direction, backFaceM)
+                            && canMerge(world, direction, backFaceM, fluidLevel)
                         ) currPos[workAxis2]++
 
                         if (currPos[workAxis2] - startPos[workAxis2] < quadSize[workAxis2]) break
@@ -147,14 +151,20 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                     tmpAIV.reset()[direction] += backFaceM
                     tmpAIV.apply(normal)
 
-                    val props = Item.Properties.fromType(block)!!
+                    if (blockP.fluid) {
+                        val level = (getFromAIV3(startPos) and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT
+                        tmpAIV.set(startPos)[direction] += backFaceM
+                        if (face == 1) adjustTopFluidLevel(level, blockP.fluidReach)
+                        else if (face % 3 != 1) adjustSideFluidLevel(world, level, blockP.fluidReach, direction)
+                    }
+
                     val tex = props.texture
                     val texture = when {
                         face == 1 -> tex // Top face
-                        face == 4 -> props.block?.texBottom ?: tex // Bottom face
+                        face == 4 -> blockP.texBottom ?: tex // Bottom face
                         Block.Orientation.isFront(face, getFromAIV3(startPos)) ->
-                            props.block?.texFront ?: props.block?.texSide ?: tex // Front face
-                        else -> props.block?.texSide ?: tex // Side face
+                            blockP.texFront ?: blockP.texSide ?: tex // Front face
+                        else -> blockP.texSide ?: tex // Side face
                     }
 
                     Builder.drawRect(
@@ -163,7 +173,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                         quadSize[workAxis1].toFloat(),
                         quadSize[workAxis2].toFloat(),
                         backFaceM == -1,
-                        direction == 0
+                        direction == 0 && !blockP.fluid // Rotating on fluids messes with the height adjust
                     )
                     hasMesh = true
 
@@ -178,22 +188,29 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     }
 
     /** Is this face visible and needs to be rendered? */
-    private fun faceVisible(world: World, pos: ArrIV3, axis: Int, backFaceM: Int): Boolean {
+    private fun faceVisible(world: World, pos: ArrIV3, axis: Int, backFaceM: Int, fluidLevel: Int): Boolean {
         tmpAIV.set(pos)[axis] += backFaceM
-        return if (tmpAIV[axis] !in 0 until CHUNK_SIZE)
-            ((position.y + tmpAIV[1]) > -1) && world.isBlended(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]))
-        else Item.Properties.fromType(getFromAIV3(tmpAIV) and TYPE)?.block?.isBlend ?: true
+        if ((position.y + tmpAIV[1]) <= -1) return false
+
+        val raw = if (tmpAIV[axis] !in 0 until CHUNK_SIZE)
+            world.getBlockRaw(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]))
+        else getFromAIV3(tmpAIV)
+        val props = Item.Properties.fromType(raw and TYPE) ?: return true
+
+        return if (props.block!!.fluid && fluidLevel != 0) {
+            ((raw and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT) != fluidLevel
+        } else props.block.isBlend
     }
 
     /** Takes a face and returns if the block at currPos can be merged
      * with the current mesh. */
-    private fun canMerge(world: World, axis: Int, backFaceM: Int): Boolean {
+    private fun canMerge(world: World, axis: Int, backFaceM: Int, fluidLevel: Int): Boolean {
         val blockA = getFromAIV3(startPos)
         val blockB = getFromAIV3(currPos)
         tmpAIV.set(currPos)[axis] += backFaceM
         return blockA == blockB
                 && blockB != 0
-                && faceVisible(world, currPos, axis, backFaceM)
+                && faceVisible(world, currPos, axis, backFaceM, fluidLevel)
                 && checkAO(world, axis)
     }
 
@@ -312,7 +329,8 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         return 3 - (sideA + sideB + corner)
     }
 
-    /** Returns 1 if block at given position exists, 0 if not. */
+    /** Returns 1 if block at given position exists, 0 if not.
+     * Used to determine ambient occlusion. */
     private fun existsAIVOrWorld(world: World, pos: ArrIV3): Int {
         val block = if (
             pos[0] !in 0 until CHUNK_SIZE ||
@@ -329,7 +347,37 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             block
         } else getFromAIV3(pos)
 
-        return if (block and TYPE == 0) 0 else 1
+        // Fluids should not trigger AO
+        return if (block and TYPE == 0 || block and FLUID_LEVEL != 0) 0 else 1
+    }
+
+    // Adjust the fluid quad down to fit level of fluid
+    private fun adjustTopFluidLevel(level: Int, fluidReach: Int) {
+        val height = 1f - (0.9f * (level.toFloat() / fluidReach))
+        corners.forEach { it.y -= height }
+    }
+
+    // Adjust the fluid quad down to fit level of fluid
+    private fun adjustSideFluidLevel(world: World, level: Int, fluidReach: Int, direction: Int) {
+        val isX = direction == 0
+        val front = getAIV3OrWorld(world, direction)
+        val frontLevel = ((front and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT)
+
+        val topHeightSub = 1f - (0.9f * (level.toFloat() / fluidReach))
+        corners[if (isX) 1 else 3].y -= topHeightSub
+        corners[2].y -= topHeightSub
+
+        val levelDiff = abs(frontLevel - level + 1)
+        val botHeightAdd = (0.9f * (levelDiff.toFloat() / fluidReach))
+        corners[if (isX) 3 else 1].y += botHeightAdd
+        corners[0].y += botHeightAdd
+    }
+
+    private fun getAIV3OrWorld(world: World, direction: Int): Int {
+        if ((position.y + tmpAIV[1]) <= -1) return 0
+        return if (tmpAIV[direction] !in 0 until CHUNK_SIZE)
+            world.getBlockRaw(tmpIV.set(position).add(tmpAIV[0], tmpAIV[1], tmpAIV[2]))
+        else getFromAIV3(tmpAIV)
     }
 
     /** Returns if the chunk is meshed and visible to the given camera. */

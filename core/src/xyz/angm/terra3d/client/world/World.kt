@@ -206,6 +206,12 @@ class World(private val client: Client, override val seed: String) : Disposable,
         return chunk?.getBlock(tmpIV1.set(position).minus(chunk.position))
     }
 
+    fun getBlockRaw(position: IntVector3): Int {
+        val chunk = getChunk(position) ?: return 0
+        tmpIV1.set(position).minus(chunk.position)
+        return chunk[tmpIV1.x, tmpIV1.y, tmpIV1.z, ALL]
+    }
+
     /** @return Local light at the given block.
      * THE VECTOR RETURNED IS REUSED FOR EVERY CALL. Copy it if you need it to persist. */
     override fun getLocalLight(position: IntVector3): IntVector3? {
