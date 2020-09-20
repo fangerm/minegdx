@@ -45,7 +45,7 @@ class World(private val server: Server) : WorldInterface {
         schedule(60000, 60000, server.coScope, database::flushChunks)
         server.engine {
             add(blockEntitySystem)
-            add(PhysicsSystem(this@World::getBlock))
+            add(PhysicsSystem(this@World::getCollider))
             add(DayTimeSystem())
         }
         server.coScope.launch {
@@ -106,7 +106,11 @@ class World(private val server: Server) : WorldInterface {
         return chunk?.getBlock(tmpIV.set(position).minus(chunk.position))
     }
 
-    private fun getBlock(position: Vector3) = getBlock(tmpIV.set(position))
+    private fun getCollider(position: Vector3): PhysicsSystem.BlockCollider {
+        val chunk = database.getChunk(tmpIV.set(position)) ?: return PhysicsSystem.BlockCollider.NONE
+        val pos = tmpIV.set(position).minus(chunk.position)
+        return chunk.getCollider(pos.x, pos.y, pos.z)
+    }
 
     /** Sets the block. Will automatically sync to clients and dispatch any other work required.
      * @param position The position to place it at

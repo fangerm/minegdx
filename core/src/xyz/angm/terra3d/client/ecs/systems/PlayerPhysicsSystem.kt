@@ -22,6 +22,7 @@ import xyz.angm.terra3d.common.ecs.direction
 import xyz.angm.terra3d.common.ecs.localPlayer
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.velocity
+import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 
 /** The height of the player. Multiply by 2 to get full height. */
 const val PLAYER_HEIGHT = (1.95f / 2f)
@@ -55,11 +56,11 @@ const val GLIDE_MAX_SPEED = 10f
  * Regarding blocks: All blocks directly adjacent to the player are stored in the blocks array, which is (3 | 4 | 3) (x | y | z) big.
  * The collision objects in this array are set to the blocks around the player instead of creating new ones for every block.
  *
- * @param blockExists A function returning if a block exists at the given position
+ * @param colliderAt A function returning the collision shape at the given position
  * @param player The player on the client to apply physics to.
  * @property sneaking If the player is currently sneaking. */
 class PlayerPhysicsSystem(
-    private val blockExists: (IntVector3) -> Boolean,
+    private val colliderAt: (IntVector3) -> PhysicsSystem.BlockCollider,
     private val player: Entity
 ) : EntitySystem(), Disposable {
 
@@ -184,7 +185,7 @@ class PlayerPhysicsSystem(
         blocks.forEachIndexed { x, arrayX ->
             arrayX.forEachIndexed { y, arrayY ->
                 arrayY.forEachIndexed { z, block ->
-                    if (!blockExists(tmpIV2.set(tmpIV).add(x, y, z))) tmpIV2.set(0, -10000, 0)
+                    if (colliderAt(tmpIV2.set(tmpIV).add(x, y, z)) == PhysicsSystem.BlockCollider.NONE) tmpIV2.set(0, -10000, 0)
                     block.worldTransform = block.worldTransform.setToTranslation(tmpIV2.toV3(tmpV).add(0.5f, 0.5f, 0.5f))
                 }
             }

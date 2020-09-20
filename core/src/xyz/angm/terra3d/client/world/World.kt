@@ -21,6 +21,7 @@ import xyz.angm.terra3d.common.networking.ChunkRequest
 import xyz.angm.terra3d.common.networking.ChunksLine
 import xyz.angm.terra3d.common.world.*
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
+import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 
 const val RENDER_DIST_CHUNKS = 3
 
@@ -150,7 +151,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
             raycast.set(tmpV2.set(position).add(tmpV1))
 
             if (raycast != last) {
-                if (blockExists(raycast)) return if (prev) last else raycast
+                if (getCollider(raycast) != PhysicsSystem.BlockCollider.NONE) return if (prev) last else raycast
                 val prevCurr = currOrient
                 currOrient = orientFromRay()
                 lastOrient = if (prevCurr != currOrient) currOrient else lastOrient
@@ -212,6 +213,13 @@ class World(private val client: Client, override val seed: String) : Disposable,
         return chunk[tmpIV1.x, tmpIV1.y, tmpIV1.z, ALL]
     }
 
+    /** Returns the collider at the given position. */
+    fun getCollider(position: IntVector3): PhysicsSystem.BlockCollider {
+        val chunk = getChunk(tmpIV1.set(position)) ?: return PhysicsSystem.BlockCollider.NONE
+        val pos = tmpIV1.set(position).minus(chunk.position)
+        return chunk.getCollider(pos.x, pos.y, pos.z)
+    }
+
     /** @return Local light at the given block.
      * THE VECTOR RETURNED IS REUSED FOR EVERY CALL. Copy it if you need it to persist. */
     override fun getLocalLight(position: IntVector3): IntVector3? {
@@ -225,12 +233,6 @@ class World(private val client: Client, override val seed: String) : Disposable,
         val chunk = getChunk(position)
         tmpIV2.set(position).minus(chunk?.position ?: return)
         return chunk.setLocalLight(tmpIV2.x, tmpIV2.y, tmpIV2.z, light)
-    }
-
-    /** @return If there's a block at the given position. */
-    fun blockExists(position: IntVector3, default: Boolean = false): Boolean {
-        val chunk = getChunk(position)
-        return chunk?.blockExists(tmpIV1.set(position).minus(chunk.position)) ?: default
     }
 
     /** @return If there's a block at the given position AND the block is solid/not blended.

@@ -79,9 +79,9 @@ open class Chunk private constructor(
         } else null
     }
 
-    /** Returns the block's collider. Used by physics systems (TODO...). */
-    fun getCollider(x: Int, y: Int, z: Int) = Item.Properties.fromType(blockData[x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))])?.block?.collider
-        ?: PhysicsSystem.BlockCollider.NONE
+    /** Returns the block's collider. Used by physics systems. */
+    fun getCollider(x: Int, y: Int, z: Int) =
+        Item.Properties.fromType(this[x, y, z, TYPE])?.block?.collider ?: PhysicsSystem.BlockCollider.NONE
 
     fun isBlended(p: IntVector3) = Item.Properties.fromType(this[p.x, p.y, p.z, TYPE])?.block?.isBlend ?: true
 

@@ -297,6 +297,7 @@ water:
   texture: textures/blocks/water.png
   block:
     blend: true
+    collider: NONE
     fluid: true
     fluidReach: 7
 

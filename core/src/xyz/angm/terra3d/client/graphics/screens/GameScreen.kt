@@ -176,7 +176,7 @@ class GameScreen(
         addLocalPlayerComponents()
         engine.add(PlayerSystem(this, player))
 
-        val physicsSystem = PlayerPhysicsSystem(world::blockExists, player)
+        val physicsSystem = PlayerPhysicsSystem(world::getCollider, player)
         engine.add(physicsSystem)
         client.addListener {
             if (it is BlockUpdate) Terra3D.postRunnable(physicsSystem::blockChanged)

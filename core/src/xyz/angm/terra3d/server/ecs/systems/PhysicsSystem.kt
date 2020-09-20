@@ -10,15 +10,14 @@ import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.NoPhysicsFlag
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.VelocityComponent
-import xyz.angm.terra3d.common.world.Block
 
 /** Used for movement, collision and gravity.
  *
  * Called on all entities with Position, Direction and Velocity components.
  *
- * @param getBlock Function for getting blocks from the world */
+ * @param colliderAt Returns the collider of the block at the given position. */
 class PhysicsSystem(
-    private val getBlock: (Vector3) -> Block?
+    private val colliderAt: (Vector3) -> BlockCollider
 ) : IteratingSystem(
     allOf(
         PositionComponent::class,
@@ -27,6 +26,7 @@ class PhysicsSystem(
 ) {
 
     private val tmpIV = IntVector3()
+    private val tmpIV2 = IntVector3()
     private val tmpV = Vector3()
     private val tmpV2 = Vector3()
     private val blockBelow = Vector3()
@@ -46,11 +46,11 @@ class PhysicsSystem(
         blockBelow.set(position)
         blockAbove.set(position).add(0f, entity.size.y, 0f)
 
-        if (getBlock(blockBelow) != null) {
+        if (colliderAt(blockBelow) != BlockCollider.NONE) {
             applyFloorCollision(position, velocity)
             network?.needsSync = true
         }
-        if (getBlock(blockAbove) != null) {
+        if (colliderAt(blockAbove) != BlockCollider.NONE) {
             applyCeilingCollision(velocity)
             network?.needsSync = true
         }
@@ -82,16 +82,17 @@ class PhysicsSystem(
         val size = entity.size
 
         for (i in 0..size.y.toInt()) {
-            val block = getBlock(tmpV2.set(position).sub(x.toFloat() * size.x, i.toFloat(), z.toFloat() * size.z))
-            if (block != null) {
-                val diff = tmpIV.set(position).minus(block.position)
+            val collider = colliderAt(tmpV2.set(position).sub(x.toFloat() * size.x, i.toFloat(), z.toFloat() * size.z))
+            if (collider != BlockCollider.NONE) {
+                val blockPos = tmpIV.set(tmpV2)
+                val diff = tmpIV2.set(position).minus(blockPos)
                 when {
                     diff.x != 0 && diff.z != 0 -> {
                     }
-                    diff.x < 0 -> position.x = block.position.x - size.x
-                    diff.x > 0 -> position.x = (block.position.x + 1) + size.x
-                    diff.z < 0 -> position.z = block.position.z - size.z
-                    diff.z > 0 -> position.z = (block.position.z + 1) + size.z
+                    diff.x < 0 -> position.x = blockPos.x - size.x
+                    diff.x > 0 -> position.x = (blockPos.x + 1) + size.x
+                    diff.z < 0 -> position.z = blockPos.z - size.z
+                    diff.z > 0 -> position.z = (blockPos.z + 1) + size.z
                 }
             }
         }
@@ -130,8 +131,19 @@ class PhysicsSystem(
         return tmpV
     }
 
+    /** The various types of block colliders in the game. */
     enum class BlockCollider {
-        FULL, HALF_LOWER, HALF_UPPER, NONE;
+        /** A full block taking the entire 1x1x1 space.*/
+        FULL,
+
+        /** A half block taking 1x0.5x1 space, on the lower half. */
+        HALF_LOWER,
+
+        /** A half block taking 1x0.5x1 space, on the upper half. */
+        HALF_UPPER,
+
+        /** Either air or a block that isn't solid, like a fluid. */
+        NONE;
     }
 
     companion object {
