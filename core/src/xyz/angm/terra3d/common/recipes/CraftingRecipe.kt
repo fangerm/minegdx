@@ -7,7 +7,7 @@ import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.yaml
 
-/** A recipe that is crafted in the player's inventory or a crafting table. */
+/** A recipe that is crafted in the player's inventory. */
 class CraftingRecipe(
     items: HashMap<String, Int>,
     result: String,

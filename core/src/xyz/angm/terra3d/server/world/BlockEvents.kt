@@ -7,6 +7,7 @@ import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.ChestMetadata
 import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
 import xyz.angm.terra3d.common.items.metadata.IMetadata
+import xyz.angm.terra3d.common.recipes.FurnaceRecipes
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
 
@@ -54,11 +55,15 @@ object BlockEvents {
                 meta.fuel!!.amount--
             }
 
-            //val recipeResult = FurnaceRecipe.matchAll((meta.baking ?: return@BlockComponent)) ?: return@BlockComponent
+            val recipeResult = FurnaceRecipes[meta.baking?.type ?: return@BlockComponent] ?: return@BlockComponent
+            if (meta.baking!!.amount < recipeResult.inAmount) return@BlockComponent
 
             meta.progress += 10
             if (meta.progress >= 100) {
-                // meta.result = recipeResult
+                if (meta.result == null) meta.result = Item(recipeResult.output, recipeResult.outAmount)
+                else if (meta.result!!.type == recipeResult.output) meta.result!!.amount += recipeResult.outAmount
+                else return@BlockComponent
+                meta.baking!!.amount -= recipeResult.inAmount
                 meta.progress = 0
             }
 
