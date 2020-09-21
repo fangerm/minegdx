@@ -21,6 +21,7 @@ import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.networking.ServerInfo
 import java.io.IOException
+import kotlin.math.min
 
 /** Multiplayer server selection. */
 class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
@@ -69,7 +70,7 @@ class MultiplayerMenuPanel(screen: MenuScreen) : Panel(screen) {
                                     client = Client(server.value) {
                                         if (it is ServerInfo) {
                                             players.setText("${it.onlinePlayers} / ${it.maxPlayers} Online")
-                                            motd.setText("MOTD: ${it.motd}")
+                                            motd.setText("${it.motd.subSequence(0, min(it.motd.length - 1, 40))}")
                                         }
                                         client!!.close()
                                     }
