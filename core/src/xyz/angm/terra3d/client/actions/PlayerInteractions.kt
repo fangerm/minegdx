@@ -5,11 +5,14 @@ import ktx.collections.*
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.ChestPanel
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.FurnacePanel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
+import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.ecs.components.specific.MAX_HUNGER
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
+import xyz.angm.terra3d.common.items.metadata.ConfiguratorMetadata
+import xyz.angm.terra3d.common.items.metadata.TranslocatorMetadata
 import xyz.angm.terra3d.common.world.Block
 
 /** Allows registering listeners for interactions between the player and items/blocks.
@@ -44,6 +47,44 @@ object PlayerInteractions {
                         soundPlayer.playSound("random/eat1")
                     }
                 }
+            }
+        }
+
+        add("configurator", Event.ITEM_CLICKED) { ctx ->
+            val confM = ctx.item!!.metadata!! as ConfiguratorMetadata
+            val newTransM = ctx.block?.metadata as? TranslocatorMetadata
+            if (newTransM == null) {
+                ctx.screen.msg("[ORANGE]${I18N["configurator.not-translocator"]}")
+                return@add
+            }
+
+            if (confM.linking) {
+                confM.linking = false
+                if (ctx.block.position == confM.position) {
+                    ctx.screen.msg("[ORANGE]${I18N["configurator.no-same"]}")
+                    return@add
+                }
+                val oldTranslocator = ctx.screen.world.getBlock(confM.position)
+                val oldTransM = oldTranslocator?.metadata as? TranslocatorMetadata
+                if (oldTransM == null) {
+                    ctx.screen.msg("[ORANGE]${I18N["configurator.block-changed"]}")
+                    return@add
+                }
+
+                oldTransM.other = ctx.block.position.cpy()
+                oldTransM.push = true
+                newTransM.other = confM.position.cpy()
+                newTransM.push = false
+
+                // Set them to ensure the new metadata is applied
+                ctx.screen.world.setBlock(oldTranslocator)
+                ctx.screen.world.setBlock(ctx.block)
+
+                ctx.screen.msg("[GREEN]${I18N["configurator.linked"]}")
+            } else {
+                confM.linking = true
+                confM.position.set(ctx.block.position)
+                ctx.screen.msg("[GREEN]$confM")
             }
         }
     }

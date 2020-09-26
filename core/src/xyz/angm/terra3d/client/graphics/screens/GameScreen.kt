@@ -171,6 +171,9 @@ class GameScreen(
         })
     }
 
+    /** Show a message to the player, using the chat. */
+    fun msg(msg: String) = gameplayPanel.addChatMessage(msg)
+
     // Initialize all ECS systems
     private fun initSystems() {
         addLocalPlayerComponents()
