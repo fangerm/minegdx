@@ -59,7 +59,11 @@ class BfsFluid(private val world: WorldInterface) {
             if ((below?.properties?.block?.fluid != false)) {
                 // Block below the node is air or a fluid,
                 // only visit the block below
-                visitBlock(node, block, block.properties!!.block!!.fluidReach)
+                // Note that this depends on the neighbor's fluid level,
+                // so set it to the value we need for a sec
+                block.fluidLevel = block.properties!!.block!!.fluidReach
+                visitBlock(node, block, block.properties!!.block!!.fluidReach + 1)
+                block.fluidLevel = level - 1
             } else {
                 node.y++
 

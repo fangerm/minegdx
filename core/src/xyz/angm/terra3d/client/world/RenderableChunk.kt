@@ -92,7 +92,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
                     val all = getFromAIV3(startPos)
                     val block = all and TYPE
-                    val fluidLevel = all and FLUID_LEVEL
+                    val fluidLevel = (all and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT
 
                     // Skip this block if it's been merged already, is air, or isn't visible
                     if (isMerged(startPos[workAxis1], startPos[workAxis2])
@@ -353,7 +353,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
     // Adjust the fluid quad down to fit level of fluid
     private fun adjustTopFluidLevel(level: Int, fluidReach: Int) {
-        val height = 1f - (0.9f * (level.toFloat() / fluidReach))
+        val height = 1f - (level.toFloat() / fluidReach)
         corners.forEach { it.y -= height }
     }
 
@@ -363,14 +363,16 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
         val front = getAIV3OrWorld(world, direction)
         val frontLevel = ((front and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT)
 
-        val topHeightSub = 1f - (0.9f * (level.toFloat() / fluidReach))
+        val topHeightSub = 1f - (level.toFloat() / fluidReach)
         corners[if (isX) 1 else 3].y -= topHeightSub
         corners[2].y -= topHeightSub
 
-        val levelDiff = abs(frontLevel - level + 1)
-        val botHeightAdd = (0.9f * (levelDiff.toFloat() / fluidReach))
-        corners[if (isX) 3 else 1].y += botHeightAdd
-        corners[0].y += botHeightAdd
+        if (frontLevel != 0) {
+            val levelDiff = abs(frontLevel - level + 1)
+            val botHeightAdd = (0.9f * (levelDiff.toFloat() / fluidReach))
+            corners[if (isX) 3 else 1].y += botHeightAdd
+            corners[0].y += botHeightAdd
+        }
     }
 
     private fun getAIV3OrWorld(world: World, direction: Int): Int {
