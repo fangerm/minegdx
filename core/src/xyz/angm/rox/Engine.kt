@@ -105,10 +105,23 @@ class Engine {
 
     /** Register a new family if it isn't known */
     private fun registerFamily(family: Family) {
-        family.index = families.size
-        families.add(family)
-        entities.forEach(::updateFamilies)
-        family.regenEntities(entities)
+        // See if a family with the same parameters is already registered
+        val existing = families.find {
+            it.include == family.include && it.exclude == family.exclude
+        }
+
+        if (existing == null) {
+            // If not, add the new family to the list
+            family.index = families.size
+            families.add(family)
+            entities.forEach(::updateFamilies)
+            family.regenEntities(entities)
+        } else {
+            // If there is, simply make the 'new' family
+            // a clone of the preexisting one
+            family.index = existing.index
+            family.entities = existing.entities
+        }
     }
 
     private fun addInternal(entity: Entity) {

@@ -13,13 +13,16 @@ import kotlin.reflect.KClass
 class Family private constructor() {
 
     internal var index = -1
-    private val include = Bits()
-    private var exclude: Int = -1
-    internal val entities = GdxArray<Entity>(false, 5, Entity::class.java)
+    internal val include = Bits()
+    internal var exclude: Int = -1
+    internal var entities = GdxArray<Entity>(false, 5, Entity::class.java)
 
     /** Sets the component to exclude; an entity will not be considered
-     * part of this family if it has this component. */
+     * part of this family if it has this component.
+     * This must be called during initialization and cannot be called
+     * after a family was first used. */
     fun exclude(component: KClass<out Component>): Family {
+        if (index != -1) throw IllegalArgumentException("Can only be called before using the family")
         exclude = getMapper(component)
         return this
     }
