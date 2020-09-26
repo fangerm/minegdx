@@ -21,16 +21,24 @@ open class Inventory(size: Int = 0) : Serializable {
 
     /** Add item to inventory, taking already existing stacks into account.
      * @param newItem Item to add. */
-    operator fun plusAssign(newItem: Item) = addToRange(newItem, 0 until size)
+    operator fun plusAssign(newItem: Item) {
+        addToRange(newItem, 0 until size)
+    }
 
     /** Add item to inventory, taking already existing stacks into account.
      * @param newItem Item to add. */
     operator fun minusAssign(newItem: Item) = removeFromRange(newItem, 0 until size)
 
+    /** Add item to inventory, taking already existing stacks into account.
+     * @param item Item to add.
+     * @return The amount of items not added due to full inventory. 0 indicates all were successfully added. */
+    fun add(item: Item) = addToRange(item, 0 until size)
+
     /** Add item to inventory, taking already existing stacks into account. Allows specifying range of slots allowed to add to.
      * @param newItem Item to add.
-     * @param range The range of slots allowed to add to. */
-    fun addToRange(newItem: Item, range: IntRange) {
+     * @param range The range of slots allowed to add to.
+     * @return The amount of items not added due to full inventory. 0 indicates all were successfully added. */
+    fun addToRange(newItem: Item, range: IntRange): Int {
         for (i in range) {
             val item = this[i] ?: continue
             if (newItem stacksWith item) {
@@ -41,7 +49,7 @@ open class Inventory(size: Int = 0) : Serializable {
                 } else {
                     // It fits all, set correct amount and return
                     item.amount += newItem.amount
-                    return
+                    return 0
                 }
             }
         }
@@ -50,10 +58,12 @@ open class Inventory(size: Int = 0) : Serializable {
         for (i in range) {
             if (this[i] == null) {
                 this[i] = newItem
-                return
+                return 0
             }
         }
+        return newItem.amount
     }
+
 
     /** Removes a given item type and amount from the inventory.
      * Does not report on failure, check yourself. */
@@ -92,6 +102,19 @@ open class Inventory(size: Int = 0) : Serializable {
             }
         }
         return false
+    }
+
+    /** Removes the first item stack in this inventory if there are any items,
+     * and returns it. */
+    fun takeFirst(): Item? {
+        for (i in 0 until size) {
+            val item = items[i]
+            if (item != null) {
+                items[i] = null
+                return item
+            }
+        }
+        return null
     }
 
     /** Clears all items. */

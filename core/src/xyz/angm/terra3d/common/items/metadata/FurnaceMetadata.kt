@@ -24,4 +24,7 @@ class FurnaceMetadata : IMetadata {
         Baking:         $baking
         Result:         $result
     """.replace("null", "None").trimIndent()
+
+    override fun equals(other: Any?) =
+        other is FurnaceMetadata && other.fuel == fuel && other.baking == baking && other.result == result
 }

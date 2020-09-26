@@ -7,6 +7,7 @@ import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.ChestMetadata
 import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
 import xyz.angm.terra3d.common.items.metadata.IMetadata
+import xyz.angm.terra3d.common.items.metadata.TranslocatorMetadata
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
 
@@ -45,6 +46,13 @@ object BlockEvents {
 
         // ##### Furnace #####
         attachMeta("furnace") { FurnaceMetadata() }
+
+        listener("furnace", Event.BLOCK_DESTROYED) { _, removed ->
+            val meta = removed.metadata as FurnaceMetadata
+            meta.progress = 0
+            meta.burnTime = 0
+        }
+
         blockEntity("furnace", BlockComponent(tickInterval = 20) { world, block ->
             val meta = block.metadata as FurnaceMetadata
             if (meta.burnTime > 10) meta.burnTime -= -10
@@ -81,6 +89,44 @@ object BlockEvents {
         blockEntity("iron_miner", component.copy(tickInterval = 50))
         blockEntity("gold_miner", component.copy(tickInterval = 20))
         blockEntity("diamond_miner", component.copy(tickInterval = 5))
+
+        // #### Translocator ####
+        // TODO: This needs some sort of abstract inventory metadata thing
+        listener("translocator", Event.BLOCK_DESTROYED) { world, removed ->
+            val meta = removed.metadata as TranslocatorMetadata
+
+            if (meta.other != null) { // Remove other position on both if it was linked
+                val other = world.getBlock(meta.other!!)!!
+                (other.metadata as TranslocatorMetadata).other = null
+                world.metadataChanged(other)
+
+                meta.other = null
+            }
+        }
+
+        blockEntity("translocator", BlockComponent(tickInterval = 20) { world, block ->
+            val meta = block.metadata as TranslocatorMetadata
+            if (!meta.push || meta.other == null) return@BlockComponent
+
+            val pullInventoryPosition = block.orientation.applyIV(block.position)
+            val pullBlock = world.getBlock(pullInventoryPosition)
+            val pullInv = pullBlock?.metadata as? ChestMetadata ?: return@BlockComponent
+
+            val other = world.getBlock(meta.other!!) ?: return@BlockComponent
+            val pushInventoryPosition = other.orientation.applyIV(other.position)
+            val pushBlock = world.getBlock(pushInventoryPosition)
+            val pushInv = pushBlock?.metadata as? ChestMetadata ?: return@BlockComponent
+
+            val item = pullInv.inventory.takeFirst() ?: return@BlockComponent
+            val remaining = pushInv.inventory.add(item)
+            if (remaining != 0) {
+                item.amount = remaining
+                pullInv.inventory += item
+            }
+
+            world.metadataChanged(pullBlock)
+            world.metadataChanged(pushBlock)
+        })
     }
 
     /** Returns the appropriate listener for the event. */

@@ -7,6 +7,6 @@ import xyz.angm.terra3d.common.items.Inventory
 class ChestMetadata : IMetadata {
     var inventory = Inventory(54)
 
-    /** Returns string representation of the inventory. */
     override fun toString() = inventory.toString()
+    override fun equals(other: Any?) = other is ChestMetadata && other.inventory == inventory
 }

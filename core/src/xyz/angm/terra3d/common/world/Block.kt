@@ -46,6 +46,21 @@ data class Block(
 
         fun toId() = list.indexOf(this)
 
+        /** Takes a position of a block and returns the position
+         * of the block on this side of it.
+         * Returns the vector given. */
+        fun applyIV(iv: IntVector3): IntVector3 {
+            when (this) {
+                NORTH -> iv.x--
+                SOUTH -> iv.x++
+                EAST -> iv.z--
+                WEST -> iv.z++
+                UP -> iv.y++
+                DOWN -> iv.y--
+            }
+            return iv
+        }
+
         companion object {
             private val list = values()
 

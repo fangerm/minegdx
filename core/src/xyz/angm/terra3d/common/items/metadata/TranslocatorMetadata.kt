@@ -17,4 +17,8 @@ class TranslocatorMetadata : IMetadata {
     override fun toString() =
         if (other == null) I18N["translocator.unlinked"]
         else "${if (push) I18N["translocator.to"] else I18N["translocator.from"]} $other"
+
+    // This is only used to check if translocators can stack in inventories;
+    // their metadata is only relevant when it's a block so it's fine
+    override fun equals(other: Any?) = other is TranslocatorMetadata
 }

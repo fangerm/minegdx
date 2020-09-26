@@ -11,7 +11,7 @@ import java.io.Serializable
  * to create a metadata class that holds the required data ('data bag', should not hold any complicated behaviour).
  *
  * Additionally, any implementors should override [Object.toString] with an implementation that displays info
- * to be shown to the user in the block tooltip.
+ * to be shown to the user in the block tooltip, as well as [Object.equals] for item stacking.
  *
  * To attach metadata to a specific item type, use [DefaultMeta].
  * Implementors must have a zero-arg constructor if [DefaultMeta] is going to be used.

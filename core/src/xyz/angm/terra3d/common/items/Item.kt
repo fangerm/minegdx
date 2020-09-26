@@ -60,8 +60,7 @@ data class Item(
     override fun hashCode() = Objects.hash(type, metadata)
 
     override fun equals(other: Any?) =
-        other is Item?
-                && other != null
+        other is Item
                 && type == other.type
                 && metadata == other.metadata
                 && amount == other.amount

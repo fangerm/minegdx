@@ -199,6 +199,7 @@ translocator:
   texture: textures/blocks/glass_black.png
   block:
     breakTime: 3
+    orientation: ALL
 
 configurator:
   texture: textures/blocks/glass_red.png
