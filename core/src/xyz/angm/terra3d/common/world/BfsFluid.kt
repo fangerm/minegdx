@@ -34,8 +34,8 @@ class BfsFluid(private val world: WorldInterface) {
 
     fun blockSet(block: Block, oldBlock: Block?) {
         // Check if fluid source was removed
-        if ((oldBlock?.fluidLevel ?: 0) != 0) {
-            removeQNext.addLast(FRemoveNode(block.position, oldBlock!!.fluidLevel))
+        if (oldBlock != null) {
+            removeQNext.addLast(FRemoveNode(block.position, oldBlock.fluidLevel))
         }
 
         // Check if new block is a fluid that needs to flow
@@ -106,13 +106,6 @@ class BfsFluid(private val world: WorldInterface) {
             visitBlockRemove(node, level)
             node.x--
 
-            // todo what is correct here
-            node.y--
-            visitBlockRemove(node, level)
-            node.y += 2
-            visitBlockRemove(node, level)
-            node.y--
-
             node.z--
             visitBlockRemove(node, level)
             node.z += 2
@@ -123,7 +116,7 @@ class BfsFluid(private val world: WorldInterface) {
 
     private fun visitBlockRemove(pos: IntVector3, neighborLevel: Int) {
         val block = world.getBlock(pos) ?: return
-        if (block.fluidLevel >= neighborLevel && neighborLevel != 0) {
+        if (block.fluidLevel >= neighborLevel) {
             fluidQNext.addLast(FluidNode(pos))
         } else if (block.fluidLevel != 0 && block.fluidLevel < neighborLevel) {
             removeQNext.addLast(FRemoveNode(pos, block.fluidLevel))
