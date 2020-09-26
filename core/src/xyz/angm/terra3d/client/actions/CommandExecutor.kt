@@ -14,6 +14,7 @@ import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.items.metadata.DefaultMeta
 
 /** Responsible for parsing commands entered by the user.
  * These commands are entered by typing a chat message with a $ as prefix. */
@@ -106,7 +107,7 @@ object CommandHandler {
 
         val itemProps = Item.Properties.tryFromIdentifier(itemIdent)
         if (itemProps != null) {
-            context.source.player[playerM].inventory += Item(itemProps.type, itemAmount)
+            context.source.player[playerM].inventory += Item(itemProps.type, itemAmount, DefaultMeta of itemProps.type)
             returnMessage = "[GREEN]Given ${itemAmount}x ${itemProps.name}"
         } else returnMessage = "[RED]Not a known item type."
         return 1

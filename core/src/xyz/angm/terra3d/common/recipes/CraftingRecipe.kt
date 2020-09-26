@@ -5,6 +5,7 @@ import kotlinx.serialization.builtins.ListSerializer
 import ktx.assets.file
 import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.items.metadata.DefaultMeta
 import xyz.angm.terra3d.common.yaml
 
 /** A recipe that is crafted in the player's inventory or a crafting table. */
@@ -25,7 +26,7 @@ class CraftingRecipe(
         if (current != null && !(result stacksWith current)) return null
         if (items.any { !inventory.contains(it) }) return null
         items.forEach { inventory -= it }
-        return result.copy()
+        return result.copy(metadata = DefaultMeta of result.type)
     }
 
     companion object {

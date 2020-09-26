@@ -13,6 +13,9 @@ import java.io.Serializable
  * Additionally, any implementors should override [Object.toString] with an implementation that displays info
  * to be shown to the user in the block tooltip.
  *
+ * To attach metadata to a specific item type, use [DefaultMeta].
+ * Implementors must have a zero-arg constructor if [DefaultMeta] is going to be used.
+ *
  * This approach to metadata is chosen over a hash table since it is:
  * - Fast (no hashing)
  * - Memory efficient (No property keys in memory)
