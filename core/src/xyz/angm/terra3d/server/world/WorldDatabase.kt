@@ -176,19 +176,21 @@ internal class WorldDatabase(private val server: Server) {
     }
 }
 
-/** Chunk DB table. All axes are primary keys for SELECT performance */
+/** Chunk DB table. */
 private object Chunks : Table() {
+    val id = integer("id").autoIncrement()
+
     /** Position X axis */
-    val x = integer("x")
+    val x = integer("x").index()
 
     /** Position Y axis */
-    val y = integer("y")
+    val y = integer("y").index()
 
     /** Position Z axis */
-    val z = integer("z")
+    val z = integer("z").index()
 
     /** The chunk object, serialized with FST */
     val data = blob("data")
 
-    override val primaryKey = PrimaryKey(x, y, z)
+    override val primaryKey = PrimaryKey(id)
 }
