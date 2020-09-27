@@ -106,7 +106,7 @@ object BlockEvents {
         }
 
         blockEntity("translocator", BlockComponent(tickInterval = 20) { world, block ->
-            val meta = block.metadata as TranslocatorMetadata
+            val meta = block.metadata as? TranslocatorMetadata ?: return@BlockComponent
             if (!meta.push || meta.other == null) return@BlockComponent
 
             val pullInventoryPosition = block.orientation.applyIV(block.position)
