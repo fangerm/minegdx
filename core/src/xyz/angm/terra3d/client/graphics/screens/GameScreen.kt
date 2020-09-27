@@ -1,6 +1,7 @@
 /*
- * Developed by Felix Ang. (felix.ang@pm.me).
- * Last modified on 7/5/19 4:00 PM.
+ * Developed as part of the Terra3D project.
+ * This file was last modified at 9/27/20, 12:57 AM.
+ * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
