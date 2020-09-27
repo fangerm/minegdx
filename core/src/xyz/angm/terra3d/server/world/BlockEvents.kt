@@ -4,10 +4,7 @@ import com.badlogic.gdx.utils.ObjectMap
 import ktx.collections.*
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
-import xyz.angm.terra3d.common.items.metadata.ChestMetadata
-import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
-import xyz.angm.terra3d.common.items.metadata.IMetadata
-import xyz.angm.terra3d.common.items.metadata.TranslocatorMetadata
+import xyz.angm.terra3d.common.items.metadata.*
 import xyz.angm.terra3d.common.recipes.FurnaceRecipes
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
@@ -58,20 +55,20 @@ object BlockEvents {
             val meta = block.metadata as FurnaceMetadata
             if (meta.burnTime > 10) meta.burnTime -= -10
             else {
-                if (meta.fuel == null || meta.fuel?.properties?.burnTime == 0) return@BlockComponent // Not a valid fuel
-                meta.burnTime += meta.fuel!!.properties.burnTime
-                meta.fuel!!.amount--
+                if (meta.fuel[0] == null || meta.fuel[0]?.properties?.burnTime == 0) return@BlockComponent // Not a valid fuel
+                meta.burnTime += meta.fuel[0]!!.properties.burnTime
+                meta.fuel[0]!!.amount--
             }
 
-            val recipeResult = FurnaceRecipes[meta.baking?.type ?: return@BlockComponent] ?: return@BlockComponent
-            if (meta.baking!!.amount < recipeResult.inAmount) return@BlockComponent
+            val recipeResult = FurnaceRecipes[meta.baking[0]?.type ?: return@BlockComponent] ?: return@BlockComponent
+            if (meta.baking[0]!!.amount < recipeResult.inAmount) return@BlockComponent
 
             meta.progress += 10
             if (meta.progress >= 100) {
-                if (meta.result == null) meta.result = Item(recipeResult.output, recipeResult.outAmount)
-                else if (meta.result!!.type == recipeResult.output) meta.result!!.amount += recipeResult.outAmount
+                if (meta.result[0] == null) meta.result[0] = Item(recipeResult.output, recipeResult.outAmount)
+                else if (meta.result[0]!!.type == recipeResult.output) meta.result[0]!!.amount += recipeResult.outAmount
                 else return@BlockComponent
-                meta.baking!!.amount -= recipeResult.inAmount
+                meta.baking[0]!!.amount -= recipeResult.inAmount
                 meta.progress = 0
             }
 
@@ -115,18 +112,18 @@ object BlockEvents {
 
             val pullInventoryPosition = block.orientation.applyIV(block.position)
             val pullBlock = world.getBlock(pullInventoryPosition)
-            val pullInv = pullBlock?.metadata as? ChestMetadata ?: return@BlockComponent
+            val pullInv = pullBlock?.metadata as? InventoryMetadata ?: return@BlockComponent
 
             val other = world.getBlock(meta.other!!) ?: return@BlockComponent
             val pushInventoryPosition = other.orientation.applyIV(other.position)
             val pushBlock = world.getBlock(pushInventoryPosition)
-            val pushInv = pushBlock?.metadata as? ChestMetadata ?: return@BlockComponent
+            val pushInv = pushBlock?.metadata as? InventoryMetadata ?: return@BlockComponent
 
-            val item = pullInv.inventory.takeFirst() ?: return@BlockComponent
-            val remaining = pushInv.inventory.add(item)
+            val item = pullInv.pull.takeFirst() ?: return@BlockComponent
+            val remaining = pushInv.push.add(item)
             if (remaining != 0) {
                 item.amount = remaining
-                pullInv.inventory += item
+                pullInv.pull += item
             }
 
             world.metadataChanged(pullBlock)

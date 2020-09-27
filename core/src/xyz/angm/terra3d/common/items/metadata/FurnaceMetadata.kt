@@ -1,6 +1,6 @@
 package xyz.angm.terra3d.common.items.metadata
 
-import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.items.Inventory
 
 /** Metadata for a furnace.
  * @property progress Progress of the current smelt operation. Range 0-100.
@@ -8,13 +8,16 @@ import xyz.angm.terra3d.common.items.Item
  * @property fuel The fuel slot.
  * @property baking The slot that is being burnt.
  * @property result The result slot. */
-class FurnaceMetadata : IMetadata {
+class FurnaceMetadata : InventoryMetadata {
 
     var progress = 0
     var burnTime = 0
-    var fuel: Item? = null
-    var baking: Item? = null
-    var result: Item? = null
+    var fuel = Inventory(1)
+    var baking = Inventory(1)
+    var result = Inventory(1)
+
+    override val pull get() = result
+    override val push get() = baking
 
     override fun toString() = """
 

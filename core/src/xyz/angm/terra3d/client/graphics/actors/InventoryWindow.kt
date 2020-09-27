@@ -69,7 +69,7 @@ class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : Inventor
     private val resultItem = ItemGroup(this, Inventory(1), row = 1, column = 1, mutable = false)
 
     init {
-        updateNetInventory(metadata)
+        refresh(metadata)
         add(burntItem).padRight(50f)
         add(resultItem).row()
         add(fuelItem).padRight(50f)
@@ -79,14 +79,14 @@ class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : Inventor
     }
 
     fun updateNetInventory(metadata: FurnaceMetadata) {
-        metadata.fuel = fuelItem.inventory[0]
-        metadata.baking = burntItem.inventory[0]
-        metadata.result = resultItem.inventory[0]
+        metadata.fuel = fuelItem.inventory
+        metadata.baking = burntItem.inventory
+        metadata.result = resultItem.inventory
     }
 
     fun refresh(metadata: FurnaceMetadata) {
-        fuelItem.inventory[0] = metadata.fuel
-        burntItem.inventory[0] = metadata.baking
-        resultItem.inventory[0] = metadata.result
+        fuelItem.inventory = metadata.fuel
+        burntItem.inventory = metadata.baking
+        resultItem.inventory = metadata.result
     }
 }

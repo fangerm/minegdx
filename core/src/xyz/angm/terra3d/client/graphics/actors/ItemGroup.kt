@@ -16,7 +16,7 @@ import xyz.angm.terra3d.common.items.Inventory
  * @param mutable If the items of the group can be set, or only taken out (used for crafting interfaces) */
 class ItemGroup(
     private val window: InventoryWindow?,
-    val inventory: Inventory,
+    var inventory: Inventory,
     val mutable: Boolean = true,
     startOffset: Int = 0,
     padding: Float = 4f,
