@@ -196,10 +196,17 @@ diamond_axe:
     level: 4
 
 translocator:
-  texture: textures/blocks/glass_black.png
+  texture: textures/blocks/translocator_side.png
   block:
+    # Misusing these attributes a bit but doesn't matter;
+    # this is just to force ResourceManager to load these textures
+    texSide: textures/blocks/translocator_top_pull.png
+    texBottom: textures/blocks/translocator_top_push.png
+    texFront: textures/blocks/translocator_top_none.png
+
     breakTime: 3
     model: true
+    blend: true
     orientation: ALL
 
 configurator:

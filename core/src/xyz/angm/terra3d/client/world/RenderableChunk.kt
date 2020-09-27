@@ -63,9 +63,12 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             meshFace(world, face)
         }
 
+        // Reset AO first, custom renderers usually do not have AO
+        for (i in 0 until 4) ao[i] = 3
         // Render all blocks with custom renderers
         // (Custom renderers require metadata so this is fine)
-        for (pos in blockMetadata.keys) {
+        for (entry in blockMetadata) {
+            val pos = entry.key
             val all = this[pos.x, pos.y, pos.z, ALL]
             val ty = all and TYPE
             val orient = (all and ORIENTATION) shr ORIENTATION_SHIFT
@@ -73,7 +76,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             val props = Item.Properties.fromType(ty)
             if (props?.block?.model == false) continue
             val renderer = BlockRenderer[ty] ?: continue
-            renderer.render(pos, Block.Orientation.fromId(orient), corners, normal)
+            renderer.render(pos, Block.Orientation.fromId(orient), entry.value, corners, normal)
         }
 
         if (hasMesh) {
@@ -450,7 +453,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
         /** An array-backed integer vector used by the greedy meshing algorithm.
          * It's required as the it indexes the axes. */
-        private class ArrIV3 {
+        class ArrIV3 {
 
             val values = IntArray(3)
 
@@ -461,6 +464,13 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                 values[0] = o[0]
                 values[1] = o[1]
                 values[2] = o[2]
+                return this
+            }
+
+            fun set(o: IntVector3): ArrIV3 {
+                values[0] = o.x
+                values[1] = o.y
+                values[2] = o.z
                 return this
             }
 

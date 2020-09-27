@@ -1,6 +1,7 @@
 package xyz.angm.terra3d.common
 
 import ch.qos.logback.classic.Level
+import com.badlogic.gdx.math.Vector3
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ticker
 import kotlinx.coroutines.launch
@@ -35,3 +36,19 @@ fun schedule(initial: Long, delay: Long, scope: CoroutineScope, run: () -> Unit)
         }
     }
 }
+
+/** Axis indexing for vectors, used by some block renderers for dynamic oriented rendering. */
+operator fun Vector3.get(index: Int) =
+    when (index) {
+        0 -> x
+        1 -> y
+        else -> z
+    }
+
+/** Axis indexing for vectors, used by some block renderers for dynamic oriented rendering. */
+operator fun Vector3.set(index: Int, v: Float) =
+    when (index) {
+        0 -> x = v
+        1 -> y = v
+        else -> z = v
+    }
