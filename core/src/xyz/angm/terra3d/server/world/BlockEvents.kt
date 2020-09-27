@@ -93,7 +93,6 @@ object BlockEvents {
         blockEntity("diamond_miner", component.copy(tickInterval = 5))
 
         // #### Translocator ####
-        // TODO: This needs some sort of abstract inventory metadata thing
         listener("translocator", Event.BLOCK_DESTROYED) { world, removed ->
             val meta = removed.metadata as TranslocatorMetadata
 
