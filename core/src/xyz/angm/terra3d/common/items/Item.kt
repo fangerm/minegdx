@@ -158,6 +158,7 @@ data class Item(
          * @property texSide Optional: Block side texture. [Properties.texture] will be used instead if null.
          * @property texBottom Optional: Block bottom texture. [Properties.texture] will be used instead if null.
          * @property texBottom Optional: Block front texture. [Properties.texture] will be used instead if null.
+         * @property model If this block has a custom model and must be rendered with [BlockRenderer]
          *
          * @property collider: The collider of this block used by the physics system.
          * @property orientation The possible orientations of this block. See [OrientationMode] for more.
@@ -185,6 +186,7 @@ data class Item(
             val texSide: String? = null,
             val texBottom: String? = null,
             val texFront: String? = null,
+            val model: Boolean = false,
 
             val collider: PhysicsSystem.BlockCollider = PhysicsSystem.BlockCollider.FULL,
             val orientation: OrientationMode = OrientationMode.DISABLE,

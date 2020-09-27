@@ -63,6 +63,19 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             meshFace(world, face)
         }
 
+        // Render all blocks with custom renderers
+        // (Custom renderers require metadata so this is fine)
+        for (pos in blockMetadata.keys) {
+            val all = this[pos.x, pos.y, pos.z, ALL]
+            val ty = all and TYPE
+            val orient = (all and ORIENTATION) shr ORIENTATION_SHIFT
+
+            val props = Item.Properties.fromType(ty)
+            if (props?.block?.model == false) continue
+            val renderer = BlockRenderer[ty] ?: continue
+            renderer.render(pos, Block.Orientation.fromId(orient), corners, normal)
+        }
+
         if (hasMesh) {
             renderable = Builder.end()
             position.toV3(renderable.position)
@@ -103,6 +116,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
                     val props = Item.Properties.fromType(block)!!
                     val blockP = props.block!!
+                    if (blockP.model) continue
 
                     setColor(world, direction, backFaceM) // Set the blocks ambient color to be used by the vertex
 
@@ -167,7 +181,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                         else -> blockP.texSide ?: tex // Side face
                     }
 
-                    Builder.drawRect(
+                    rect(
                         texture,
                         props.block?.isBlend == true,
                         quadSize[workAxis1].toFloat(),
@@ -388,11 +402,11 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     override fun hashCode() = position.hashCode()
     override fun equals(other: Any?) = other is RenderableChunk && other.position == position
 
-    private companion object {
+    companion object {
 
         private val dimensions = Vector3(CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat(), CHUNK_SIZE.toFloat())
 
-        /** The attributes used to render the world.
+        /** The attributes used to render chunks.
          * - Position: Simply the position of the vertex; 3 floats
          * - Normal: Normal of the vertex; 3 floats
          * - TexCoord: Texture coordinates of the vertex; 2 floats; textures wrap
@@ -436,7 +450,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
         /** An array-backed integer vector used by the greedy meshing algorithm.
          * It's required as the it indexes the axes. */
-        class ArrIV3 {
+        private class ArrIV3 {
 
             val values = IntArray(3)
 
@@ -468,7 +482,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
         /** A builder for chunk meshes.
          * Defers actually building the mesh to end(). */
-        object Builder {
+        private object Builder {
 
             private val builder = MeshBuilder()
             private val parts = OrderedMap<String, Part>(50)
@@ -476,7 +490,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             private var partsUsed = 0
 
             fun end(): ChunkRenderable {
-                var nodes = GdxArray<NodePart>(partsUsed)
+                val nodes = GdxArray<NodePart>(partsUsed)
 
                 builder.begin(attributes)
                 for (part in parts) {
@@ -528,7 +542,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
             private val vertTmp = Array(4) { MeshPartBuilder.VertexInfo() }
 
-            /** Draw a rectangle, using the positions inside corner1-4. */
+            /** @see [RenderableChunk.rect] */
             fun drawRect(texture: String, blend: Boolean, width: Float, height: Float, backFace: Boolean, xFace: Boolean) {
                 var part = parts[texture]
                 if (part == null) {
@@ -602,6 +616,19 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             }
         }
 
+        /** Draw a quad. Should ideally always be orthogonal to one of the
+         * three coordinate axes.
+         * [corners], [normal], [ao] and [color] should be set
+         * to the appropriate values to draw this quad with.
+         * @param texture The texture to be used for rendering
+         * @param blend If this quad should have blending enabled
+         * @param width The width of the quad on the first axis
+         * @param height The width of the quad on the second axis
+         * @param backFace If this quad should be flipped, making it visible on the other side
+         * @param xFace If this quad is orthogonal to the X axis, requiring an adjustment to alignment */
+        fun rect(texture: String, blend: Boolean, width: Float, height: Float, backFace: Boolean, xFace: Boolean) =
+            Builder.drawRect(texture, blend, width, height, backFace, xFace)
+
         private val meshPartPool: Pool<MeshPart> = object : Pool<MeshPart>() {
             override fun newObject() = MeshPart()
         }
@@ -609,7 +636,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             override fun newObject() = NodePart()
         }
 
-        class ChunkRenderable(val nodeParts: GdxArray<NodePart>) : RenderableProvider {
+        private class ChunkRenderable(val nodeParts: GdxArray<NodePart>) : RenderableProvider {
 
             val position = Vector3()
 
