@@ -99,7 +99,7 @@ object TranslocatorRender : BlockRenderer {
         renderSide(other1, -WIDTH, -heightAdj, 2, face <= 2)
         renderSide(other2, -WIDTH, +heightAdj, 0, face > 2)
 
-        fun renderTop() {
+        fun renderTop(back: Boolean) {
             tmpV[dir] += dirCorrection
             tmpV[other1] += S_OFF
             tmpV[other2] += S_OFF
@@ -111,14 +111,14 @@ object TranslocatorRender : BlockRenderer {
             corners[2].set(tmpV)
             tmpV[other1] -= WIDTH
             corners[3].set(tmpV)
-            RenderableChunk.rect(if (meta.other == null) topTexUnlinked else if (meta.push) topTexPush else topTexPull, false, 1f, 1f, face > 2, dir == 0)
+            RenderableChunk.rect(if (meta.other == null) topTexUnlinked else if (meta.push) topTexPush else topTexPull, false, 1f, 1f, back, dir == 0)
         }
 
         location.toV3(tmpV)
         tmpV[dir] += heightAdj
-        renderTop()
+        renderTop(face > 2)
 
         location.toV3(tmpV)
-        renderTop()
+        renderTop(face <= 2)
     }
 }
