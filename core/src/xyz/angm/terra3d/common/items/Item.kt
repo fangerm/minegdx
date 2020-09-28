@@ -41,13 +41,11 @@ data class Item(
     var metadata: IMetadata? = null
 ) : java.io.Serializable {
 
-    @Transient
-    private var textureBackingField: Texture? = null
-    val texture: Texture
-        get() {
-            if (textureBackingField == null) genTexture()
-            return textureBackingField!!
-        }
+    @delegate:Transient
+    val texture by lazy {
+        if (properties.isBlock) ResourceManager.models.itemImage(type)
+        else ResourceManager.get(properties.texture)
+    }
 
     val properties get() = Properties.fromType(type)!!
 
@@ -56,13 +54,6 @@ data class Item(
 
     /** If the item stacks with the other item. */
     infix fun stacksWith(other: Item?) = other != null && type == other.type && metadata == other.metadata
-
-    private fun genTexture(): Texture {
-        val tex = if (properties.isBlock) ResourceManager.models.itemImage(type)
-        else ResourceManager.get(properties.texture)
-        textureBackingField = tex
-        return tex
-    }
 
     override fun hashCode() = Objects.hash(type, metadata)
 
