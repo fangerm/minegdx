@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 7:20 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -92,9 +92,12 @@ object ResourceManager {
         )
     }
 
-    /** Continues loading game assets. Returns loading progress as a float with value range 0-1. 1 means loading is finished. */
-    fun continueLoading(): Float {
-        assets.update()
+    /** Continues loading game assets. Returns loading progress as a float with value range 0-1. 1 means loading is finished.
+     * @param processingTime How long to process, in milliseconds. */
+    fun continueLoading(processingTime: Int = 10): Float {
+        val time = System.currentTimeMillis()
+        while ((System.currentTimeMillis() - time) < processingTime)
+            assets.update()
         return assets.progress
     }
 
