@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 12:25 AM.
+ * This file was last modified at 9/29/20, 6:48 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -123,7 +123,7 @@ class BfsFluid(private val world: WorldInterface) {
 
     private fun visitBlockRemove(pos: IntVector3, neighborLevel: Int) {
         val block = world.getBlock(pos) ?: return
-        if (block.fluidLevel >= neighborLevel) {
+        if ((block.fluidLevel == neighborLevel && neighborLevel != 0) || block.fluidLevel > neighborLevel) {
             fluidQNext.addLast(FluidNode(pos))
         } else if (block.fluidLevel != 0 && block.fluidLevel < neighborLevel) {
             removeQNext.addLast(FRemoveNode(pos, block.fluidLevel))
