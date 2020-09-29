@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 12:55 AM.
+ * This file was last modified at 9/29/20, 7:40 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -47,8 +47,6 @@ const val RENDER_TIME_LOAD = 10
 /** The maximum distance a chunk can have to the player before being discarded. */
 private const val MAX_CHUNK_DIST = (RENDER_DIST_CHUNKS + 1) * CHUNK_SIZE
 
-private const val concurrentMeshing = 2
-
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
 class World(private val client: Client, override val seed: String) : Disposable, WorldInterface {
@@ -82,7 +80,10 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
                     // Put it at the other end of the list to ensure it gets
                     // rendered first on the next frame
-                    if (!chunk.isQueued) chunksWaitingForRender.addLast(chunk)
+                    if (!chunk.isQueued) {
+                        chunk.isQueued = true
+                        chunksWaitingForRender.addLast(chunk)
+                    }
                     queueNeighbors(chunk)
                 }
                 is ChunksLine -> addChunks(packet.chunks)
@@ -245,14 +246,8 @@ class World(private val client: Client, override val seed: String) : Disposable,
     override fun setLocalLight(position: IntVector3, light: IntVector3) {
         val chunk = getChunk(position)
         tmpIV2.set(position).minus(chunk?.position ?: return)
+        queueForRender(chunk, false)
         return chunk.setLocalLight(tmpIV2.x, tmpIV2.y, tmpIV2.z, light)
-    }
-
-    /** @return If there's a block at the given position AND the block is solid/not blended.
-     * Used by RenderableChunk to determine if an adjacent block face is visible */
-    fun isBlended(position: IntVector3): Boolean {
-        val chunk = getChunk(position)
-        return chunk?.isBlended(tmpIV1.set(position).minus(chunk.position)) ?: false
     }
 
     /** Queue a chunk and all adjacent chunks for rendering. */
@@ -265,7 +260,6 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
     /** Queues all neighboring chunks for rerender. */
     private fun queueNeighbors(chunk: Chunk) {
-        // TODO: don't do this
         queueRerender(getChunk(tmpIV2.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
         queueRerender(getChunk(tmpIV2.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
         queueRerender(getChunk(tmpIV2.set(chunk.position).minus(0, 0, CHUNK_SIZE)))
