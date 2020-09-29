@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:40 PM.
+ * This file was last modified at 9/29/20, 10:06 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -49,7 +49,7 @@ private const val MAX_CHUNK_DIST = (RENDER_DIST_CHUNKS + 1) * CHUNK_SIZE
 
 /** Client-side representation of the world, which contains all blocks.
  * @param client A connected network client. */
-class World(private val client: Client, override val seed: String) : Disposable, WorldInterface {
+class World(private val client: Client, seed: String) : Disposable, IWorld(seed) {
 
     private val tmpIV1 = IntVector3()
     private val tmpIV2 = IntVector3()
@@ -69,7 +69,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
         client.addListener { packet ->
             when (packet) {
                 is BlockUpdate -> {
-                    val chunk = getChunk(packet.position) ?: return@addListener
+                    val chunk = getRChunk(packet.position) ?: return@addListener
                     packet.position.minus(chunk.position)
 
                     val oldBlock = chunk.getBlock(packet.position)
@@ -99,7 +99,7 @@ class World(private val client: Client, override val seed: String) : Disposable,
         for (x in -RENDER_DIST_CHUNKS..RENDER_DIST_CHUNKS) {
             for (z in -RENDER_DIST_CHUNKS..RENDER_DIST_CHUNKS) {
                 val chunkPosition = chunkPos.set(position).add(x * CHUNK_SIZE, 0, z * CHUNK_SIZE)
-                if (getChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
+                if (getRChunk(chunkPosition) == null) loadChunkLine(chunkPosition)
             }
         }
         generator.finalizeGen()
@@ -207,47 +207,34 @@ class World(private val client: Client, override val seed: String) : Disposable,
         }
     }
 
-    /** Gets block.
-     * @param position Position of the block in world coordinates
-     * @return Block at specified location; can be null */
-    override fun getBlock(position: IntVector3): Block? {
-        val chunk = getChunk(position)
-        return chunk?.getBlock(tmpIV1.set(position).minus(chunk.position))
+    /** Sets the given position to the block. Note that block type of 0 removes the block.
+     * This works by having the server echo the block change to all clients, making
+     * the change occur when this client also receives the echo and applies it. */
+    fun setBlock(block: Block) = client.send(block)
+
+    private fun setBlock(position: IntVector3, item: Item?, orientation: Block.Orientation) {
+        val block = if (item != null) Block(item, position, orientation) else Block(0, position, orientation = orientation)
+        setBlock(block)
     }
 
-    fun getBlockRaw(position: IntVector3): Int {
-        val chunk = getChunk(position) ?: return 0
-        tmpIV1.set(position).minus(chunk.position)
-        return chunk[tmpIV1.x, tmpIV1.y, tmpIV1.z, ALL]
+    override fun setBlockRaw(position: IntVector3, type: ItemType): Boolean {
+        val chunk = getRChunk(position) ?: return false
+        chunk.setBlock(tmpIV1, type)
+        queueForRender(chunk)
+        return true
     }
 
-    fun getFluidLevel(position: IntVector3): Int {
-        val chunk = getChunk(position) ?: return 0
-        tmpIV1.set(position).minus(chunk.position)
-        return chunk[tmpIV1.x, tmpIV1.y, tmpIV1.z, FLUID_LEVEL] shr FLUID_LEVEL_SHIFT
-    }
+    /** Returns raw block data at the given position. */
+    fun getBlockRaw(position: IntVector3) = getRChunk(position)?.get(tmpIV1.x, tmpIV1.y, tmpIV1.z, ALL) ?: 0
 
-    /** Returns the collider at the given position. */
-    fun getCollider(position: IntVector3): PhysicsSystem.BlockCollider {
-        val chunk = getChunk(tmpIV1.set(position)) ?: return PhysicsSystem.BlockCollider.NONE
-        val pos = tmpIV1.set(position).minus(chunk.position)
-        return chunk.getCollider(pos.x, pos.y, pos.z)
-    }
-
-    /** @return Local light at the given block.
-     * THE VECTOR RETURNED IS REUSED FOR EVERY CALL. Copy it if you need it to persist. */
-    override fun getLocalLight(position: IntVector3): IntVector3? {
-        val chunk = getChunk(position)
-        tmpIV2.set(position).minus(chunk?.position ?: return null)
-        return chunk.getLocalLight(tmpIV2.x, tmpIV2.y, tmpIV2.z)
-    }
+    /** Returns the fluid level at the given position. */
+    fun getFluidLevel(position: IntVector3) = (getBlockRaw(position) and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT
 
     /** Sets local light at the given block. */
     override fun setLocalLight(position: IntVector3, light: IntVector3) {
-        val chunk = getChunk(position)
-        tmpIV2.set(position).minus(chunk?.position ?: return)
+        val chunk = getRChunk(position) ?: return
+        chunk.setLocalLight(tmpIV1.x, tmpIV1.y, tmpIV1.z, light)
         queueForRender(chunk, false)
-        return chunk.setLocalLight(tmpIV2.x, tmpIV2.y, tmpIV2.z, light)
     }
 
     /** Queue a chunk and all adjacent chunks for rendering. */
@@ -260,12 +247,12 @@ class World(private val client: Client, override val seed: String) : Disposable,
 
     /** Queues all neighboring chunks for rerender. */
     private fun queueNeighbors(chunk: Chunk) {
-        queueRerender(getChunk(tmpIV2.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
-        queueRerender(getChunk(tmpIV2.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
-        queueRerender(getChunk(tmpIV2.set(chunk.position).minus(0, 0, CHUNK_SIZE)))
-        queueRerender(getChunk(tmpIV2.set(chunk.position).add(CHUNK_SIZE, 0, 0)))
-        queueRerender(getChunk(tmpIV2.set(chunk.position).add(0, CHUNK_SIZE, 0)))
-        queueRerender(getChunk(tmpIV2.set(chunk.position).add(0, 0, CHUNK_SIZE)))
+        queueRerender(getRChunk(tmpIV2.set(chunk.position).minus(CHUNK_SIZE, 0, 0)))
+        queueRerender(getRChunk(tmpIV2.set(chunk.position).minus(0, CHUNK_SIZE, 0)))
+        queueRerender(getRChunk(tmpIV2.set(chunk.position).minus(0, 0, CHUNK_SIZE)))
+        queueRerender(getRChunk(tmpIV2.set(chunk.position).add(CHUNK_SIZE, 0, 0)))
+        queueRerender(getRChunk(tmpIV2.set(chunk.position).add(0, CHUNK_SIZE, 0)))
+        queueRerender(getRChunk(tmpIV2.set(chunk.position).add(0, 0, CHUNK_SIZE)))
     }
 
     private fun queueRerender(chunk: RenderableChunk?) {
@@ -276,24 +263,21 @@ class World(private val client: Client, override val seed: String) : Disposable,
         }
     }
 
-    private fun setBlock(position: IntVector3, item: Item?, orientation: Block.Orientation) {
-        val block = if (item != null) Block(item, position, orientation) else Block(0, position, orientation = orientation)
-        setBlock(block)
+    /** Returns the chunk and sets tmpIV to chunk-local coordinates. */
+    override fun getChunk(position: IntVector3): Chunk? {
+        val chunk = chunks[tmpIV1.set(position).chunk()] ?: return null
+        tmpIV.set(position).minus(chunk.position)
+        return chunk
     }
 
-    /** Sets the given position to the block. Note that block type of 0 removes the block.
-     * This works by having the server echo the block change to all clients, making
-     * the change occur when this client also receives the echo and applies it. */
-    fun setBlock(block: Block) = client.send(block)
-
-    override fun setBlockRaw(position: IntVector3, type: ItemType): Boolean {
-        val chunk = getChunk(position) ?: return false
-        chunk.setBlock(tmpIV1.set(position).minus(chunk.position), type)
-        queueForRender(chunk)
-        return true
+    /** Returns the chunk and sets tmpIV1 to chunk-local coordinates.
+     * This function returns a renderable chunk directly and also
+     * avoids tmpIV, meaning it is faster and should be preferred. */
+    private fun getRChunk(position: IntVector3): RenderableChunk? {
+        val chunk = chunks[tmpIV1.set(position).chunk()] ?: return null
+        tmpIV1.set(position).minus(chunk.position)
+        return chunk
     }
-
-    private fun getChunk(position: IntVector3): RenderableChunk? = chunks[tmpIV1.set(position).chunk()]
 
     override fun getLoadedChunk(position: IntVector3): Chunk? = getChunk(position)
 

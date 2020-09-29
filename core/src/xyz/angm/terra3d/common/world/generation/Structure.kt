@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 9:49 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -17,7 +17,7 @@ import ktx.collections.*
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
-import xyz.angm.terra3d.common.world.WorldInterface
+import xyz.angm.terra3d.common.world.IWorld
 import xyz.angm.terra3d.common.yaml
 
 internal class Structures {
@@ -39,7 +39,7 @@ internal class Structures {
     }
 
     /** Update all structure's pending locations. */
-    fun update(world: WorldInterface) = structures.forEach { it.key.update(world, it.value) }
+    fun update(world: IWorld) = structures.forEach { it.key.update(world, it.value) }
 }
 
 /** A structure is a fixed set of blocks generated in the world. */
@@ -48,13 +48,13 @@ private class Structure private constructor(private val calls: Array<DrawCall>) 
     /** Update the structure's pending locations
      * @param world The world to apply to
      * @param pending All locations pending. */
-    fun update(world: WorldInterface, pending: GdxArray<IntVector3>) {
+    fun update(world: IWorld, pending: GdxArray<IntVector3>) {
         pending.removeAll {
             apply(world, it)
         }
     }
 
-    private fun apply(world: WorldInterface, pos: IntVector3): Boolean {
+    private fun apply(world: IWorld, pos: IntVector3): Boolean {
         var success = true
         for (call in calls) {
             success = success && call.draw(world, tmpIV.set(pos))
@@ -106,11 +106,11 @@ private class Structure private constructor(private val calls: Array<DrawCall>) 
 private val tmpIV = IntVector3() // Vector used by draw calls
 
 private sealed class DrawCall(val start: IntVector3, val block: ItemType) {
-    abstract fun draw(world: WorldInterface, pos: IntVector3): Boolean
+    abstract fun draw(world: IWorld, pos: IntVector3): Boolean
 }
 
 private class BoxCall(start: IntVector3, block: ItemType, val end: IntVector3) : DrawCall(start, block) {
-    override fun draw(world: WorldInterface, pos: IntVector3): Boolean {
+    override fun draw(world: IWorld, pos: IntVector3): Boolean {
         var success = true
         for (y in start.y..end.y)
             for (x in start.x..end.x)
@@ -121,5 +121,5 @@ private class BoxCall(start: IntVector3, block: ItemType, val end: IntVector3) :
 }
 
 private class PointCall(start: IntVector3, block: ItemType) : DrawCall(start, block) {
-    override fun draw(world: WorldInterface, pos: IntVector3) = world.setBlockRaw(pos.add(start), block)
+    override fun draw(world: IWorld, pos: IntVector3) = world.setBlockRaw(pos.add(start), block)
 }

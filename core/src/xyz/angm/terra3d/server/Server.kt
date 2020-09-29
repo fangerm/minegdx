@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 6:28 PM.
+ * This file was last modified at 9/29/20, 10:06 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,10 +12,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import ktx.collections.*
+import xyz.angm.rox.Engine
 import xyz.angm.rox.Entity
 import xyz.angm.rox.EntityListener
 import xyz.angm.rox.EntitySystem
 import xyz.angm.rox.Family.Companion.allOf
+import xyz.angm.terra3d.common.SyncChannel
 import xyz.angm.terra3d.common.TICK_RATE
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
@@ -23,7 +25,6 @@ import xyz.angm.terra3d.common.ecs.components.specific.DayTimeComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.network
 import xyz.angm.terra3d.common.ecs.position
-import xyz.angm.terra3d.common.ecs.systems.FluidSystem
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
 import xyz.angm.terra3d.common.log
@@ -50,9 +51,9 @@ class Server(
     private val serverSocket = if (configuration.isLocalServer) LocalServerSocket.getSocket(this) else NettyServerSocket(this)
     internal val coScope = CoroutineScope(Dispatchers.Default)
 
-    val engine = ConcurrentEngine(coScope)
-    val netSystem = NetworkSystem(::sendToAll)
+    val engine = SyncChannel(Engine(), coScope)
     val world = World(this)
+    private val netSystem = NetworkSystem(::sendToAll)
     private val players = IntMap<Entity>() // Key is the connection id
     private val playerFamily = allOf(PlayerComponent::class)
     private val networkedFamily = allOf(NetworkSyncComponent::class)
@@ -65,7 +66,6 @@ class Server(
 
         engine {
             add(ItemSystem())
-            add(FluidSystem(world.fluids))
             add(netSystem as EntityListener)
             add(netSystem as EntitySystem)
             add(RemoveSystem())

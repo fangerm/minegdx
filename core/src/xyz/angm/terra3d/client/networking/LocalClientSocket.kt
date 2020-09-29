@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 7:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,7 +12,7 @@ import xyz.angm.terra3d.server.networking.LocalServerSocket
 
 /** A socket for a server running locally (singleplayer). Does not send data over network to improve performance.
  * Use the companion object to get the socket. */
-class LocalClientSocket private constructor(client: Client) : ClientSocketInterface(client) {
+class LocalClientSocket private constructor(client: Client) : ClientSocket(client) {
 
     override fun connect(ip: String) = Unit
 

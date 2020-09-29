@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 7:29 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.Vector3
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 
 /** Interface for playing sound. */
-interface SoundInterface {
+interface ISound {
 
     /** Initialize and get ready for playing sounds. */
     fun init()
@@ -32,9 +32,9 @@ interface SoundInterface {
     fun updateListenerPosition(position: VectoredComponent, direction: VectoredComponent)
 }
 
-/** A dummy sound interface that deliberately does nothing.
+/** A dummy sound implementation that deliberately does nothing.
  * Used by default when the launcher didn't specify an interface. */
-private object DummySoundInterface : SoundInterface {
+private object DummySound : ISound {
     override fun init() {}
     override fun playSound(sound: String) {}
     override fun playSound3D(sound: String, location: Vector3) {}
@@ -47,4 +47,4 @@ private object DummySoundInterface : SoundInterface {
  * Defaults to dummy that does nothing, can only be set to proper interface once.
  * (The dummy is used instead of a 'lateinit' variable to prevent crashes in cases
  * where no sound is the intended behavior, like the server or during unit tests) */
-var soundPlayer: SoundInterface = DummySoundInterface
+var soundPlayer: ISound = DummySound

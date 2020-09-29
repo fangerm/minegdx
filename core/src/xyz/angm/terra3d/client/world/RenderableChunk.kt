@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 9:30 PM.
+ * This file was last modified at 9/29/20, 9:20 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -193,7 +193,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
 
                     rect(
                         texture,
-                        props.block?.isBlend == true,
+                        props.block.isBlend,
                         quadSize[workAxis1].toFloat(),
                         quadSize[workAxis2].toFloat(),
                         backFaceM == -1,
@@ -619,9 +619,8 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
             private fun getMaterial(texture: String, blend: Boolean): Material {
                 val tex = ResourceManager.get<Texture>(texture)
                 tex.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
-                val mat = if (blend && configuration.video.blend) Material(TextureAttribute.createDiffuse(tex), BlendingAttribute())
+                return if (blend && configuration.video.blend) Material(TextureAttribute.createDiffuse(tex), BlendingAttribute())
                 else Material(TextureAttribute.createDiffuse(tex))
-                return mat
             }
 
             private class Part(val material: Material) {

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 9:41 PM.
+ * This file was last modified at 9/29/20, 7:27 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -11,7 +11,7 @@ import com.badlogic.gdx.Input
 import com.kotcrab.vis.ui.widget.VisTextField
 import ktx.actors.onKeyDown
 
-import xyz.angm.terra3d.client.actions.CommandHandler
+import xyz.angm.terra3d.client.actions.CommandExecutor
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.common.ecs.playerM
@@ -36,7 +36,7 @@ class ChatPanel(private val screen: GameScreen) : Panel(screen) {
     }
 
     private fun onEnter(message: String) {
-        if (message.startsWith(">")) screen.gameplayPanel.addChatMessage(CommandHandler.execute(message.substringAfter(">"), screen))
+        if (message.startsWith(">")) screen.gameplayPanel.addChatMessage(CommandExecutor.execute(message.substringAfter(">"), screen))
         else screen.client.send(ChatMessagePacket(formatMessage(message)))
         screen.popPanel()
     }

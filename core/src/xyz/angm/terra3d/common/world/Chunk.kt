@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/20/20, 7:50 PM.
+ * This file was last modified at 9/29/20, 9:30 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -87,10 +87,8 @@ open class Chunk private constructor(
     }
 
     /** Returns the block's collider. Used by physics systems. */
-    fun getCollider(x: Int, y: Int, z: Int) =
-        Item.Properties.fromType(this[x, y, z, TYPE])?.block?.collider ?: PhysicsSystem.BlockCollider.NONE
-
-    fun isBlended(p: IntVector3) = Item.Properties.fromType(this[p.x, p.y, p.z, TYPE])?.block?.isBlend ?: true
+    fun getCollider(p: IntVector3) =
+        Item.Properties.fromType(this[p.x, p.y, p.z, TYPE])?.block?.collider ?: PhysicsSystem.BlockCollider.NONE
 
     fun getLocalLight(x: Int, y: Int, z: Int): IntVector3 {
         colorVec.set(
@@ -108,12 +106,6 @@ open class Chunk private constructor(
         val dataNoColor = data and (LIGHTING xor ALL)
         this[x, y, z] = dataNoColor or color
     }
-
-    /** @return If a block at the given position exists */
-    fun blockExists(p: IntVector3) = p.isInBounds(0, CHUNK_SIZE) && blockExists(p.x, p.y, p.z)
-
-    /** @see blockExists */
-    private fun blockExists(x: Int, y: Int, z: Int) = this[x, y, z, TYPE] != 0
 
     /** Sets the block.
      * @param position The position to place it at

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 1:45 AM.
+ * This file was last modified at 9/29/20, 7:27 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -25,7 +25,7 @@ import xyz.angm.terra3d.common.items.metadata.DefaultMeta
 
 /** Responsible for parsing commands entered by the user.
  * These commands are entered by typing a chat message with a $ as prefix. */
-object CommandHandler {
+object CommandExecutor {
 
     private val dispatcher = CommandDispatcher<GameScreen>()
     private var returnMessage = ""

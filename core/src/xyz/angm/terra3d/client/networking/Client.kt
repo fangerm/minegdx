@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 7:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -20,7 +20,7 @@ import xyz.angm.terra3d.common.log
  * @constructor Will create a socket for a local server. */
 class Client() {
 
-    private var client: ClientSocketInterface = LocalClientSocket.getSocket(this)
+    private var socket: ClientSocket = LocalClientSocket.getSocket(this)
     private val listeners = GdxArray<(Any) -> Unit>(false, 10)
     var disconnectListener: () -> Unit = {}
 
@@ -45,8 +45,8 @@ class Client() {
     /** Constructs a client for a remote server using netty.
      * @param ip The IP to connect to. */
     constructor(ip: String) : this() {
-        client = NettyClientSocket(this)
-        client.connect(ip)
+        socket = NettyClientSocket(this)
+        socket.connect(ip)
     }
 
     /** Constructs a client for a remote server using netty,
@@ -55,8 +55,8 @@ class Client() {
      * @param listener The listener to add before connection. */
     constructor(ip: String, listener: (Any) -> Unit) : this() {
         listeners.add(listener)
-        client = NettyClientSocket(this)
-        client.connect(ip)
+        socket = NettyClientSocket(this)
+        socket.connect(ip)
     }
 
     /** Add a listener for received packets */
@@ -79,7 +79,7 @@ class Client() {
 
     /** Send the specified packet to server. */
     fun send(packet: Any) {
-        client.send(packet)
+        socket.send(packet)
         log.debug { "[CLIENT] Sent packet of class ${packet.javaClass.name}" }
     }
 
@@ -123,7 +123,7 @@ class Client() {
     /** Dispose of the client. Object is unusable after this. */
     fun close() {
         clearListeners()
-        client.close()
+        socket.close()
         scope.cancel()
     }
 }

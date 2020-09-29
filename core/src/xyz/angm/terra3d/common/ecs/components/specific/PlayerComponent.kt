@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 9:58 PM.
+ * This file was last modified at 9/29/20, 7:26 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -66,10 +66,10 @@ class PlayerComponent : Component {
         internal val defaultSpawnLocation = Vector3(10000f, 80f, 10000f)
 
         /** Create a new player entity. */
-        fun create(engine: Engine, _name: String, uuid: Int) =
+        fun create(engine: Engine, pName: String, uuid: Int) =
             engine.entity {
                 with<PlayerComponent> {
-                    name = _name
+                    name = pName
                     clientUUID = uuid
                 }
                 with<PositionComponent> { set(defaultSpawnLocation) }

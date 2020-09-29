@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/18/20, 7:47 PM.
+ * This file was last modified at 9/29/20, 10:06 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -38,6 +38,8 @@ val localPlayer = mapperFor<LocalPlayerComponent>()
 val network = mapperFor<NetworkSyncComponent>()
 val ignoreSync = mapperFor<IgnoreSyncFlag>()
 val remove = mapperFor<RemoveFlag>()
+
+@Suppress("unused") // Unused but required to ensure NoPhysicsFlag is registered
 val noPhysics = mapperFor<NoPhysicsFlag>()
 
 val modelRender = mapperFor<ModelRenderComponent>()

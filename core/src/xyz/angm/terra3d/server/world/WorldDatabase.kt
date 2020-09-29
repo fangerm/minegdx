@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 2:02 AM.
+ * This file was last modified at 9/29/20, 10:15 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -73,17 +73,17 @@ internal class WorldDatabase(private val server: Server) {
     /** Returns chunk or null if it is not in the DB
      * @param generate If the chunk should be generated if missing. Does not return null if true. */
     internal fun getChunk(position: IntVector3, generate: Boolean = true): Chunk? {
-        tmpIV.set(position).chunk()
-        val cacheChunk = getCachedChunk(tmpIV)
+        val pos = tmpIV.set(position).chunk()
+        val cacheChunk = getCachedChunk(pos)
         if (cacheChunk != null) return cacheChunk
 
-        val dbChunk = getDBChunk(position)
+        val dbChunk = getDBChunk(pos)
         val chunk = if (dbChunk != null) fst.asObject(dbChunk[Chunks.data].bytes) as Chunk
         else if (!generate) return null
         else {
-            server.world.generator.generateChunks(tmpIV)
+            server.world.generator.generateChunks(pos)
             server.world.generator.finalizeGen()
-            getCachedChunk(tmpIV.set(position).chunk())!!
+            getCachedChunk(tmpIV)!!
         }
 
         unchangedChunks[chunk.position] = chunk
@@ -120,6 +120,18 @@ internal class WorldDatabase(private val server: Server) {
         return oldBlock
     }
 
+    /** Same as above, but takes type instead of block. Also returns chunk instead of old block.
+     * Better performance than the method above; mainly used for batching block operations ([World.setBlockRaw]).
+     * Does not consider a chunk that the block was placed in to be changed. */
+    internal fun setBlockRaw(position: IntVector3, type: ItemType): Boolean {
+        val chunk = getChunk(position, false) ?: return false
+        tmpIV.set(position).minus(chunk.position)
+        chunk.setBlock(tmpIV, type)
+
+        unchangedChunks[chunk.position] = chunk
+        return true
+    }
+
     /** Sets and marks the chunk the given block is in as changed. */
     internal fun markBlockChanged(block: Block) {
         val chunk = getChunk(block.position) ?: return
@@ -131,19 +143,6 @@ internal class WorldDatabase(private val server: Server) {
     /** Marks the given chunk as changed. */
     internal fun markChunkChanged(chunk: Chunk) {
         changedChunks[chunk.position] = chunk
-    }
-
-    /** Same as above, but takes type instead of block. Also returns chunk instead of old block.
-     * Better performance than the method above; mainly used for batching block operations ([World.setBlockRaw]).
-     * Does not consider a chunk that the block was placed in to be changed. */
-    internal fun setBlockRaw(position: IntVector3, type: ItemType): Boolean {
-        val chunk = getChunk(position, false) ?: return false
-        tmpIV.set(position).minus(chunk.position)
-
-        chunk.setBlock(tmpIV, type)
-        unchangedChunks[chunk.position] = chunk
-
-        return true
     }
 
     /** Saves all chunks to DB. Called at regular intervals; as well as on shutdown. */
@@ -168,10 +167,8 @@ internal class WorldDatabase(private val server: Server) {
         changedChunks.clear()
     }
 
-    private fun getDBChunk(position: IntVector3): ResultRow? {
-        tmpIV.set(position).chunk()
-        return transaction { Chunks.select { (Chunks.x eq tmpIV.x) and (Chunks.y eq tmpIV.y) and (Chunks.z eq tmpIV.z) }.firstOrNull() }
-    }
+    private fun getDBChunk(p: IntVector3) =
+        transaction { Chunks.select { (Chunks.x eq p.x) and (Chunks.y eq p.y) and (Chunks.z eq p.z) }.firstOrNull() }
 
     private fun <T> transaction(statement: Transaction.() -> T) =
         org.jetbrains.exposed.sql.transactions.transaction(db, statement)
@@ -186,18 +183,15 @@ internal class WorldDatabase(private val server: Server) {
 /** Chunk DB table. */
 private object Chunks : Table() {
     val id = integer("id").autoIncrement()
+    override val primaryKey = PrimaryKey(id)
 
     /** Position X axis */
     val x = integer("x").index()
-
     /** Position Y axis */
     val y = integer("y").index()
-
     /** Position Z axis */
     val z = integer("z").index()
 
     /** The chunk object, serialized with FST */
     val data = blob("data")
-
-    override val primaryKey = PrimaryKey(id)
 }

@@ -1,27 +1,22 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/20/20, 7:49 PM.
+ * This file was last modified at 9/29/20, 10:11 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
 package xyz.angm.terra3d.server.world
 
-import com.badlogic.gdx.math.Vector3
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
 import ktx.collections.*
 import xyz.angm.rox.Entity
-import xyz.angm.terra3d.common.CHUNK_SIZE
-import xyz.angm.terra3d.common.IntVector3
-import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS
+import xyz.angm.terra3d.common.*
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.DayTimeSystem
+import xyz.angm.terra3d.common.ecs.systems.FluidSystem
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
-import xyz.angm.terra3d.common.schedule
 import xyz.angm.terra3d.common.world.*
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
@@ -34,29 +29,22 @@ const val INIT_DIST_CHUNKS = 2
 /** Server-side representation of a World containing all blocks.
  * @param server The server this world is running under.
  * @property seed The world seed used for generating the terrain. */
-class World(private val server: Server) : WorldInterface {
+class World(private val server: Server) : IWorld(server.save.seed) {
 
-    private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
-    private val tmpIV get() = tmpIVLocal.get()
-
-    override val seed = server.save.seed
     private val database = WorldDatabase(server)
     internal val generator = TerrainGenerator(this)
     private val blockEntitySystem = BlockEntitySystem(this)
     private val lighting = BfsLight(this)
-    internal val fluids = BfsFluid(this)
-
-    private val channel = Channel<World.() -> Unit>()
+    private val fluids = BfsFluid(this)
+    private val sync = SyncChannel(this, server.coScope)
 
     init {
         schedule(60000, 60000, server.coScope, database::flushChunks)
         server.engine {
             add(blockEntitySystem)
-            add(PhysicsSystem(this@World::getCollider))
+            add(PhysicsSystem { getCollider(tmpIV.set(it)) })
             add(DayTimeSystem())
-        }
-        server.coScope.launch {
-            while (true) channel.receive()(this@World)
+            add(FluidSystem(fluids))
         }
     }
 
@@ -107,18 +95,6 @@ class World(private val server: Server) : WorldInterface {
         return out.toArray()
     }
 
-    /** Returns a block at the specified position, or null if there is none. */
-    override fun getBlock(position: IntVector3): Block? {
-        val chunk = database.getChunk(position)
-        return chunk?.getBlock(tmpIV.set(position).minus(chunk.position))
-    }
-
-    private fun getCollider(position: Vector3): PhysicsSystem.BlockCollider {
-        val chunk = database.getChunk(tmpIV.set(position)) ?: return PhysicsSystem.BlockCollider.NONE
-        val pos = tmpIV.set(position).minus(chunk.position)
-        return chunk.getCollider(pos.x, pos.y, pos.z)
-    }
-
     /** Sets the block. Will automatically sync to clients and dispatch any other work required.
      * @param position The position to place it at
      * @param block The block to place
@@ -159,26 +135,17 @@ class World(private val server: Server) : WorldInterface {
 
     override fun setBlockRaw(position: IntVector3, type: ItemType) = database.setBlockRaw(position, type)
 
-    /** @return Local light at the given block.
-     * THE VECTOR RETURNED IS REUSED FOR EVERY CALL. Copy it if you need it to persist. */
-    override fun getLocalLight(position: IntVector3): IntVector3? {
-        val chunk = database.getChunk(position)
-        tmpIV.set(position).minus(chunk?.position ?: return null)
-        return chunk.getLocalLight(tmpIV.x, tmpIV.y, tmpIV.z)
-    }
-
     /** Sets local light at the given block. */
     override fun setLocalLight(position: IntVector3, light: IntVector3) {
-        val chunk = database.getChunk(position)
-        tmpIV.set(position).minus(chunk?.position ?: return)
+        val chunk = getChunk(position) ?: return
         database.markChunkChanged(chunk)
         chunk.setLocalLight(tmpIV.x, tmpIV.y, tmpIV.z, light)
     }
 
-    /** This method always runs the given closures on the same thread.
-     * Used for non-thread-safe operations. */
-    private fun sync(fn: World.() -> Unit) {
-        server.coScope.launch { channel.send(fn) }
+    override fun getChunk(position: IntVector3): Chunk? {
+        val chunk = database.getChunk(position) ?: return null
+        tmpIV.set(position).minus(chunk.position)
+        return chunk
     }
 
     /** Called on server close; saves to disk */

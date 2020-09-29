@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 2:04 AM.
+ * This file was last modified at 9/29/20, 7:05 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -26,7 +26,6 @@ class ItemGroup(
     var inventory: Inventory,
     val mutable: Boolean = true,
     startOffset: Int = 0,
-    padding: Float = 4f,
     row: Int,
     column: Int,
 ) : VisTable() {
@@ -34,7 +33,7 @@ class ItemGroup(
     init {
         for (index in startOffset until (row * column) + startOffset) {
             val actor = GroupedItemActor(this, index)
-            add(actor).pad(padding)
+            add(actor).pad(4f)
             if (index != 0 && index % column == column - 1) row()
         }
         pack()

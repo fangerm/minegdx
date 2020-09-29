@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 7:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -63,7 +63,7 @@ internal class Environment : Disposable {
     private val directionalC = Color(DAYLIGHT_DIRECTIONAL)
     private val skyC = Color(DAYLIGHT_SKY)
 
-    val environment = Environment()
+    val gdxEnv = Environment()
     private val ambientLight = ColorAttribute(ColorAttribute.AmbientLight)
     private val directionalLight = DirectionalLight()
     private val shadowLight = DirectionalShadowLight(configuration.video.shadowFBO, configuration.video.shadowFBO, 300f, 300f, -50f, 350f)
@@ -72,10 +72,10 @@ internal class Environment : Disposable {
     private val moon = getCelestialModel("moon")
 
     init {
-        environment.set(ambientLight)
-        environment.add(directionalLight)
-        environment.add(shadowLight)
-        environment.shadowMap = shadowLight
+        gdxEnv.set(ambientLight)
+        gdxEnv.add(directionalLight)
+        gdxEnv.add(shadowLight)
+        gdxEnv.shadowMap = shadowLight
     }
 
     /** Renders sky & shadows. Called before any other rendering. */

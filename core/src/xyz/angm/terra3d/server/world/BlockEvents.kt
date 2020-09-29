@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 8:50 PM.
+ * This file was last modified at 9/29/20, 9:23 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -72,9 +72,11 @@ object BlockEvents {
 
             meta.progress += 10
             if (meta.progress >= 100) {
-                if (meta.result[0] == null) meta.result[0] = Item(recipeResult.output, recipeResult.outAmount)
-                else if (meta.result[0]!!.type == recipeResult.output) meta.result[0]!!.amount += recipeResult.outAmount
-                else return@BlockComponent
+                when {
+                    meta.result[0] == null -> meta.result[0] = Item(recipeResult.output, recipeResult.outAmount)
+                    meta.result[0]!!.type == recipeResult.output -> meta.result[0]!!.amount += recipeResult.outAmount
+                    else -> return@BlockComponent
+                }
                 meta.baking[0]!!.amount -= recipeResult.inAmount
                 meta.progress = 0
             }

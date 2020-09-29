@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/20/20, 9:58 PM.
+ * This file was last modified at 9/29/20, 9:49 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,12 +12,12 @@ import xyz.angm.terra3d.common.*
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.FLUID_LEVEL_SHIFT
-import xyz.angm.terra3d.common.world.WorldInterface
+import xyz.angm.terra3d.common.world.IWorld
 import kotlin.random.Random
 
 /** Generates terrain/chunks for a world.
  * @param world The world to generate for */
-class TerrainGenerator(val world: WorldInterface) {
+class TerrainGenerator(val world: IWorld) {
 
     private val noiseGenerator = NoiseGenerator(world.seed.convertToLong())
     private val structures = Structures()

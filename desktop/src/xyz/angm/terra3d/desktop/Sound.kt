@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/14/20, 7:13 PM.
+ * This file was last modified at 9/29/20, 10:06 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -14,8 +14,8 @@ import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.ObjectIntMap
 import com.badlogic.gdx.utils.StreamUtils
 import org.lwjgl.openal.AL10.*
+import xyz.angm.terra3d.client.resources.ISound
 import xyz.angm.terra3d.client.resources.ResourceManager
-import xyz.angm.terra3d.client.resources.SoundInterface
 import xyz.angm.terra3d.common.ecs.components.DirectionComponent
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.VectoredComponent
@@ -24,7 +24,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /** A sound interface playing sounds using LWJGL's OpenAL wrapper. */
-object Sound : SoundInterface {
+object Sound : ISound {
 
     private val sounds = ObjectIntMap<String>()
     private val listenerPosition = Vector3()

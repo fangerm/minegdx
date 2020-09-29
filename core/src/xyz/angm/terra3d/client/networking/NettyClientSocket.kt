@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 7:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -22,7 +22,7 @@ import xyz.angm.terra3d.common.networking.FSTDecoder
 import xyz.angm.terra3d.common.networking.FSTEncoder
 
 /** Client socket for non-local servers (multiplayer). Uses Netty. */
-class NettyClientSocket(client: Client) : ClientSocketInterface(client) {
+class NettyClientSocket(client: Client) : ClientSocket(client) {
 
     private val workerGroup = NioEventLoopGroup()
     private lateinit var future: ChannelFuture

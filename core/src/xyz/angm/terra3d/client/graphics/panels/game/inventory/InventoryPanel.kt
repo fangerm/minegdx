@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 7:32 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -19,11 +19,6 @@ import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.items.Item
-
-private const val heldItemOffsetX = 2f
-private const val heldItemOffsetY = -50f
-private const val tooltipOffsetX = 20f
-private const val tooltipOffsetY = -5f
 
 /** Class for panels that need to handle items. Items should be added with ItemGroup. */
 @Suppress("LeakingThis")
@@ -48,8 +43,8 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
 
         listener = object : KtxInputListener() {
             override fun mouseMoved(event: InputEvent, x: Float, y: Float): Boolean {
-                heldItemActor.setPosition(x + heldItemOffsetX, y + heldItemOffsetY)
-                tooltip.setPosition(x + tooltipOffsetX, y + tooltipOffsetY, Align.topLeft)
+                heldItemActor.setPosition(x + 2f, y + -50f)
+                tooltip.setPosition(x + 20f, y + -5f, Align.topLeft)
                 return false
             }
         }

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:00 PM.
+ * This file was last modified at 9/29/20, 9:48 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -15,7 +15,7 @@ import xyz.angm.terra3d.common.IntVector3
  * the blog post about it can be found here:
  * https://www.seedofandromeda.com/blogs/29-fast-flood-fill-lighting-in-a-blocky-voxel-game-pt-1
  * This implementation is NOT thread safe. */
-class BfsLight(private val world: WorldInterface) {
+class BfsLight(private val world: IWorld) {
 
     private val tmpColor = IntVector3()
     private val lightQ = Queue<LightNode>()

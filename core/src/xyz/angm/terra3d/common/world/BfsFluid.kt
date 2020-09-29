@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 6:48 PM.
+ * This file was last modified at 9/29/20, 9:48 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -14,7 +14,7 @@ import xyz.angm.terra3d.common.IntVector3
  * This alg is abridged from the one in [BfsLight] with a few differences to support
  * stepping and other related features needed for fluids.
  * This implementation is NOT thread safe. */
-class BfsFluid(private val world: WorldInterface) {
+class BfsFluid(private val world: IWorld) {
 
     // Fluid queues to empty each tick
     private var fluidQ = Queue<FluidNode>()
