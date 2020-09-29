@@ -1,12 +1,13 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 12:02 AM.
+ * This file was last modified at 9/29/20, 6:42 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
-package xyz.angm.rox
+package xyz.angm.rox.util
 
+import xyz.angm.rox.Component
 import kotlin.math.max
 
 /** A collection of elements very similar to a dynamically growing array.

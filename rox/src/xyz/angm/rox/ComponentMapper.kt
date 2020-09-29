@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/19/20, 12:11 AM.
+ * This file was last modified at 9/29/20, 6:20 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -13,7 +13,7 @@ import kotlin.reflect.KClass
 /** A component mapper is used for accessing components inside an entity.
  * Component retrieval this way is always O(1), as it is a simple array access.
  * For each component you make, use [mapperFor] for getting a mapper. */
-class ComponentMapper<C : Component>(cls: KClass<C>, internal val index: Int) {
+class ComponentMapper<C : Component>(cls: KClass<C>, val index: Int) {
 
     init {
         mappers.put(cls, index)

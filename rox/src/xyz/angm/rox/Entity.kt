@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/19/20, 12:59 AM.
+ * This file was last modified at 9/29/20, 6:42 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -9,12 +9,13 @@ package xyz.angm.rox
 
 import com.badlogic.gdx.utils.Bits
 import com.badlogic.gdx.utils.IntSet
-import ktx.collections.*
 import org.nustaq.serialization.FSTBasicObjectSerializer
 import org.nustaq.serialization.FSTClazzInfo
 import org.nustaq.serialization.FSTObjectInput
 import org.nustaq.serialization.FSTObjectOutput
 import xyz.angm.rox.ComponentMapper.Companion.getMapper
+import xyz.angm.rox.util.Bag
+import xyz.angm.rox.util.RoxArray
 import java.io.Serializable
 
 /** An entity, the center of the rox ECS.
@@ -87,7 +88,7 @@ class Entity private constructor() : Serializable {
 
     companion object {
 
-        private val free = GdxArray<Entity>(false, 20)
+        private val free = RoxArray<Entity>(false, 20)
 
         @Synchronized
         fun get() = if (free.isEmpty) Entity() else free.pop()!!

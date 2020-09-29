@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/18/20, 11:02 PM.
+ * This file was last modified at 9/29/20, 6:28 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -126,7 +126,7 @@ class Server(
 
     private fun registerPlayer(connection: Connection, packet: JoinPacket) {
         engine {
-            val entities = this[networkedFamily].toArray()
+            val entities = this[networkedFamily].toArray(Entity::class)
             val playerEntity = save.getPlayer(this, packet)
             players[connection.id] = playerEntity
 

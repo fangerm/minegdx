@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/18/20, 7:47 PM.
+ * This file was last modified at 9/29/20, 6:28 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -89,7 +89,7 @@ object WorldSaveManager {
             engine[playerFamily].forEach { savePlayer(it) }
 
             val entities = engine[otherFamily]
-            val rawData = fst.asByteArray(entities.toArray())
+            val rawData = fst.asByteArray(entities.toArray(Entity::class))
             "$location/entities.bin".toLocalFile().writeBytes(rawData, false)
         }
 

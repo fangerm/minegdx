@@ -1,39 +1,40 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/26/20, 11:59 PM.
+ * This file was last modified at 9/29/20, 6:42 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
 package xyz.angm.rox
 
-import ktx.collections.*
 import xyz.angm.rox.ComponentMapper.Companion.getMapper
+import xyz.angm.rox.util.RoxArray
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
 /** The Engine, which is core of every rox ECS instance. Register
  * all your entities, systems and listeners in an Engine instance.
  *
- * Warning: Do not modify any of the arrays exposed as public API or
- * returned by methods. They are intended to be read-only, but cannot
- * be for performance reasons. Expect unintended behavior if you ignore this.
+ * Warning: The arrays used for entities and systems do not allow
+ * nested iteration. If you need it, you need to create
+ * your own [RoxArray.RoxIterator] unless you want to
+ * run into some very nasty bugs.
  *
  * @property entities All entities currently in the engine.
  * @property systems All systems currently registered.
  * @property updating If the ECS is currently inside [Engine.update]. */
 class Engine {
 
-    val entities = GdxArray<Entity>(false, 200)
-    val systems = GdxArray<EntitySystem>(true, 20)
-    private val families = GdxArray<Family>(20)
-    private val listeners = GdxArray<EntityListener>(5)
+    val entities = RoxArray<Entity>(false, 200)
+    val systems = RoxArray<EntitySystem>(true, 20)
+    private val families = RoxArray<Family>(20)
+    private val listeners = RoxArray<EntityListener>(5)
     private val builder = EntityBuilder()
 
     var updating = false
         private set
-    private val pendingAdd = GdxArray<Entity>(false, 5)
-    private val pendingRemove = GdxArray<Entity>(false, 5)
+    private val pendingAdd = RoxArray<Entity>(false, 5)
+    private val pendingRemove = RoxArray<Entity>(false, 5)
 
     /** Calls [EntitySystem.update] on all systems to advance
      * the ECS by one step as well as other upkeep.
@@ -67,7 +68,7 @@ class Engine {
     fun add(system: EntitySystem) {
         system.engine = this
         systems.add(system)
-        systems.sort(EntitySystem.SystemComparator)
+        systems.sort()
     }
 
     /** Add an entity listener to listen to entity changes.
@@ -87,7 +88,7 @@ class Engine {
     }
 
     /** Returns all entities registered that are part of the given family. */
-    operator fun get(family: Family): GdxArray<Entity> {
+    operator fun get(family: Family): RoxArray<Entity> {
         if (family.index < 0) registerFamily(family)
         return family.entities
     }
@@ -138,7 +139,7 @@ class Engine {
     }
 
     private fun removeInternal(entity: Entity) {
-        entities.removeValue(entity, true)
+        entities.remove(entity)
         families.forEach { it.entityRemoved(entity) }
         listeners.forEach { if (entity partOf it.family) it.entityRemoved(entity) }
         Entity.free(entity)
