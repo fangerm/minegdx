@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 9:43 PM.
+ * This file was last modified at 9/29/20, 6:05 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -18,6 +18,7 @@ import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
 import com.badlogic.gdx.graphics.glutils.PixmapTextureData
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.IntMap
 import com.badlogic.gdx.utils.ScreenUtils
@@ -98,20 +99,30 @@ class ModelCache {
     /** Call on position change, or block breakTime change.
      * @param transform Model world transform (block position)
      * @param timePercent The brokenness of the block in percent. */
-    fun updateDamageModelPosition(transform: Vector3, timePercent: Float) {
+    fun updateDamageModelPosition(transform: Matrix4, timePercent: Float) {
         blockDamageModels.forEach { it.transform.setToTranslation(0f, -10000f, 0f) }
         if (timePercent == 0f) return // Block has no hit, nothing to do
 
         val modelIndex = min((timePercent / 10f).toInt(), 9)
         val modelInstance = blockDamageModels[modelIndex]
-        modelInstance.transform
-            .setToTranslation(transform.sub(0.015f, 0.015f, 0.015f))
-            .scale(1.03f, 1.03f, 1.03f) // Ensure breakTime is drawn over the block
+        modelInstance.transform.set(transform)
         activeDamageModel = modelInstance
     }
 
     private fun loadBlockDamageModels() {
-        blockDamageModels = Array(10) { ModelInstance(createBlockModel(tex = "textures/blocks/destroy_stage_$it.png", blend = true)) }
+        blockDamageModels = Array(10) {
+            val model = createBlockModel(tex = "textures/blocks/destroy_stage_$it.png", blend = true)
+
+            // Modify transforms to make the damage models slightly larger and
+            // centered on (0|0|0), this is to make them identical to the block selector
+            // and therefore allowing them to use the same transform
+            val scl = 1.03f
+            val trans = -0.5f - ((scl - 1f) / 2)
+            model.nodes.first().translation.set(trans, trans, trans)
+            model.nodes.first().scale.scl(scl)
+
+            ModelInstance(model)
+        }
         activeDamageModel = blockDamageModels[0]
     }
 

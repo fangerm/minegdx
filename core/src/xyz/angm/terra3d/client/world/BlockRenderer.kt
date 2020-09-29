@@ -1,12 +1,13 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 9:33 PM.
+ * This file was last modified at 9/29/20, 6:05 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
 package xyz.angm.terra3d.client.world
 
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.IntMap
 import xyz.angm.terra3d.common.IntVector3
@@ -35,6 +36,13 @@ interface BlockRenderer {
      * @param direction The direction the block is facing.
      * @param meta The metadata of the block. */
     fun render(location: IntVector3, direction: Block.Orientation, meta: IMetadata, corners: Array<Vector3>, normal: Vector3)
+
+    /** @param location The location of the block
+     * @param direction The direction the block is facing.
+     * @param transform The transform of the 1x1x1 block selector that the player sees.
+     * This function should set the transform to be encompassing the block rendered.
+     * Note that transforms are centered! */
+    fun selectorTransform(location: IntVector3, direction: Block.Orientation, transform: Matrix4)
 
     companion object {
 
@@ -120,5 +128,22 @@ object TranslocatorRender : BlockRenderer {
 
         location.toV3(tmpV)
         renderTop(face <= 2)
+    }
+
+    override fun selectorTransform(location: IntVector3, direction: Block.Orientation, transform: Matrix4) {
+        val face = direction.toId()
+        val dirCorrection = if (face > 2) 1f else 0f
+        val heightAdj = if (face > 2) -HEIGHT else HEIGHT
+        val dir = face % 3
+        val other1 = (dir + 1) % 3
+        val other2 = (dir + 2) % 3
+
+        location.toV3(tmpV)
+        tmpV[dir] += dirCorrection + (heightAdj / 2)
+        tmpV[other1] += S_OFF + (WIDTH / 2)
+        tmpV[other2] += S_OFF + (WIDTH / 2)
+
+        transform.setToScaling(if (dir == 0) HEIGHT else WIDTH, if (dir == 1) HEIGHT else WIDTH, if (dir == 2) HEIGHT else WIDTH)
+        transform.setTranslation(tmpV)
     }
 }

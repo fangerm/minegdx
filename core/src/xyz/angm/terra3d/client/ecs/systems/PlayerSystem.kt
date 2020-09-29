@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/19/20, 1:11 AM.
+ * This file was last modified at 9/29/20, 6:45 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -15,11 +15,16 @@ import xyz.angm.terra3d.client.graphics.panels.game.DeathPanel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.soundPlayer
+import xyz.angm.terra3d.client.world.BlockRenderer
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
+import xyz.angm.terra3d.common.world.Block
+import xyz.angm.terra3d.common.world.ORIENTATION
+import xyz.angm.terra3d.common.world.ORIENTATION_SHIFT
+import xyz.angm.terra3d.common.world.TYPE
 
 /** Frequency of sending the player entity to the server for updating. */
 private const val NETWORK_SYNC_TIME = 0.1f
@@ -67,8 +72,20 @@ class PlayerSystem(
         pDirection.set(screen.cam.direction)
 
         // Update position of the block looked at
-        localPlayerC.blockLookingAt = screen.world.getBlockRaycast(pPosition, pDirection, false) ?: defaultSelectorPosition
-        ResourceManager.models.updateDamageModelPosition(localPlayerC.blockLookingAt.toV3(tmpV), localPlayerC.blockHitPercent)
+        val lookingAt = screen.world.getBlockRaycast(pPosition, pDirection, false) ?: defaultSelectorPosition
+        if (localPlayerC.blockLookingAt != lookingAt) {
+            localPlayerC.blockLookingAt = lookingAt
+            val block = screen.world.getBlockRaw(lookingAt)
+            val customRender = BlockRenderer[block and TYPE]
+
+            if (customRender != null) {
+                val orient = Block.Orientation.fromId((block and ORIENTATION) shr ORIENTATION_SHIFT)
+                customRender.selectorTransform(lookingAt, orient, pRender.blockSelector.transform)
+            } else {
+                pRender.blockSelector.transform.setToTranslation(localPlayerC.blockLookingAt.toV3(tmpV).add(0.5f))
+            }
+        }
+        ResourceManager.models.updateDamageModelPosition(pRender.blockSelector.transform, localPlayerC.blockHitPercent)
 
         // Update camera position
         screen.cam.position.set(pPosition)
@@ -78,7 +95,6 @@ class PlayerSystem(
         screen.cam.fieldOfView -= (screen.cam.fieldOfView - localPlayerC.fov) * 10f * delta
 
         // Update rendering-related positions
-        pRender.blockSelector.transform.setToTranslation(localPlayerC.blockLookingAt.toV3(tmpV).add(0.5f))
         soundPlayer.updateListenerPosition(pPosition, pDirection)
     }
 
