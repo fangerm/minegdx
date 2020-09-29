@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/29/20, 7:00 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -44,23 +44,13 @@ class BfsLight(private val world: WorldInterface) {
             val node = lightQ.removeFirst()
             val light = tmpColor.set(world.getLocalLight(node) ?: continue)
 
-            node.x--
-            visitBlockLight(node, light)
-            node.x += 2
-            visitBlockLight(node, light)
-            node.x--
-
-            node.y--
-            visitBlockLight(node, light)
-            node.y += 2
-            visitBlockLight(node, light)
-            node.y--
-
-            node.z--
-            visitBlockLight(node, light)
-            node.z += 2
-            visitBlockLight(node, light)
-            node.z--
+            node.forAxes {
+                node[it]--
+                visitBlockLight(node, light)
+                node[it] += 2
+                visitBlockLight(node, light)
+                node[it]--
+            }
         }
     }
 
@@ -68,17 +58,11 @@ class BfsLight(private val world: WorldInterface) {
         val light = world.getLocalLight(pos) ?: return
         var modified = false
 
-        if (light.x + 2 <= neighborLevel.x) {
-            light.x = neighborLevel.x - 1
-            modified = true
-        }
-        if (light.y + 2 <= neighborLevel.y) {
-            light.y = neighborLevel.y - 1
-            modified = true
-        }
-        if (light.z + 2 <= neighborLevel.z) {
-            light.z = neighborLevel.z - 1
-            modified = true
+        light.forAxes {
+            if (light[it] + 2 <= neighborLevel[it]) {
+                light[it] = neighborLevel[it] - 1
+                modified = true
+            }
         }
 
         if (modified) {
@@ -93,23 +77,13 @@ class BfsLight(private val world: WorldInterface) {
             tmpColor.delinearize(node.color, (RED_LIGHT shr RED_LIGHT_SHIFT) + 1)
             val light = tmpColor
 
-            node.x--
-            visitBlockRemove(node, light)
-            node.x += 2
-            visitBlockRemove(node, light)
-            node.x--
-
-            node.y--
-            visitBlockRemove(node, light)
-            node.y += 2
-            visitBlockRemove(node, light)
-            node.y--
-
-            node.z--
-            visitBlockRemove(node, light)
-            node.z += 2
-            visitBlockRemove(node, light)
-            node.z--
+            node.forAxes {
+                node[it]--
+                visitBlockRemove(node, light)
+                node[it] += 2
+                visitBlockRemove(node, light)
+                node[it]--
+            }
         }
         emptyLightQueue()
     }
@@ -118,21 +92,14 @@ class BfsLight(private val world: WorldInterface) {
         val light = world.getLocalLight(pos) ?: return
         var modified = false
 
-        if (light.x != 0 && light.x < neighborLevel.x) {
-            light.x = 0
-            modified = true
+        light.forAxes {
+            if (light[it] != 0 && light[it] < neighborLevel[it]) {
+                light[it] = 0
+                modified = true
+            }
         }
-        if (light.y != 0 && light.y < neighborLevel.y) {
-            light.y = 0
-            modified = true
-        }
-        if (light.z != 0 && light.z < neighborLevel.z) {
-            light.z = 0
-            modified = true
-        }
-        val queueLight = (light.x >= neighborLevel.x && neighborLevel.x != 0)
-                || (light.y >= neighborLevel.y && neighborLevel.y != 0)
-                || (light.z >= neighborLevel.z && neighborLevel.z != 0)
+
+        val queueLight = IntRange(0, 2).any { (light[it] >= neighborLevel[it] && neighborLevel[it] != 0) }
 
         if (modified) {
             removeQ.addLast(RemoveNode(pos, neighborLevel.linearize((RED_LIGHT shr RED_LIGHT_SHIFT) + 1)))

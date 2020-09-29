@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/19/20, 2:20 PM.
+ * This file was last modified at 9/29/20, 6:57 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -131,6 +131,27 @@ open class IntVector3(var x: Int = 0, var y: Int = 0, var z: Int = 0) : Serializ
         x = value % mul
         y = (value % (mul * mul)) / mul
         z = value / (mul * mul)
+    }
+
+    /** Axis indexing, used for dynamic indexing or axis iteration. */
+    operator fun get(index: Int) =
+        when (index) {
+            0 -> x
+            1 -> y
+            else -> z
+        }
+
+    /** Axis indexing, used for dynamic indexing or axis iteration. */
+    operator fun set(index: Int, v: Int) =
+        when (index) {
+            0 -> x = v
+            1 -> y = v
+            else -> z = v
+        }
+
+    /** Run the given function for each axis on itself. */
+    inline fun forAxes(run: IntVector3.(Int) -> Unit) {
+        for (i in 0 until 3) run(this, i)
     }
 
     /** String representation of all 3 axes */
