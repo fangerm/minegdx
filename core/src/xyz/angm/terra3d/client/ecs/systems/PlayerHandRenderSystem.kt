@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 9:58 PM.
+ * This file was last modified at 9/28/20, 5:57 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -29,7 +29,7 @@ import xyz.angm.terra3d.common.items.ItemType
 
 /** A system used to render the player hand, which is rendered
  * into it's own framebuffer that is then rendered on top of the back/display buffer. */
-class PlayerRenderSystem(private val screen: GameScreen) : EntitySystem(), Disposable {
+class PlayerHandRenderSystem(private val screen: GameScreen) : EntitySystem(), Disposable {
 
     private val batch = ModelBatch()
     private val camera = PerspectiveCamera(40f, WORLD_WIDTH, WORLD_HEIGHT)

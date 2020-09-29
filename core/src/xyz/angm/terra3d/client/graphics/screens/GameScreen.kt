@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 12:57 AM.
+ * This file was last modified at 9/29/20, 6:05 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -90,7 +90,6 @@ class GameScreen(
     val engine = Engine()
     lateinit var playerInputSystem: PlayerInputSystem
         private set
-    val playerRenderSystem = PlayerRenderSystem(this)
     val playerInventory get() = player[playerM].inventory
     private val players = allOf(PlayerComponent::class)
 
@@ -105,7 +104,6 @@ class GameScreen(
 
     init {
         initSystems()
-        // TODO: This pointlessly recalculates family bits, maybe improve in Rox
         engine.add(player)
         entities.forEach { engine.add(it) }
 
@@ -194,7 +192,7 @@ class GameScreen(
         engine.add(renderSystem as EntityListener)
         engine.add(DayTimeSystem())
         engine.add(PhysicsInterpolationSystem())
-        engine.add(playerRenderSystem)
+        engine.add(PlayerHandRenderSystem(this))
         engine.add(FluidSystem(world.fluid))
 
         val netSystem = NetworkSystem(client::send)
@@ -236,7 +234,7 @@ class GameScreen(
         // 2D / Stage
         stage.addActor(gameplayPanel)
         stage.addActor(uiPanels)
-        stage.addActor(playerRenderSystem.getActor())
+        stage.addActor(engine[PlayerHandRenderSystem::class]?.getActor())
 
         // Sound
         registerBlockChangeListener(client, world)
@@ -255,5 +253,6 @@ class GameScreen(
         gameplayPanel.dispose()
         uiPanels.dispose()
         engine[PlayerPhysicsSystem::class]?.dispose()
+        engine[PlayerHandRenderSystem::class]?.dispose()
     }
 }
