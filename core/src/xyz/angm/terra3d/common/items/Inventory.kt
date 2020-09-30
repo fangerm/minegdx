@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 1:24 AM.
+ * This file was last modified at 9/30/20, 4:35 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -96,20 +96,25 @@ open class Inventory(size: Int = 0) : Serializable {
         }
     }
 
-    /** Returns if inventory contains specified item.
+    /** Returns the count of the given item.
      * @param item The item to search for.
-     * @param amount The amount needed; item.amount used when not specified. */
-    fun contains(item: Item, amount: Int = item.amount): Boolean {
-        var amountLeft = amount
+     * @param stopAfter Will stop and return this value if it counted more than this. */
+    fun count(item: Item, stopAfter: Int = item.amount): Int {
+        var amount = 0
         for (i in 0 until size) {
             val it = items[i] ?: continue
             if (it stacksWith item) {
-                amountLeft -= it.amount
-                if (amountLeft < 0) return true
+                amount += it.amount
+                if (amount > stopAfter) return stopAfter
             }
         }
-        return false
+        return amount
     }
+
+    /** Returns if inventory contains specified item.
+     * @param item The item to search for.
+     * @param amount The amount needed; item.amount used when not specified. */
+    fun contains(item: Item, amount: Int = item.amount) = count(item, amount) == amount
 
     /** Removes the first item stack in this inventory if there are any items,
      * and returns it. */

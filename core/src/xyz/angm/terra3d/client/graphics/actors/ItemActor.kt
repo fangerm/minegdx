@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/30/20, 4:30 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -17,12 +17,13 @@ import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable
 import com.kotcrab.vis.ui.VisUI
 import com.kotcrab.vis.ui.widget.VisTextButton
 import ktx.scene2d.Scene2DSkin
+import xyz.angm.terra3d.client.graphics.windows.InventoryWindow
 import xyz.angm.terra3d.common.items.Item
 import kotlin.math.min
 
 /** An actor showing a single item.
  * @param item The item to display. */
-open class ItemActor(open var item: Item? = null, window: InventoryWindow?) : Actor() {
+open class ItemActor(open var item: Item? = null, window: InventoryWindow? = null) : Actor() {
 
     // If the mouse is currently over this actor.
     protected var mouseOver = false

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/30/20, 4:52 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.Pixmap
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
+import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.kotcrab.vis.ui.VisUI
 import com.kotcrab.vis.ui.widget.VisTextButton
 import ktx.assets.file
@@ -103,6 +104,8 @@ object Skin {
                 over = it["dark-grey"]
                 checked = it["black"]
             }
+
+            add("vis-default", it.get<Label.LabelStyle>())
 
             getAll(BitmapFont::class.java).forEach { skinFont ->
                 label(skinFont.key) { font = skinFont.value }

@@ -1,0 +1,28 @@
+- ident: getting-started
+  itemReq: oak_wood
+  amount: 3
+
+- ident: stoned
+  itemReq: cobblestone
+  amount: 10
+
+- ident: hot-stuff
+  itemReq: furnace
+  amount: 1
+
+- ident: ironed-out
+  itemReq: iron_ingot
+  amount: 10
+
+# TODO: Change once energy system is stablized
+- ident: energized
+  itemReq: oak_wood
+  amount: 3
+
+- ident: infiminer
+  itemReq: stone_miner
+  amount: 1
+
+- ident: translocators
+  itemReq: iron_ingot
+  amount: 200

@@ -1,14 +1,16 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 2:13 AM.
+ * This file was last modified at 9/30/20, 4:20 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
-package xyz.angm.terra3d.client.graphics.actors
+package xyz.angm.terra3d.client.graphics.windows
 
 import com.badlogic.gdx.utils.Align
 import com.kotcrab.vis.ui.widget.VisWindow
+import xyz.angm.terra3d.client.graphics.actors.ItemActor
+import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.InventoryPanel
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
 import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH

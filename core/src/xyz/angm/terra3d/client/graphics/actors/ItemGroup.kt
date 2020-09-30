@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:05 PM.
+ * This file was last modified at 9/30/20, 4:20 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,6 +12,7 @@ import com.badlogic.gdx.Input
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.kotcrab.vis.ui.widget.VisTable
+import xyz.angm.terra3d.client.graphics.windows.InventoryWindow
 import xyz.angm.terra3d.common.items.Inventory
 
 /** Displays a group of items in a draggable window.

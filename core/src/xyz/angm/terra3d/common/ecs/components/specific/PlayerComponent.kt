@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:26 PM.
+ * This file was last modified at 9/29/20, 10:59 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,6 +12,7 @@ import xyz.angm.rox.Component
 import xyz.angm.rox.Engine
 import xyz.angm.terra3d.common.ecs.components.*
 import xyz.angm.terra3d.common.items.Inventory
+import xyz.angm.terra3d.common.quest.Quests
 
 /** The maximum amount of hunger a player can have. */
 const val MAX_HUNGER = 20
@@ -22,7 +23,8 @@ const val MAX_HUNGER = 20
  * @property hunger The hunger of the player.
  * @property spawnPosition The spawn position returned to after death.
  * @property inventory The inventory of the player containing all their items.
- * @property isDead If the player is currently dead. */
+ * @property isDead If the player is currently dead.
+ * @property quest The quest the player is currently doing. */
 class PlayerComponent : Component {
 
     lateinit var name: String
@@ -31,6 +33,7 @@ class PlayerComponent : Component {
     val spawnPosition = defaultSpawnLocation.cpy()!!
     val inventory = PlayerInventory()
     var isDead = false
+    var quest = Quests.quests[0]
 
     /** An [Inventory] with some additional features.
      * @property hotbarPosition The position of the hotbar selector.

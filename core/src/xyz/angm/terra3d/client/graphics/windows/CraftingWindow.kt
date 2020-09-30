@@ -1,11 +1,11 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 9/30/20, 4:20 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
-package xyz.angm.terra3d.client.graphics.actors
+package xyz.angm.terra3d.client.graphics.windows
 
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.Table
@@ -16,6 +16,8 @@ import ktx.scene2d.buttonGroup
 import ktx.scene2d.scene2d
 import ktx.scene2d.textButton
 import ktx.scene2d.vis.visLabel
+import xyz.angm.terra3d.client.graphics.actors.ItemActor
+import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.click
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.InventoryPanel
 import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT

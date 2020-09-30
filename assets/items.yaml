@@ -240,6 +240,10 @@ diamond_ore:
     minToolLevel: 1
     drop: cobblestone
 
+iron_ingot: {}
+
+gold_ingot: {}
+
 stone_miner:
   block:
     breakTime: 6
