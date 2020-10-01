@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/20/20, 9:48 PM.
+ * This file was last modified at 10/1/20, 9:50 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -21,7 +21,7 @@ import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw.DebugDrawModes.DB
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState
 import com.badlogic.gdx.utils.Disposable
 import xyz.angm.rox.Entity
-import xyz.angm.rox.EntitySystem
+import xyz.angm.rox.systems.EntitySystem
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.WORLD_HEIGHT_IN_CHUNKS

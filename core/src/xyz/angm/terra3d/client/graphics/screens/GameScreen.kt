@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 6:05 PM.
+ * This file was last modified at 10/1/20, 10:25 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -18,8 +18,8 @@ import kotlinx.coroutines.cancel
 import xyz.angm.rox.Engine
 import xyz.angm.rox.Entity
 import xyz.angm.rox.EntityListener
-import xyz.angm.rox.EntitySystem
 import xyz.angm.rox.Family.Companion.allOf
+import xyz.angm.rox.systems.EntitySystem
 import xyz.angm.terra3d.client.Terra3D
 import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
@@ -174,32 +174,34 @@ class GameScreen(
     fun msg(msg: String) = gameplayPanel.addChatMessage(msg)
 
     // Initialize all ECS systems
-    private fun initSystems() {
+    private fun initSystems() = engine.apply {
+        val screen = this@GameScreen
         addLocalPlayerComponents()
-        engine.add(PlayerSystem(this, player))
 
+        add(PlayerSystem(screen, player))
         val physicsSystem = PlayerPhysicsSystem(world::getCollider, player)
-        engine.add(physicsSystem)
+        add(physicsSystem)
         client.addListener {
             if (it is BlockUpdate) Terra3D.postRunnable(physicsSystem::blockChanged)
         }
 
-        playerInputSystem = PlayerInputSystem(this, player, physicsSystem, inputHandler)
-        engine.add(PlayerFluidSystem(this, physicsSystem))
-        engine.add(playerInputSystem)
+        playerInputSystem = PlayerInputSystem(screen, player, physicsSystem, inputHandler)
+        add(PlayerFluidSystem(screen, physicsSystem))
+        add(QuestCompleteSystem(screen))
+        add(playerInputSystem)
         val renderSystem = RenderSystem()
-        engine.add(renderSystem as EntitySystem)
-        engine.add(renderSystem as EntityListener)
-        engine.add(DayTimeSystem())
-        engine.add(PhysicsInterpolationSystem())
-        engine.add(PlayerHandRenderSystem(this))
-        engine.add(FluidSystem(world.fluid))
+        add(renderSystem as EntitySystem)
+        add(renderSystem as EntityListener)
+        add(DayTimeSystem())
+        add(PhysicsInterpolationSystem())
+        add(PlayerHandRenderSystem(screen))
+        add(FluidSystem(world.fluid))
 
         val netSystem = NetworkSystem(client::send)
         client.addListener { if (it is Entity) netSystem.receive(it) }
-        engine.add(netSystem as EntitySystem)
-        engine.add(netSystem as EntityListener)
-        engine.add(RemoveSystem())
+        add(netSystem as EntitySystem)
+        add(netSystem as EntityListener)
+        add(RemoveSystem())
     }
 
     // Initialize everything not render-related
@@ -220,10 +222,10 @@ class GameScreen(
     }
 
     // Adds local components to the player entity.
-    private fun addLocalPlayerComponents() {
-        player.add(engine, LocalPlayerComponent())
-        player.add(engine, PlayerRenderComponent())
-        player.add(engine, IgnoreSyncFlag())
+    private fun addLocalPlayerComponents() = player.apply {
+        add(engine, LocalPlayerComponent())
+        add(engine, PlayerRenderComponent())
+        add(engine, IgnoreSyncFlag())
     }
 
     // Initialize all rendering components

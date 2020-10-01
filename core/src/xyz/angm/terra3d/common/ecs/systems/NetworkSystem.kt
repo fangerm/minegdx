@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/19/20, 12:54 AM.
+ * This file was last modified at 10/1/20, 10:25 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -10,8 +10,8 @@ package xyz.angm.terra3d.common.ecs.systems
 import com.badlogic.gdx.utils.IntMap
 import xyz.angm.rox.Entity
 import xyz.angm.rox.EntityListener
-import xyz.angm.rox.EntitySystem
 import xyz.angm.rox.Family
+import xyz.angm.rox.systems.EntitySystem
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.ignoreSync
 import xyz.angm.terra3d.common.ecs.network

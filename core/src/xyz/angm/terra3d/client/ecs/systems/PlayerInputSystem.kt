@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 9:58 PM.
+ * This file was last modified at 10/1/20, 9:50 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -9,7 +9,7 @@ package xyz.angm.terra3d.client.ecs.systems
 
 import com.badlogic.gdx.math.Vector3
 import xyz.angm.rox.Entity
-import xyz.angm.rox.EntitySystem
+import xyz.angm.rox.systems.EntitySystem
 import xyz.angm.terra3d.client.actions.Event
 import xyz.angm.terra3d.client.actions.EventContext
 import xyz.angm.terra3d.client.actions.PlayerInteractions
