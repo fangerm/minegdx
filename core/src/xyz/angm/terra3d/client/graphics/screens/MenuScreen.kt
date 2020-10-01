@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/19/20, 2:22 PM.
+ * This file was last modified at 10/1/20, 11:22 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -16,7 +16,6 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.ModelInstance
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.utils.viewport.FitViewport
 import xyz.angm.terra3d.client.Terra3D
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.panels.PanelStack
@@ -37,12 +36,12 @@ private const val PANORAMA_SPEED = 2f
 class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
 
 
-    private val stage = Stage(FitViewport(WORLD_WIDTH, WORLD_HEIGHT))
+    private val stage = Stage(viewport)
     private var panelStack = PanelStack()
 
     private var skybox = ModelInstance(Model())
     private var modelBatch = ModelBatch()
-    private val cam = PerspectiveCamera(75f, WORLD_WIDTH, WORLD_HEIGHT)
+    private val cam = PerspectiveCamera(75f, worldWidth, worldHeight)
 
     override fun show() {
         stage.addActor(panelStack)

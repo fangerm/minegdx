@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 10:11 PM.
+ * This file was last modified at 10/1/20, 11:09 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -25,8 +25,8 @@ import xyz.angm.terra3d.client.graphics.actors.ItemTooltip
 import xyz.angm.terra3d.client.graphics.actors.QuestCompleteMessage
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
-import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
-import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.graphics.screens.worldHeight
+import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.health
@@ -40,6 +40,19 @@ import kotlin.random.Random
 /** The HUD during gameplay. Contains everything that is 2D. */
 class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
 
+    private val icons = "textures/gui/icons.png"
+    private val hotbarItems = ItemGroup(null, screen.playerInventory, row = 1, column = 9)
+    private val crosshair = Image(ResourceManager.getTextureRegion(icons, 0, 0, 32, 32))
+    private val healthBar = IconGroup(
+        ResourceManager.getTextureRegion(icons, 32, 0, 18, 18),
+        ResourceManager.getTextureRegion(icons, 122, 0, 18, 18),
+        ResourceManager.getTextureRegion(icons, 104, 0, 18, 18)
+    ) { screen.player[health].health }
+    private val hungerBar = IconGroup(
+        ResourceManager.getTextureRegion(icons, 32, 54, 18, 18),
+        ResourceManager.getTextureRegion(icons, 122, 54, 18, 18),
+        ResourceManager.getTextureRegion(icons, 104, 54, 18, 18)
+    ) { screen.player[playerM].hunger }
     private val hotbar = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 0, 364, 44))
     private val hotbarSelected = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 44, 48, 48))
     private val blockLabel = Label("", skin, "default-24pt")
@@ -56,20 +69,6 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         }
 
     init {
-        val icons = "textures/gui/icons.png"
-        val hotbarItems = ItemGroup(null, screen.playerInventory, row = 1, column = 9)
-        val crosshair = Image(ResourceManager.getTextureRegion(icons, 0, 0, 32, 32))
-        val healthBar = IconGroup(
-            ResourceManager.getTextureRegion(icons, 32, 0, 18, 18),
-            ResourceManager.getTextureRegion(icons, 122, 0, 18, 18),
-            ResourceManager.getTextureRegion(icons, 104, 0, 18, 18)
-        ) { screen.player[health].health }
-        val hungerBar = IconGroup(
-            ResourceManager.getTextureRegion(icons, 32, 54, 18, 18),
-            ResourceManager.getTextureRegion(icons, 122, 54, 18, 18),
-            ResourceManager.getTextureRegion(icons, 104, 54, 18, 18)
-        ) { screen.player[playerM].hunger }
-
         addActor(hotbar)
         addActor(hotbarSelected)
         addActor(blockLabel)
@@ -87,29 +86,36 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         hotbar.setSize(364f, 44f)
         hotbarSelected.setSize(48f, 48f)
         crosshair.setSize(32f, 32f)
-        fluidOverlay.setSize(WORLD_WIDTH, WORLD_HEIGHT)
-        questCompleteMsg.setSize(WORLD_WIDTH, WORLD_HEIGHT)
         fluidOverlay.alpha = 0.2f
 
-        hotbar.setPosition(WORLD_WIDTH / 2, hotbar.height / 2, Align.center)
+        debugLabel.isVisible = false
+        onlinePlayers.isVisible = false
+        fluidOverlay.isVisible = false
+        questCompleteMsg.isVisible = false
+        background = null
+
+        resize()
+    }
+
+    /** Recalculate the positions of all elements. Called on viewport resize. */
+    fun resize() {
+        fluidOverlay.setSize(worldWidth, worldHeight)
+        questCompleteMsg.setSize(worldWidth, worldHeight)
+
+        hotbar.setPosition(worldWidth / 2, hotbar.height / 2, Align.center)
         hotbarSelected.setPosition(0f, hotbar.height / 2, Align.center)
-        blockTooltip.setPosition(0f, WORLD_HEIGHT, Align.topLeft)
+        blockTooltip.setPosition(0f, worldHeight, Align.topLeft)
         hotbarItems.setPosition(hotbar.x + 2f, hotbar.y + 2f)
-        crosshair.setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 2, Align.center)
-        debugLabel.setPosition(5f, WORLD_HEIGHT - 200, Align.topLeft)
-        onlinePlayers.setPosition(WORLD_WIDTH - 400, WORLD_HEIGHT / 3)
+        crosshair.setPosition(worldWidth / 2, worldHeight / 2, Align.center)
+        debugLabel.setPosition(5f, worldHeight - 200, Align.topLeft)
+        onlinePlayers.setPosition(worldWidth - 400, worldHeight / 3)
         healthBar.setPosition(hotbar.x, hotbar.height + 6, Align.bottomLeft)
         hungerBar.setPosition(hotbar.x + hotbar.width + 16, hotbar.height + 6, Align.bottomRight)
         chat.setPosition(10f, 90f)
         fluidOverlay.setPosition(0f, 0f)
         questCompleteMsg.setPosition(0f, 0f)
 
-        debugLabel.isVisible = false
-        onlinePlayers.isVisible = false
-        fluidOverlay.isVisible = false
-        questCompleteMsg.isVisible = false
         updateHotbarSelector(screen.player[playerM].inventory.hotbarPosition)
-        background = null
     }
 
     override fun act(delta: Float) {
@@ -119,7 +125,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
 
         val block = screen.world.getBlock(screen.player[localPlayer].blockLookingAt)
         blockTooltip.update(block)
-        blockTooltip.setPosition(0f, WORLD_HEIGHT, Align.topLeft)
+        blockTooltip.setPosition(0f, worldHeight, Align.topLeft)
     }
 
     /** Update the hotbar selected sprite.

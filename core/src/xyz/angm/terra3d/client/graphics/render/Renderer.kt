@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:31 PM.
+ * This file was last modified at 10/1/20, 11:18 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -18,8 +18,8 @@ import xyz.angm.rox.Family.Companion.allOf
 import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
-import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
-import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.graphics.screens.worldHeight
+import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.common.ecs.dayTime
 import xyz.angm.terra3d.common.ecs.modelRender
 import xyz.angm.terra3d.common.ecs.playerRender
@@ -27,7 +27,7 @@ import xyz.angm.terra3d.common.ecs.playerRender
 /** Responsible for 3D rendering the game. */
 class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity) : Disposable {
 
-    val cam = PerspectiveCamera(FOV, WORLD_WIDTH, WORLD_HEIGHT)
+    val cam = PerspectiveCamera(FOV, worldWidth, worldHeight)
     private val env = Environment()
     private val modelBatch = ModelBatch(DefaultShaderProvider(file("shader/vertex.glsl"), file("shader/fragment.glsl")))
     private val renderableEntities = allOf(ModelRenderComponent::class)
@@ -40,6 +40,7 @@ class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity
 
     fun render() {
         env.preRender(this, dayTimeEntity[dayTime].time)
+        screen.applyViewport()
         modelBatch.begin(cam)
         env.render(modelBatch)
         renderWorld(modelBatch, cam, env.gdxEnv)

@@ -1,19 +1,27 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 10/1/20, 11:19 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
 package xyz.angm.terra3d.client.graphics.screens
 
+import com.badlogic.gdx.utils.viewport.ExtendViewport
 import xyz.angm.terra3d.client.graphics.panels.Panel
 
-/** World width. Used for viewports */
-const val WORLD_WIDTH = 1920f
+/** The viewport currently in use by the game.
+ * This is a global out of legacy support reasons; viewport
+ * was fixed before meaning world width/height were constants;
+ * changing all code using them would be a lot of work so
+ * this was the easiest reasonable solution. */
+val viewport = ExtendViewport(1920f, 1080f)
 
-/** World height. Used for viewports */
-const val WORLD_HEIGHT = 1080f
+/** World width of the viewport. */
+val worldWidth get() = viewport.worldWidth
+
+/** World height of the viewport. */
+val worldHeight get() = viewport.worldHeight
 
 /** A basic interface for a Screen.
  * Every screen must provide an interface for pushing and popping panels.

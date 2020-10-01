@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 10/1/20, 11:01 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -31,8 +31,8 @@ import ktx.scene2d.vis.visTable
 import xyz.angm.terra3d.client.graphics.Skin
 import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.screens.MenuScreen
-import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
-import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.graphics.screens.worldHeight
+import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.client.resources.configuration
@@ -116,8 +116,8 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
                 }
 
                 val messageLabel = Label(I18N["wait"], skin, "pack-loading")
-                messageLabel.width = WORLD_WIDTH
-                messageLabel.height = WORLD_HEIGHT
+                messageLabel.width = worldWidth
+                messageLabel.height = worldHeight
                 messageLabel.setAlignment(Align.center)
                 addActor(messageLabel)
                 messageLabel.centerPosition()

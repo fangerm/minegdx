@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/30/20, 4:20 PM.
+ * This file was last modified at 10/1/20, 11:01 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,8 +12,8 @@ import com.kotcrab.vis.ui.widget.VisWindow
 import xyz.angm.terra3d.client.graphics.actors.ItemActor
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.InventoryPanel
-import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
-import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.graphics.screens.worldHeight
+import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
@@ -44,7 +44,7 @@ class GenericInventoryWindow(panel: InventoryPanel, inventory: Inventory) : Inve
     init {
         add(ItemGroup(this, inventory, row = inventory.size / 9, column = 9))
         pack()
-        setPosition(WORLD_WIDTH / 2, (WORLD_HEIGHT / 3) * 2, Align.center)
+        setPosition(worldWidth / 2, (worldHeight / 3) * 2, Align.center)
     }
 }
 
@@ -58,7 +58,7 @@ class PlayerInventoryWindow(panel: InventoryPanel, private val playerInv: Invent
         add(inventoryItems).padBottom(15f).row()
         add(hotbarItems)
         pack()
-        setPosition(WORLD_WIDTH / 2, WORLD_HEIGHT / 3, Align.center)
+        setPosition(worldWidth / 2, worldHeight / 3, Align.center)
     }
 
     override fun itemShiftClicked(actor: ItemGroup.GroupedItemActor) {
@@ -84,7 +84,7 @@ class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : Inventor
         add(fuelItem).padRight(50f)
         add()
         pack()
-        setPosition(WORLD_WIDTH / 2, (WORLD_HEIGHT / 3) * 2, Align.center)
+        setPosition(worldWidth / 2, (worldHeight / 3) * 2, Align.center)
     }
 
     fun updateNetInventory(metadata: FurnaceMetadata) {

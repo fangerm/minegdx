@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 10:25 PM.
+ * This file was last modified at 10/1/20, 11:22 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -11,7 +11,6 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.PerformanceCounter
-import com.badlogic.gdx.utils.viewport.FitViewport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -94,7 +93,7 @@ class GameScreen(
     private val players = allOf(PlayerComponent::class)
 
     // 2D Graphics
-    private val stage = Stage(FitViewport(WORLD_WIDTH, WORLD_HEIGHT))
+    private val stage = Stage(viewport)
     private val uiPanels = PanelStack()
     val gameplayPanel = GameplayOverlay(this)
 
@@ -236,13 +235,21 @@ class GameScreen(
         // 2D / Stage
         stage.addActor(gameplayPanel)
         stage.addActor(uiPanels)
-        stage.addActor(engine[PlayerHandRenderSystem::class]?.getActor())
+        stage.addActor(engine[PlayerHandRenderSystem::class]?.actor)
 
         // Sound
         registerBlockChangeListener(client, world)
     }
 
-    override fun resize(width: Int, height: Int) = stage.viewport.update(width, height, true)
+    /** Sets the current viewport to the one to be used for the back buffer.
+     * Used by the renderer to set the proper GL viewport after shadow rendering. */
+    fun applyViewport() = stage.viewport.apply()
+
+    override fun resize(width: Int, height: Int) {
+        stage.viewport.update(width, height, true)
+        gameplayPanel.resize()
+        engine[PlayerHandRenderSystem::class]?.resize()
+    }
 
     /** hide is called when the screen is no longer active, at which point this type of screen becomes dereferenced and needs to be disposed. */
     override fun hide() = dispose()

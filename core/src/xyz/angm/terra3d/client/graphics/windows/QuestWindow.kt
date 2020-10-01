@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/30/20, 5:04 PM.
+ * This file was last modified at 10/1/20, 11:01 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -14,8 +14,8 @@ import ktx.scene2d.vis.visLabel
 import ktx.scene2d.vis.visProgressBar
 import ktx.scene2d.vis.visTable
 import xyz.angm.terra3d.client.graphics.actors.ItemActor
-import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
-import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.graphics.screens.worldHeight
+import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 
@@ -37,6 +37,6 @@ class QuestWindow(player: PlayerComponent) : VisWindow(I18N["quests"]) {
         }).width(400f).pad(10f)
 
         pack()
-        setPosition(WORLD_WIDTH, WORLD_HEIGHT)
+        setPosition(worldWidth, worldHeight)
     }
 }

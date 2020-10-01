@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 9:50 PM.
+ * This file was last modified at 10/1/20, 11:15 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -11,6 +11,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.PerspectiveCamera
 import com.badlogic.gdx.graphics.Pixmap
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.graphics.g3d.Environment
 import com.badlogic.gdx.graphics.g3d.ModelBatch
 import com.badlogic.gdx.graphics.g3d.ModelInstance
@@ -18,11 +19,12 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight
 import com.badlogic.gdx.graphics.glutils.FrameBuffer
 import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.utils.Disposable
 import xyz.angm.rox.systems.EntitySystem
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
-import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
-import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.graphics.screens.worldHeight
+import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.playerRender
 import xyz.angm.terra3d.common.items.ItemType
@@ -32,10 +34,11 @@ import xyz.angm.terra3d.common.items.ItemType
 class PlayerHandRenderSystem(private val screen: GameScreen) : EntitySystem(), Disposable {
 
     private val batch = ModelBatch()
-    private val camera = PerspectiveCamera(40f, WORLD_WIDTH, WORLD_HEIGHT)
-    private val fbo = FrameBuffer(Pixmap.Format.RGBA8888, WORLD_WIDTH.toInt(), WORLD_HEIGHT.toInt(), true)
+    private val camera = PerspectiveCamera(40f, worldWidth, worldHeight)
+    private var fbo = FrameBuffer(Pixmap.Format.RGBA8888, worldWidth.toInt(), worldHeight.toInt(), true)
     private val environment = Environment()
     private val pRender get() = screen.player[playerRender]
+    val actor = Image(fbo.colorBufferTexture)
 
     private var modelBacking: ModelInstance? = null // Model inst of held item, if any
     private var modelType: ItemType = 0 // Item type of modelBacking
@@ -77,9 +80,15 @@ class PlayerHandRenderSystem(private val screen: GameScreen) : EntitySystem(), D
         fbo.end()
     }
 
-    /** The actor to be used for rendering the player hand into the
-     * back buffer using Scene2D. */
-    fun getActor() = Image(fbo.colorBufferTexture)
+    fun resize() {
+        camera.viewportHeight = worldHeight
+        camera.viewportWidth = worldWidth
+        camera.update()
+        fbo.dispose()
+        fbo = FrameBuffer(Pixmap.Format.RGBA8888, worldWidth.toInt(), worldHeight.toInt(), true)
+        actor.drawable = TextureRegionDrawable(TextureRegion(fbo.colorBufferTexture))
+        actor.setSize(worldWidth, worldHeight)
+    }
 
     override fun dispose() {
         batch.dispose()

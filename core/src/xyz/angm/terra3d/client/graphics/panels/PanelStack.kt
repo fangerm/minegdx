@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 10/1/20, 11:01 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,8 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.utils.Array
 import com.badlogic.gdx.utils.Disposable
-import xyz.angm.terra3d.client.graphics.screens.WORLD_HEIGHT
-import xyz.angm.terra3d.client.graphics.screens.WORLD_WIDTH
+import xyz.angm.terra3d.client.graphics.screens.worldHeight
+import xyz.angm.terra3d.client.graphics.screens.worldWidth
 
 private const val TRANSITION_DURATION = 0.2f
 private val TRANSITION = Interpolation.pow3
@@ -33,7 +33,7 @@ class PanelStack : Actor(), Disposable {
         val panel = panels.pop()!!
         panel.addAction(
             Actions.sequence(
-                Actions.moveTo(WORLD_WIDTH * direction, 0f, TRANSITION_DURATION, TRANSITION),
+                Actions.moveTo(worldWidth * direction, 0f, TRANSITION_DURATION, TRANSITION),
                 Actions.visible(false),
                 Actions.run { panel.dispose() },
                 Actions.removeActor()
@@ -48,13 +48,13 @@ class PanelStack : Actor(), Disposable {
     fun pushPanel(panel: Panel) {
         if (!panels.isEmpty) transitionOut(panels.peek())
         panels.add(panel)
-        panel.setSize(WORLD_WIDTH, WORLD_HEIGHT)
+        panel.setSize(worldWidth, worldHeight)
         stage.addActor(panel)
         transitionIn(panel)
     }
 
     private fun transitionIn(panel: Panel, direction: Int = 1) {
-        panel.x = WORLD_WIDTH * direction
+        panel.x = worldWidth * direction
         panel.addAction(
             Actions.sequence(
                 Actions.visible(true),
@@ -67,7 +67,7 @@ class PanelStack : Actor(), Disposable {
     private fun transitionOut(panel: Panel) {
         panel.addAction(
             Actions.sequence(
-                Actions.moveTo(-WORLD_WIDTH, 0f, TRANSITION_DURATION, TRANSITION),
+                Actions.moveTo(-worldWidth, 0f, TRANSITION_DURATION, TRANSITION),
                 Actions.visible(false)
             )
         )
