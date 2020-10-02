@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 10:15 PM.
+ * This file was last modified at 10/2/20, 6:13 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -73,6 +73,7 @@ internal class WorldDatabase(private val server: Server) {
     /** Returns chunk or null if it is not in the DB
      * @param generate If the chunk should be generated if missing. Does not return null if true. */
     internal fun getChunk(position: IntVector3, generate: Boolean = true): Chunk? {
+        if (position.y < 0) return null
         val pos = tmpIV.set(position).chunk()
         val cacheChunk = getCachedChunk(pos)
         if (cacheChunk != null) return cacheChunk
