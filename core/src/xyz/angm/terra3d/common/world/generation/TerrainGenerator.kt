@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 9:49 PM.
+ * This file was last modified at 10/2/20, 6:04 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -23,6 +23,7 @@ class TerrainGenerator(val world: IWorld) {
     private val structures = Structures()
     private val tmpIVLocal = ThreadLocal.withInitial { IntVector3() }
     private val tmpIV get() = tmpIVLocal.get()
+    private val tmpData = ThreadLocal.withInitial { NoiseGenerator.ChunkData() }
 
     /** Finalize generation. Call after finishing with generating something, usually something batched. */
     @Synchronized
@@ -33,12 +34,11 @@ class TerrainGenerator(val world: IWorld) {
     @Synchronized
     fun generateChunks(position: IntVector3): Array<Chunk> {
         position.chunk().y = 0
-        val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
-        val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z)
+        val data = noiseGenerator.generate(position.x, position.y, position.z, tmpData.get())
 
         val chunks = Array(WORLD_HEIGHT_IN_CHUNKS) {
             val chunk = Chunk(chunkPosition = IntVector3(position.x, it * CHUNK_SIZE, position.z))
-            generateChunk(chunk, heightMap, biomeMap)
+            generateChunk(chunk, data)
             world.addChunk(chunk)
             chunk
         }
@@ -52,8 +52,7 @@ class TerrainGenerator(val world: IWorld) {
      * Optional, if null the generator will simply only add new chunks to the world. */
     @Synchronized
     fun generateMissing(alreadyCreated: GdxArray<Chunk>?, position: IntVector3) {
-        val biomeMap = noiseGenerator.generateChunkBiomeMap(position.x, position.z)
-        val heightMap = noiseGenerator.generateChunkHeightMap(position.x, position.z)
+        val data = noiseGenerator.generate(position.x, position.y, position.z, tmpData.get())
 
         for (chunkIndex in 0 until WORLD_HEIGHT_IN_CHUNKS) {
             position.y = chunkIndex * CHUNK_SIZE
@@ -64,7 +63,7 @@ class TerrainGenerator(val world: IWorld) {
             val chunk = if (preexisting != null) preexisting
             else {
                 val chunk = Chunk(chunkPosition = IntVector3(position.x, chunkIndex * CHUNK_SIZE, position.z))
-                generateChunk(chunk, heightMap, biomeMap)
+                generateChunk(chunk, data)
                 world.addChunk(chunk)
                 chunk
             }
@@ -73,26 +72,26 @@ class TerrainGenerator(val world: IWorld) {
     }
 
     @Synchronized
-    private fun generateChunk(chunk: Chunk, heightMap: Array<IntArray>, biomeMap: Array<Array<Biome>>) {
-        val random = Random((chunk.position.x * chunk.position.y + chunk.position.z).toLong() + world.seed.convertToLong() + heightMap[0][0])
+    private fun generateChunk(chunk: Chunk, data: NoiseGenerator.ChunkData) {
+        val random = Random((chunk.position.x * chunk.position.y + chunk.position.z).toLong() + world.seed.convertToLong() + data.height[0][0])
 
         for (x in 0 until CHUNK_SIZE) {
             for (z in 0 until CHUNK_SIZE) {
-                generateTerrain(chunk, heightMap[x][z], biomeMap[x][z], x, z)
+                generateTerrain(chunk, data.height[x][z], data.biome[x][z], data.caves[x][z], x, z)
                 generateStructures(
-                    chunk, tmpIV.set(chunk.position.x + x, heightMap[x][z], chunk.position.z + z),
-                    heightMap[x][z], biomeMap[x][z], random
+                    chunk, tmpIV.set(chunk.position.x + x, data.height[x][z], chunk.position.z + z),
+                    data.height[x][z], data.biome[x][z], random
                 )
             }
         }
     }
 
-    private fun generateTerrain(chunk: Chunk, height: Int, biome: Biome, x: Int, z: Int) {
+    private fun generateTerrain(chunk: Chunk, height: Int, biome: Biome, cave: BooleanArray, x: Int, z: Int) {
         if (height - chunk.position.y < 0) return // This chunk is 100% air
 
         for (y in 0 until CHUNK_SIZE) {
             val diff = height - (chunk.position.y + y)
-            if (diff < 0) break // blocks beyond should be air; aka null
+            if (diff < 0 || cave[y]) break // blocks beyond should be air; aka null
 
             val type = when {
                 chunk.position.y == 0 && y == 0 -> "bedrock"
