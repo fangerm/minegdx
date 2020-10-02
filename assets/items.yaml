@@ -87,14 +87,6 @@ glass:
 glass_shard:
   texture: textures/blocks/glass_pane_top.png
 
-crafting_table:
-  texture: textures/blocks/crafting_table_top.png
-  block:
-    breakTime: 5.0
-    prefTool: axe
-    texSide: textures/blocks/crafting_table_side.png
-    texBottom: textures/blocks/planks_oak.png
-
 furnace:
   texture: textures/blocks/furnace_top.png
   block:
@@ -106,10 +98,13 @@ furnace:
     orientation: XZ
 
 chest:
-  texture: textures/blocks/log_oak_top.png
+  texture: textures/blocks/chest.png
   block:
+    texSide: textures/blocks/chest_side.png
+    texFront: textures/blocks/chest_front.png
     breakTime: 7.5
     prefTool: axe
+    orientation: XZ
 
 wood_pickaxe:
   tool:
@@ -209,8 +204,7 @@ translocator:
     blend: true
     orientation: ALL
 
-configurator:
-  texture: textures/blocks/glass_red.png
+configurator: {}
 
 iron_ore:
   block:
@@ -269,28 +263,24 @@ diamond_miner:
     minToolLevel: 4
 
 red_lamp:
-  texture: textures/blocks/glass_red.png
   block:
     emitsLight: true
     redLight: 15
     blend: true
 
 green_lamp:
-  texture: textures/blocks/glass_green.png
   block:
     emitsLight: true
     greenLight: 15
     blend: true
 
 blue_lamp:
-  texture: textures/blocks/glass_blue.png
   block:
     emitsLight: true
     blueLight: 15
     blend: true
 
 orange_lamp:
-  texture: textures/blocks/glass_orange.png
   block:
     emitsLight: true
     redLight: 15
@@ -298,7 +288,6 @@ orange_lamp:
     blend: true
 
 lamp:
-  texture: textures/blocks/glass.png
   block:
     emitsLight: true
     redLight: 15
@@ -307,7 +296,6 @@ lamp:
     blend: true
 
 water:
-  texture: textures/blocks/water.png
   block:
     blend: true
     collider: NONE
