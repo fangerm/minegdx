@@ -9,12 +9,6 @@
   amount: 4
 
 - items:
-    planks_oak: 4
-    oak_wood: 1
-  result: crafting_table
-  amount: 1
-
-- items:
     stick: 1
     planks_oak: 3
   result: wood_pickaxe
@@ -24,6 +18,66 @@
     stick: 1
     cobblestone: 3
   result: stone_pickaxe
+  amount: 1
+
+- items:
+    stick: 1
+    iron_ingot: 3
+  result: iron_pickaxe
+  amount: 1
+
+- items:
+    stick: 1
+    diamond: 3
+  result: diamond_pickaxe
+  amount: 1
+
+- items:
+    stick: 1
+    planks_oak: 3
+  result: wood_axe
+  amount: 1
+
+- items:
+    stick: 1
+    cobblestone: 3
+  result: stone_axe
+  amount: 1
+
+- items:
+    stick: 1
+    iron_ingot: 3
+  result: iron_axe
+  amount: 1
+
+- items:
+    stick: 1
+    diamond: 3
+  result: diamond_axe
+  amount: 1
+
+- items:
+    stick: 1
+    planks_oak: 2
+  result: wood_shovel
+  amount: 1
+
+- items:
+    stick: 1
+    cobblestone: 2
+  result: stone_shovel
+  amount: 1
+
+- items:
+    stick: 1
+    iron_ingot: 2
+  result: iron_shovel
+  amount: 1
+
+- items:
+    stick: 1
+    diamond: 2
+  result: diamond_shovel
   amount: 1
 
 - items:
