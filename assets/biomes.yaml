@@ -1,7 +1,7 @@
 HILLS:
   surfaceLayers: 1
   belowSurfaceLayers: 6
-  minimumSurfaceHeight: 80
+  minimumSurfaceHeight: 66
   surfaceHeightDeviation: 20
 
 PLAINS:
@@ -13,7 +13,7 @@ PLAINS2: # TODO This is a rather poor bandaid
 FOREST:
   structuresGenerating:
     small_oak_tree: 0.01
-  minimumSurfaceHeight: 62
+  minimumSurfaceHeight: 42
 
 DESERT:
   surfaceBlock: sand
@@ -23,7 +23,7 @@ DESERT:
 
 OCEAN:
   surfaceLayers: 20
-  minimumSurfaceHeight: 58
-  surfaceHeightDeviation: 10
+  minimumSurfaceHeight: 38
+  surfaceHeightDeviation: 0
   surfaceBlock: water
   belowSurfaceBlock: sand

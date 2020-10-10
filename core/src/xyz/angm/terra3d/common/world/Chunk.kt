@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 9:30 PM.
+ * This file was last modified at 10/10/20, 9:55 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -54,7 +54,7 @@ const val FLUID_LEVEL = 0b1111 shl FLUID_LEVEL_SHIFT
  * @property blockData Array of all blocks in the chunk; XYZ. Lower 16 bits are type, higher are status bits - see above
  * @property blockMetadata Metadata for blocks. Blocks without metadata are not is this map. */
 open class Chunk private constructor(
-    protected val blockData: IntArray = IntArray(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE),
+    protected var blockData: IntArray? = null,
     protected val blockMetadata: HashMap<IntVector3, IMetadata> = HashMap(),
     val position: IntVector3 = IntVector3()
 ) : Serializable {
@@ -66,11 +66,15 @@ open class Chunk private constructor(
     protected constructor(fromChunk: Chunk) : this(fromChunk.blockData, fromChunk.blockMetadata, fromChunk.position)
 
     @Suppress("NOTHING_TO_INLINE")
-    internal inline operator fun get(x: Int, y: Int, z: Int, mask: Int) = blockData[x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))] and mask
+    internal inline operator fun get(x: Int, y: Int, z: Int, mask: Int): Int {
+        if (blockData == null) return 0
+        return blockData!![x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))] and mask
+    }
 
     @Suppress("NOTHING_TO_INLINE")
     protected inline operator fun set(x: Int, y: Int, z: Int, value: Int) {
-        blockData[x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))] = value
+        if (blockData == null) blockData = IntArray(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
+        blockData!![x + (y shl CHUNK_SHIFT) + (z shl (CHUNK_SHIFT * 2))] = value
     }
 
     /** Returns the block at the specified location, or null if there is none. */
@@ -143,7 +147,11 @@ open class Chunk private constructor(
             out.writeInt(chunk.position.y)
             out.writeInt(chunk.position.z)
             out.writeObject(chunk.blockMetadata)
-            writeBlockTypes(out, chunk.blockData)
+            if (chunk.blockData == null) out.writeByte(0)
+            else {
+                out.writeByte(1)
+                writeBlockTypes(out, chunk.blockData!!)
+            }
         }
 
         /** Creates the chunk, also reads it during instance creation */
@@ -175,7 +183,10 @@ open class Chunk private constructor(
         }
 
         /** Reads block types from the stream. */
-        private fun readBlockTypes(input: FSTObjectInput): IntArray {
+        private fun readBlockTypes(input: FSTObjectInput): IntArray? {
+            val exists = input.readByte()
+            if (exists == 0.toByte()) return null
+
             val out = IntArray(CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE)
             val zero: Short = 0 // Why, Kotlin...
             var left = input.codec.readFShort()

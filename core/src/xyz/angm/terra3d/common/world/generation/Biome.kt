@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 10/10/20, 9:47 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -39,7 +39,7 @@ class Biome {
 
     val surfaceBlock = "grass_block"
     val surfaceLayers = 1
-    val minimumSurfaceHeight = 60
+    val minimumSurfaceHeight = 40
     val surfaceHeightDeviation = 10
     val belowSurfaceBlock = "dirt"
     val belowSurfaceLayers = 3
