@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/2/20, 6:34 PM.
+ * This file was last modified at 10/4/20, 8:44 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -16,7 +16,7 @@ import kotlin.random.Random
  * @param roughness Postmultiplier for each octave, higher results in rougher results
  * @param scale The scale of the noise, smaller = bigger / more stretched */
 class Noise(
-    seed: Long,
+    private val seed: Long,
     private val octaves: Int,
     private val roughness: Float,
     private val scale: Double
@@ -36,8 +36,11 @@ class Noise(
         }
     }
 
+    /** Generate a 2D point using simplex noise. */
     fun point(x: Int, z: Int) = pointInternal { noise(x * it, z * it) }
-    fun point(x: Int, y: Int, z: Int) = pointInternal { noise(x * it, y * it, z * it) }
+
+    /** Generate a 3D point using cellular (!!) noise. */
+    fun point(x: Int, y: Int, z: Int) = CellularNoise.cellular(seed.toInt(), (scale * x).toFloat(), (scale * y).toFloat(), (scale * z).toFloat())
 
     private inline fun pointInternal(noise: (Double) -> Double): Float {
         var layerFrequency = scale
