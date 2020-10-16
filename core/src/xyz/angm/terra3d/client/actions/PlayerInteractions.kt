@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 1:06 AM.
+ * This file was last modified at 10/16/20, 6:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -9,8 +9,11 @@ package xyz.angm.terra3d.client.actions
 
 import com.badlogic.gdx.utils.ObjectMap
 import ktx.collections.*
+import xyz.angm.terra3d.client.graphics.panels.Panel
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.ChestPanel
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.FurnacePanel
+import xyz.angm.terra3d.client.graphics.panels.game.inventory.GeneratorPanel
+import xyz.angm.terra3d.client.graphics.panels.game.inventory.MinerPanel
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.soundPlayer
@@ -18,8 +21,8 @@ import xyz.angm.terra3d.common.ecs.components.specific.MAX_HUNGER
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
-import xyz.angm.terra3d.common.items.metadata.ConfiguratorMetadata
-import xyz.angm.terra3d.common.items.metadata.TranslocatorMetadata
+import xyz.angm.terra3d.common.items.metadata.blocks.ConfiguratorMetadata
+import xyz.angm.terra3d.common.items.metadata.blocks.TranslocatorMetadata
 import xyz.angm.terra3d.common.world.Block
 
 /** Allows registering listeners for interactions between the player and items/blocks.
@@ -36,14 +39,18 @@ object PlayerInteractions {
         fun add(item: String, type: Event, listener: (EventContext) -> Unit) =
             add(Item.Properties.fromIdentifier(item).type, type, listener)
 
+        fun panel(item: String, panel: (EventContext) -> Panel) =
+            add(item, Event.BLOCK_CLICKED) { ctx ->
+                ctx.screen.pushPanel(panel(ctx))
+            }
 
-        add("furnace", Event.BLOCK_CLICKED) { ctx ->
-            ctx.screen.pushPanel(FurnacePanel(ctx.screen, ctx.block!!))
-        }
-
-        add("chest", Event.BLOCK_CLICKED) { ctx ->
-            ctx.screen.pushPanel(ChestPanel(ctx.screen, ctx.block!!))
-        }
+        panel("furnace") { ctx -> FurnacePanel(ctx.screen, ctx.block!!) }
+        panel("chest") { ctx -> ChestPanel(ctx.screen, ctx.block!!) }
+        panel("generator") { ctx -> GeneratorPanel(ctx.screen, ctx.block!!) }
+        panel("stone_miner") { ctx -> MinerPanel(ctx.screen, ctx.block!!) }
+        panel("iron_miner") { ctx -> MinerPanel(ctx.screen, ctx.block!!) }
+        panel("gold_miner") { ctx -> MinerPanel(ctx.screen, ctx.block!!) }
+        panel("diamond_miner") { ctx -> MinerPanel(ctx.screen, ctx.block!!) }
 
         for (item in Item.Properties.allItems) {
             if (item.hunger != 0) {

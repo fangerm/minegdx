@@ -264,6 +264,15 @@ diamond_miner:
     prefTool: pickaxe
     minToolLevel: 4
 
+generator:
+  block:
+    breakTime: 6
+    prefTool: pickaxe
+    minToolLevel: 2
+    orientation: XZ
+    texSide: textures/blocks/generator_side.png
+    texFront: textures/blocks/generator_front.png
+
 red_lamp:
   block:
     emitsLight: true

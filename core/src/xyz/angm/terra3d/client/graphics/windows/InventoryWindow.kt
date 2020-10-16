@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:01 PM.
+ * This file was last modified at 10/16/20, 7:01 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -16,7 +16,7 @@ import xyz.angm.terra3d.client.graphics.screens.worldHeight
 import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.common.items.Inventory
-import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
+import xyz.angm.terra3d.common.items.metadata.blocks.FurnaceMetadata
 
 
 abstract class InventoryWindow(protected val panel: InventoryPanel, name: String) : VisWindow(I18N[name]) {
@@ -39,10 +39,16 @@ abstract class InventoryWindow(protected val panel: InventoryPanel, name: String
 
 
 /** Window containing some random inventory, like a chest. */
-class GenericInventoryWindow(panel: InventoryPanel, inventory: Inventory) : InventoryWindow(panel, "inventory") {
+class GenericInventoryWindow(
+    panel: InventoryPanel,
+    inventory: Inventory,
+    row: Int = inventory.size / 9,
+    column: Int = 9,
+    name: String = "inventory"
+) : InventoryWindow(panel, name) {
 
     init {
-        add(ItemGroup(this, inventory, row = inventory.size / 9, column = 9))
+        add(ItemGroup(this, inventory, row = row, column = column))
         pack()
         setPosition(worldWidth / 2, (worldHeight / 3) * 2, Align.center)
     }

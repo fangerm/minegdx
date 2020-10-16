@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 6:05 PM.
+ * This file was last modified at 10/16/20, 5:54 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -15,7 +15,7 @@ import xyz.angm.terra3d.common.get
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.IMetadata
-import xyz.angm.terra3d.common.items.metadata.TranslocatorMetadata
+import xyz.angm.terra3d.common.items.metadata.blocks.TranslocatorMetadata
 import xyz.angm.terra3d.common.set
 import xyz.angm.terra3d.common.world.Block
 

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:01 PM.
+ * This file was last modified at 10/16/20, 5:54 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -14,7 +14,7 @@ import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.client.graphics.windows.FurnaceWindow
 import xyz.angm.terra3d.client.graphics.windows.PlayerInventoryWindow
 import xyz.angm.terra3d.common.ecs.playerM
-import xyz.angm.terra3d.common.items.metadata.FurnaceMetadata
+import xyz.angm.terra3d.common.items.metadata.blocks.FurnaceMetadata
 import xyz.angm.terra3d.common.world.Block
 
 /** Panel for the furnace block. */
