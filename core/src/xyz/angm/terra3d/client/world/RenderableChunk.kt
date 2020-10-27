@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 9:20 PM.
+ * This file was last modified at 10/27/20, 5:17 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -26,6 +26,7 @@ import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.*
+import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 import kotlin.math.abs
 
 
@@ -180,6 +181,24 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                         tmpAIV.set(startPos)[direction] += backFaceM
                         if (face == 1) adjustTopFluidLevel(level, blockP.fluidReach)
                         else if (face % 3 != 1) adjustSideFluidLevel(world, level, blockP.fluidReach, direction)
+                    } else if (blockP.collider != PhysicsSystem.BlockCollider.FULL) {
+                        val isX = direction == 0
+                        when (blockP.collider) {
+                            PhysicsSystem.BlockCollider.HALF_LOWER -> {
+                                if (face == 1) corners.forEach { it.y -= 0.5f }
+                                else if (direction != 1) {
+                                    corners[if (isX) 1 else 3].y -= 0.5f
+                                    corners[2].y -= 0.5f
+                                }
+                            }
+                            PhysicsSystem.BlockCollider.HALF_UPPER -> {
+                                if (face == 4) corners.forEach { it.y += 0.5f }
+                                else if (direction != 1) {
+                                    corners[if (isX) 3 else 1].y += 0.5f
+                                    corners[0].y += 0.5f
+                                }
+                            }
+                        }
                     }
 
                     val tex = props.texture

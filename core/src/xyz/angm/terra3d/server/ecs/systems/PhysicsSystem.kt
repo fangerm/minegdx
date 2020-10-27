@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 9:50 PM.
+ * This file was last modified at 10/27/20, 5:00 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -53,11 +53,11 @@ class PhysicsSystem(
         blockBelow.set(position)
         blockAbove.set(position).add(0f, entity.size.y, 0f)
 
-        if (colliderAt(blockBelow) != BlockCollider.NONE) {
+        if (colliderAt(blockBelow).collides(blockBelow)) {
             applyFloorCollision(position, velocity)
             network?.needsSync = true
         }
-        if (colliderAt(blockAbove) != BlockCollider.NONE) {
+        if (colliderAt(blockAbove).collides(blockAbove)) {
             applyCeilingCollision(velocity)
             network?.needsSync = true
         }
@@ -76,7 +76,7 @@ class PhysicsSystem(
     }
 
     private fun applyFloorCollision(position: PositionComponent, velocity: VelocityComponent) {
-        position.y = MathUtils.floor(blockBelow.y) + 1f
+        position.y = blockBelow.y
         velocity.y = 0f
     }
 
@@ -151,6 +151,31 @@ class PhysicsSystem(
 
         /** Either air or a block that isn't solid, like a fluid. */
         NONE;
+
+        /** Does this collider collide with the given position?
+         * Assumes [pos] is a position within the block.
+         * Will set [pos.y] to the top of the block. */
+        fun collides(pos: Vector3) =
+            when (this) {
+                FULL -> {
+                    pos.y = MathUtils.floor(pos.y) + 1f
+                    true
+                }
+
+                HALF_LOWER -> {
+                    val hit = (pos.y - pos.y.toInt()) < 0.5f
+                    pos.y = MathUtils.floor(pos.y) + 0.5f
+                    hit
+                }
+
+                HALF_UPPER -> {
+                    val hit = (pos.y - pos.y.toInt()) > 0.5f
+                    pos.y = MathUtils.floor(pos.y) + 1f
+                    hit
+                }
+
+                NONE -> false
+            }
     }
 
     companion object {

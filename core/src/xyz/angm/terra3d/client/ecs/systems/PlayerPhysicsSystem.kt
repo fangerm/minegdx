@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 9:50 PM.
+ * This file was last modified at 10/27/20, 5:19 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -20,6 +20,7 @@ import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSol
 import com.badlogic.gdx.physics.bullet.linearmath.btIDebugDraw.DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE
 import com.badlogic.gdx.physics.bullet.linearmath.btMotionState
 import com.badlogic.gdx.utils.Disposable
+import com.badlogic.gdx.utils.ObjectMap
 import xyz.angm.rox.Entity
 import xyz.angm.rox.systems.EntitySystem
 import xyz.angm.terra3d.common.CHUNK_SIZE
@@ -195,8 +196,13 @@ class PlayerPhysicsSystem(
         blocks.forEachIndexed { x, arrayX ->
             arrayX.forEachIndexed { y, arrayY ->
                 arrayY.forEachIndexed { z, block ->
-                    if (colliderAt(tmpIV2.set(tmpIV).add(x, y, z)) == PhysicsSystem.BlockCollider.NONE) tmpIV2.set(0, -10000, 0)
-                    block.worldTransform = block.worldTransform.setToTranslation(tmpIV2.toV3(tmpV).add(0.5f, 0.5f, 0.5f))
+                    val collider = colliderAt(tmpIV2.set(tmpIV).add(x, y, z))
+                    if (collider == PhysicsSystem.BlockCollider.NONE) block.worldTransform.setToTranslation(0f, -10000f, 0f)
+                    else {
+                        val shape = blockShapes[collider]!!
+                        block.worldTransform = block.worldTransform.setToTranslation(tmpIV2.toV3(tmpV).add(shape.offset))
+                        block.collisionShape = shape.shape
+                    }
                 }
             }
         }
@@ -298,9 +304,16 @@ class PlayerPhysicsSystem(
     }
 
     private companion object {
+        private val blockShapes = ObjectMap<PhysicsSystem.BlockCollider, BlockShape>()
         private val blockConstructionInfo = btRigidBody.btRigidBodyConstructionInfo(
             0f, null, btBoxShape(Vector3(0.5f, 0.5f, 0.5f)), Vector3.Zero
         )
+
+        init {
+            blockShapes.put(PhysicsSystem.BlockCollider.FULL, BlockShape(Vector3(0.5f, 0.5f, 0.5f), btBoxShape(Vector3(0.5f, 0.5f, 0.5f))))
+            blockShapes.put(PhysicsSystem.BlockCollider.HALF_LOWER, BlockShape(Vector3(0.5f, 0.25f, 0.5f), btBoxShape(Vector3(0.5f, 0.25f, 0.5f))))
+            blockShapes.put(PhysicsSystem.BlockCollider.HALF_UPPER, BlockShape(Vector3(0.5f, 0.75f, 0.5f), btBoxShape(Vector3(0.5f, 0.25f, 0.5f))))
+        }
 
         fun createBlock(): btRigidBody {
             val body = btRigidBody(blockConstructionInfo)
@@ -308,4 +321,9 @@ class PlayerPhysicsSystem(
             return body
         }
     }
+
+    /** A collider shape for a block. Note that Bullet automatically centers bodies; sizes are radii.
+     * @property offset The offset of the block body; this is not centered by default.
+     * @property shape The shape of the body.*/
+    private data class BlockShape(val offset: Vector3, val shape: btBoxShape)
 }

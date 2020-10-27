@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/16/20, 6:31 PM.
+ * This file was last modified at 10/27/20, 5:03 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -100,6 +100,17 @@ object PlayerInteractions {
                 confM.position.set(ctx.block.position)
                 ctx.screen.msg("[GREEN]$confM")
             }
+        }
+
+        // This dirty hack allows swapping slab types; relies on slabs
+        // being adjacent in the item id table
+        add("slab_oak_lower", Event.ITEM_CLICKED) { ctx ->
+            ctx.item!!.type++
+            ctx.screen.gameplayPanel.updateHotbarSelector(ctx.screen.playerInventory.hotbarPosition)
+        }
+        add("slab_oak_upper", Event.ITEM_CLICKED) { ctx ->
+            ctx.item!!.type--
+            ctx.screen.gameplayPanel.updateHotbarSelector(ctx.screen.playerInventory.hotbarPosition)
         }
     }
 

@@ -203,6 +203,7 @@ translocator:
     model: true
     blend: true
     orientation: ALL
+    collider: NONE
 
 configurator: {}
 
@@ -319,3 +320,21 @@ ultratool:
     type: ALL
     multiplier: 0.0001
     level: 999
+
+slab_oak_lower:
+  texture: textures/blocks/planks_oak.png
+  burnTime: 180
+  block:
+    blend: true
+    breakTime: 3
+    prefTool: axe
+    collider: HALF_LOWER
+
+slab_oak_upper:
+  texture: textures/blocks/planks_oak.png
+  burnTime: 180
+  block:
+    blend: true
+    breakTime: 3
+    prefTool: axe
+    collider: HALF_UPPER
