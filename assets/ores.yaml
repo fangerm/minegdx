@@ -1,0 +1,23 @@
+coal_ore:
+  minHeight: 10
+  maxHeight: 35
+  block: coal_ore
+  freq: 300
+
+iron_ore:
+  minHeight: 10
+  maxHeight: 30
+  block: iron_ore
+  freq: 175
+
+gold_ore:
+  minHeight: 5
+  maxHeight: 20
+  block: gold_ore
+  freq: 80
+
+diamond_ore:
+  minHeight: 1
+  maxHeight: 10
+  block: diamond_ore
+  freq: 50

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/2/20, 6:04 PM.
+ * This file was last modified at 10/27/20, 5:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -84,6 +84,7 @@ class TerrainGenerator(val world: IWorld) {
                 )
             }
         }
+        generateOres(chunk, random)
     }
 
     private fun generateTerrain(chunk: Chunk, height: Int, biome: Biome, cave: BooleanArray, x: Int, z: Int) {
@@ -124,6 +125,22 @@ class TerrainGenerator(val world: IWorld) {
             val level = props.block.fluidReach shl FLUID_LEVEL_SHIFT
             props.type or level
         } else props.type
+    }
+
+    private fun generateOres(chunk: Chunk, random: Random) = Ore.ores.forEach { generateOre(chunk, it.value, random) }
+
+    private fun generateOre(chunk: Chunk, ore: Ore, random: Random) {
+        if (chunk.position.y > ore.maxHeight || chunk.position.y + CHUNK_SIZE < ore.minHeight) return
+        var left = ore.freq
+        while (left > 0) {
+            val x = random.nextInt(CHUNK_SIZE - 1)
+            val y = random.nextInt(CHUNK_SIZE - 1)
+            val z = random.nextInt(CHUNK_SIZE - 1)
+
+            if (chunk.position.y + y > ore.maxHeight || chunk.position.y + y < ore.minHeight) continue
+            chunk.setBlock(tmpIV.set(x, y, z), ore.blockId)
+            left--
+        }
     }
 
     private fun isSurfaceChunk(chunkY: Int, surfaceHeight: Int) = (surfaceHeight - chunkY) < CHUNK_SIZE && (surfaceHeight - chunkY) >= 0
