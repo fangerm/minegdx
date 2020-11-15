@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 9:38 PM.
+ * This file was last modified at 11/15/20, 10:24 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -161,7 +161,7 @@ class World(private val client: Client, seed: String) : Disposable, IWorld(seed)
 
             if (raycast != last) {
                 val c = getCollider(raycast)
-                if (c != PhysicsSystem.BlockCollider.NONE || (c == PhysicsSystem.BlockCollider.FLUID && fluids)) {
+                if (c != PhysicsSystem.BlockCollider.NONE && !(c == PhysicsSystem.BlockCollider.FLUID && !fluids)) {
                     return if (prev) last else raycast
                 }
                 val prevCurr = currOrient
