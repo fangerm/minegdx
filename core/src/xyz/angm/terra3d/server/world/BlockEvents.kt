@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 5:15 PM.
+ * This file was last modified at 11/15/20, 5:32 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -110,6 +110,32 @@ object BlockEvents {
             world.metadataChanged(block)
         })
 
+
+        /// ### Energy Cell ###
+        attachMeta("energy_cell") { EnergyCellMetadata() }
+
+        blockEntity("energy_cell", BlockComponent(tickInterval = 20) { world, block ->
+            val meta = block.metadata as EnergyCellMetadata
+
+            fun send() {
+                val target = world.getBlock(block.position)
+                val targetM = target?.metadata as? EnergyStorageMeta ?: return
+                val taken = targetM.receive(meta.energy)
+                meta.energy -= taken
+                world.metadataChanged(target)
+            }
+
+            // Try sending energy to all 6 adjacent blocks
+            block.position.forAxes {
+                block.position[it]--
+                send()
+                block.position[it] += 2
+                send()
+                block.position[it]--
+            }
+            world.metadataChanged(block)
+        })
+
         // ##### Chest #####
         attachMeta("chest") { ChestMetadata() }
 
@@ -150,7 +176,7 @@ object BlockEvents {
             val meta = block.metadata as? TranslocatorMetadata ?: return
             if (!meta.push || meta.other == null) return
 
-            val pullInventoryPosition = block.orientation.applyIVInv(block.position)
+            val pullInventoryPosition = block.orientation.applyIVInv(block.position.cpy())
             val pullBlock = world.getBlock(pullInventoryPosition)
 
             val other = world.getBlock(meta.other!!) ?: return

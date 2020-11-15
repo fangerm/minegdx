@@ -353,3 +353,8 @@ slab_oak_upper:
     breakTime: 3
     prefTool: axe
     collider: HALF_UPPER
+
+energy_cell:
+  texture: textures/blocks/energy_cell.png
+  block:
+    breakTime: 3
