@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/16/20, 5:54 PM.
+ * This file was last modified at 11/15/20, 2:35 AM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -52,7 +52,8 @@ interface BlockRenderer {
             fun add(ty: String, r: BlockRenderer) = renderers.put(Item.Properties.fromIdentifier(ty).type, r)
 
             // Add block renderers here
-            add("translocator", TranslocatorRender)
+            add("energy_translocator", TranslocatorRender)
+            add("item_translocator", TranslocatorRender)
         }
 
         /** Returns the renderer for this block type if any */

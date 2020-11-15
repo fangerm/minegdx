@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/16/20, 5:54 PM.
+ * This file was last modified at 11/15/20, 4:59 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -11,6 +11,7 @@ import com.badlogic.gdx.utils.IntMap
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.blocks.ConfiguratorMetadata
+import xyz.angm.terra3d.common.items.metadata.blocks.EnergyTranslocatorMetadata
 import xyz.angm.terra3d.common.items.metadata.blocks.TranslocatorMetadata
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
@@ -26,7 +27,8 @@ object DefaultMeta {
         fun add(name: String, t: KClass<out IMetadata>) = metadata.put(Item.Properties.fromIdentifier(name).type, t)
 
         // Add custom metadata here
-        add("translocator", TranslocatorMetadata::class)
+        add("energy_translocator", EnergyTranslocatorMetadata::class)
+        add("item_translocator", TranslocatorMetadata::class)
         add("configurator", ConfiguratorMetadata::class)
     }
 

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/16/20, 7:01 PM.
+ * This file was last modified at 11/15/20, 5:15 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -18,6 +18,7 @@ import xyz.angm.terra3d.common.items.metadata.blocks.*
 import xyz.angm.terra3d.common.recipes.FurnaceRecipes
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
+import kotlin.math.min
 
 /** A manager for block Events.
  *
@@ -95,16 +96,16 @@ object BlockEvents {
 
             val pos = block.orientation.applyIV(block.position.cpy())
             val target = world.getBlock(pos)
-            val targetM = target?.metadata as? EnergyStorageMeta
-            if (targetM?.isFull() == false) {
-                targetM.receive(meta.energyStored)
-                meta.energyStored = 0
-                world.metadataChanged(target)
-                world.metadataChanged(block)
-            }
+            val targetM = target?.metadata as? EnergyStorageMeta ?: return@BlockComponent
+            val taken = targetM.receive(meta.energyStored)
+            meta.energyStored -= taken
+            world.metadataChanged(target)
+            world.metadataChanged(block)
 
-            if (meta.fuel[0] == null || meta.fuel[0]?.properties?.burnTime == 0) return@BlockComponent // Not a valid fuel
+            // Not a valid fuel or buffer full
+            if (meta.fuel[0] == null || meta.fuel[0]?.properties?.burnTime == 0 || meta.energyStored > 2500) return@BlockComponent
             meta.energyStored += meta.fuel[0]!!.properties.burnTime / 10
+            meta.energyStored = min(meta.energyStored, 2500)
             meta.fuel.subtractFromSlot(0, 1)
             world.metadataChanged(block)
         })
@@ -132,9 +133,8 @@ object BlockEvents {
         blockEntity("diamond_miner", component.copy(tickInterval = 5))
 
         // #### Translocator ####
-        listener("translocator", Event.BLOCK_DESTROYED) { world, removed ->
+        val listener = { world: World, removed: Block ->
             val meta = removed.metadata as TranslocatorMetadata
-
             if (meta.other != null) { // Remove other position on both if it was linked
                 val other = world.getBlock(meta.other!!)!!
                 (other.metadata as TranslocatorMetadata).other = null
@@ -143,29 +143,47 @@ object BlockEvents {
                 meta.other = null
             }
         }
+        listener("energy_translocator", Event.BLOCK_DESTROYED, listener)
+        listener("item_translocator", Event.BLOCK_DESTROYED, listener)
 
-        blockEntity("translocator", BlockComponent(tickInterval = 20) { world, block ->
-            val meta = block.metadata as? TranslocatorMetadata ?: return@BlockComponent
-            if (!meta.push || meta.other == null) return@BlockComponent
+        fun translocatorListener(world: World, block: Block, action: (TranslocatorMetadata, Block, Block) -> Unit) {
+            val meta = block.metadata as? TranslocatorMetadata ?: return
+            if (!meta.push || meta.other == null) return
 
             val pullInventoryPosition = block.orientation.applyIVInv(block.position)
             val pullBlock = world.getBlock(pullInventoryPosition)
-            val pullInv = pullBlock?.metadata as? InventoryMetadata ?: return@BlockComponent
 
-            val other = world.getBlock(meta.other!!) ?: return@BlockComponent
+            val other = world.getBlock(meta.other!!) ?: return
             val pushInventoryPosition = other.orientation.applyIVInv(other.position)
             val pushBlock = world.getBlock(pushInventoryPosition)
-            val pushInv = pushBlock?.metadata as? InventoryMetadata ?: return@BlockComponent
 
-            val item = pullInv.pull.takeFirst() ?: return@BlockComponent
-            val remaining = pushInv.push.add(item)
-            if (remaining != 0) {
-                item.amount = remaining
-                pullInv.pull += item
-            }
-
+            action(meta, pushBlock ?: return, pullBlock ?: return)
+            world.metadataChanged(block)
             world.metadataChanged(pullBlock)
             world.metadataChanged(pushBlock)
+        }
+
+        blockEntity("energy_translocator", BlockComponent(tickInterval = 20) { world, block ->
+            translocatorListener(world, block) { pushMeta, pushBlock, _ ->
+                val energyMeta = pushMeta as EnergyTranslocatorMetadata
+                val pushInv = pushBlock.metadata as? EnergyStorageMeta ?: return@translocatorListener
+                val taken = pushInv.receive(energyMeta.energy)
+                energyMeta.energy -= taken
+            }
+        })
+
+        blockEntity("item_translocator", BlockComponent(tickInterval = 20) { world, block ->
+            translocatorListener(world, block) { _, pushBlock, pullBlock ->
+                val pushInv = pushBlock.metadata as? InventoryMetadata ?: return@translocatorListener
+                val pullInv = pullBlock.metadata as? InventoryMetadata ?: return@translocatorListener
+
+                val item = pullInv.pull.takeFirst() ?: return@translocatorListener
+                val remaining = pushInv.push.add(item)
+                if (remaining != 0) {
+                    item.amount = remaining
+                    pullInv.pull += item
+                }
+            }
         })
     }
 

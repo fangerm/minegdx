@@ -190,7 +190,7 @@ diamond_axe:
     durability: 1500
     level: 4
 
-translocator:
+energy_translocator:
   texture: textures/blocks/translocator_side.png
   block:
     # Misusing these attributes a bit but doesn't matter;
@@ -203,7 +203,22 @@ translocator:
     model: true
     blend: true
     orientation: ALL
-    collider: NONE
+    collider: ONLY_RAY
+
+item_translocator:
+  texture: textures/blocks/translocator_side.png
+  block:
+    # Misusing these attributes a bit but doesn't matter;
+    # this is just to force ResourceManager to load these textures
+    texSide: textures/blocks/translocator_top_pull.png
+    texBottom: textures/blocks/translocator_top_push.png
+    texFront: textures/blocks/translocator_top_none.png
+
+    breakTime: 3
+    model: true
+    blend: true
+    orientation: ALL
+    collider: ONLY_RAY
 
 configurator: {}
 

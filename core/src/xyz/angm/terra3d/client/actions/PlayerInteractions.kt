@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/27/20, 5:03 PM.
+ * This file was last modified at 11/15/20, 4:48 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -82,6 +82,9 @@ object PlayerInteractions {
                 val oldTransM = oldTranslocator?.metadata as? TranslocatorMetadata
                 if (oldTransM == null) {
                     ctx.screen.msg("[ORANGE]${I18N["configurator.block-changed"]}")
+                    return@add
+                } else if (oldTranslocator.type != ctx.block.type) {
+                    ctx.screen.msg("[ORANGE]${I18N["configurator.different-type"]}")
                     return@add
                 }
 

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/27/20, 5:00 PM.
+ * This file was last modified at 11/15/20, 4:54 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -150,7 +150,10 @@ class PhysicsSystem(
         HALF_UPPER,
 
         /** Either air or a block that isn't solid, like a fluid. */
-        NONE;
+        NONE,
+
+        /** Same as [NONE], but allows rays to collide. */
+        ONLY_RAY;
 
         /** Does this collider collide with the given position?
          * Assumes [pos] is a position within the block.
@@ -174,7 +177,7 @@ class PhysicsSystem(
                     hit
                 }
 
-                NONE -> false
+                else -> false
             }
     }
 
