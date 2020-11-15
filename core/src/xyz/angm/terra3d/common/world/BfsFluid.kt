@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 9:48 PM.
+ * This file was last modified at 11/15/20, 10:22 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -112,6 +112,11 @@ class BfsFluid(private val world: IWorld) {
             node.x += 2
             visitBlockRemove(node, level)
             node.x--
+
+            // Ensure blocks under this one are removed
+            node.y--
+            removeQNext.addLast(FRemoveNode(node, 15))
+            node.y++
 
             node.z--
             visitBlockRemove(node, level)
