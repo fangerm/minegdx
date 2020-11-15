@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 10:06 PM.
+ * This file was last modified at 11/15/20, 9:38 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -150,8 +150,9 @@ class World(private val client: Client, seed: String) : Disposable, IWorld(seed)
      * @param position Position of the one looking
      * @param direction Direction of the one looking
      * @param prev true returns block before the one being looked at (used for placing blocks, etc.)
+     * @param fluids Should fluids collide with the ray?
      * @return Position of the block being looked at, or null if there is none */
-    fun getBlockRaycast(position: Vector3, direction: Vector3, prev: Boolean): IntVector3? {
+    fun getBlockRaycast(position: Vector3, direction: Vector3, prev: Boolean, fluids: Boolean = false): IntVector3? {
         last.set(position)
         for (i in 1 until (RAYCAST_REACH / RAYCAST_STEP).toInt()) {
             val dist = i * RAYCAST_STEP
@@ -159,7 +160,10 @@ class World(private val client: Client, seed: String) : Disposable, IWorld(seed)
             raycast.set(tmpV2.set(position).add(tmpV1))
 
             if (raycast != last) {
-                if (getCollider(raycast) != PhysicsSystem.BlockCollider.NONE) return if (prev) last else raycast
+                val c = getCollider(raycast)
+                if (c != PhysicsSystem.BlockCollider.NONE || (c == PhysicsSystem.BlockCollider.FLUID && fluids)) {
+                    return if (prev) last else raycast
+                }
                 val prevCurr = currOrient
                 currOrient = orientFromRay()
                 lastOrient = if (prevCurr != currOrient) currOrient else lastOrient

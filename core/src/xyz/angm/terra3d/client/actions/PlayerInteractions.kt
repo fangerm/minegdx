@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 4:48 PM.
+ * This file was last modified at 11/15/20, 9:49 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -18,12 +18,15 @@ import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.soundPlayer
 import xyz.angm.terra3d.common.ecs.components.specific.MAX_HUNGER
+import xyz.angm.terra3d.common.ecs.direction
 import xyz.angm.terra3d.common.ecs.playerM
+import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.blocks.ConfiguratorMetadata
 import xyz.angm.terra3d.common.items.metadata.blocks.TranslocatorMetadata
 import xyz.angm.terra3d.common.world.Block
+import xyz.angm.terra3d.common.world.NOTHING
 
 /** Allows registering listeners for interactions between the player and items/blocks.
  * See [Event] for all events that can be listened to. */
@@ -114,6 +117,21 @@ object PlayerInteractions {
         add("slab_oak_upper", Event.ITEM_CLICKED) { ctx ->
             ctx.item!!.type--
             ctx.screen.gameplayPanel.updateHotbarSelector(ctx.screen.playerInventory.hotbarPosition)
+        }
+
+        add("bucket", Event.ITEM_CLICKED) { ctx ->
+            val fluid = ctx.screen.world.getBlockRaycast(ctx.screen.player[position], ctx.screen.player[direction], prev = false, fluids = true)
+            val fBlock = ctx.screen.world.getBlock(fluid ?: return@add)
+            val properties = fBlock?.properties?.block ?: return@add
+            if (!properties.fluid || properties.fluidReach != fBlock.fluidLevel) return@add
+            ctx.screen.world.setBlock(Block(NOTHING, fBlock.position))
+            ctx.screen.playerInventory.heldItem!!.type = Item.Properties.fromIdentifier("water_bucket").type
+        }
+
+        add("water_bucket", Event.ITEM_CLICKED) { ctx ->
+            val fluid = ctx.screen.world.getBlockRaycast(ctx.screen.player[position], ctx.screen.player[direction], prev = true) ?: return@add
+            ctx.screen.world.setBlock(Block(Item.Properties.fromIdentifier("water").type, fluid))
+            ctx.screen.playerInventory.heldItem!!.type = Item.Properties.fromIdentifier("bucket").type
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 7:04 PM.
+ * This file was last modified at 11/15/20, 9:36 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -155,7 +155,10 @@ class PhysicsSystem(
         NONE,
 
         /** Same as [NONE], but allows rays to collide. */
-        ONLY_RAY;
+        ONLY_RAY,
+
+        /** Same as [NONE], but allows fluids to collide if fluid flag is set. */
+        FLUID;
 
         /** Does this collider collide with the given position?
          * Assumes [pos] is a position within the block.

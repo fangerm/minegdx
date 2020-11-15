@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 7:37 PM.
+ * This file was last modified at 11/15/20, 9:53 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -115,12 +115,15 @@ class World(private val server: Server) : IWorld(server.save.seed) {
             blockEntitySystem.removeBlockEntity(server.engine, oldBlock.position)
             BlockEvents.getListener(oldBlock, Event.BLOCK_DESTROYED)?.invoke(this, oldBlock)
 
-            val item = Item(oldBlock)
-            item.type = Item.Properties.fromIdentifier(item.properties.block!!.drop ?: item.properties.ident).type
-            server.engine {
-                if (!falling) ItemComponent.create(this, item, block.position.toV3().add(0.5f, 0f, 0.5f))
-                fallingBlockSystem.maybeFall(block.position)
+            // If not a fluid and falling flat not set, drop an item and check for falling blocks
+            if (oldBlock.properties?.block?.fluid != true && !falling) {
+                val item = Item(oldBlock)
+                item.type = Item.Properties.fromIdentifier(item.properties.block!!.drop ?: item.properties.ident).type
+                server.engine {
+                    ItemComponent.create(this, item, block.position.toV3().add(0.5f, 0f, 0.5f))
+                }
             }
+            server.engine { fallingBlockSystem.maybeFall(block.position) }
 
         } else if (oldBlock?.type != block.type) { // A new block got placed; the block was just updated if this is false
             BlockEvents.getListener(block, Event.BLOCK_PLACED)?.invoke(this, block)

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 4:54 PM.
+ * This file was last modified at 11/15/20, 9:36 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -314,6 +314,7 @@ class PlayerPhysicsSystem(
             blockShapes.put(PhysicsSystem.BlockCollider.HALF_LOWER, BlockShape(Vector3(0.5f, 0.25f, 0.5f), btBoxShape(Vector3(0.5f, 0.25f, 0.5f))))
             blockShapes.put(PhysicsSystem.BlockCollider.HALF_UPPER, BlockShape(Vector3(0.5f, 0.75f, 0.5f), btBoxShape(Vector3(0.5f, 0.25f, 0.5f))))
             blockShapes.put(PhysicsSystem.BlockCollider.ONLY_RAY, BlockShape(Vector3(), btBoxShape(Vector3())))
+            blockShapes.put(PhysicsSystem.BlockCollider.FLUID, BlockShape(Vector3(), btBoxShape(Vector3())))
         }
 
         fun createBlock(): btRigidBody {
