@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/2/20, 6:13 PM.
+ * This file was last modified at 11/15/20, 5:56 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -84,7 +84,9 @@ internal class WorldDatabase(private val server: Server) {
         else {
             server.world.generator.generateChunks(pos)
             server.world.generator.finalizeGen()
-            getCachedChunk(tmpIV)!!
+            // Recurse as direct getCachedChunk causes a NPE in about 1/1000 times...
+            // TODO: Mayyybe fix this? probably not worth the effort
+            getChunk(position, true)!!
         }
 
         unchangedChunks[chunk.position] = chunk
