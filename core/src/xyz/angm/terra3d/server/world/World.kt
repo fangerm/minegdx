@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 7:03 PM.
+ * This file was last modified at 11/15/20, 7:37 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -105,7 +105,13 @@ class World(private val server: Server) : IWorld(server.save.seed) {
         val oldBlock = database.setBlock(block.position, block)
 
         if (block.type == 0) { // Destroy the block
-            if (oldBlock == null || oldBlock.type == 0) return
+            if (oldBlock == null || oldBlock.type == 0) { // Block didn't exist before
+                // A client asking to destroy a block that does not exist
+                // only occurs during a rare desync issue where the client thinks the block
+                // does still exist (#74), sync it to fix client state and return as there is nothing to do
+                server.sendToAll(block)
+                return
+            }
             blockEntitySystem.removeBlockEntity(server.engine, oldBlock.position)
             BlockEvents.getListener(oldBlock, Event.BLOCK_DESTROYED)?.invoke(this, oldBlock)
 
