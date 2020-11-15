@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:15 PM.
+ * This file was last modified at 11/15/20, 8:50 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -51,6 +51,13 @@ class PlayerHandRenderSystem(private val screen: GameScreen) : EntitySystem(), D
 
             val model = ResourceManager.models.getItemModel(heldItem.type)
             modelBacking = ModelInstance(model)
+            if (heldItem.properties.isBlock) {
+                modelBacking!!.transform.setToTranslation(0.593f, -1.8f, -0.678f)
+                modelBacking!!.transform.rotate(-0.982f, 0.08f, 0.368f, 222f)
+            } else {
+                modelBacking!!.transform.setToTranslation(0.623f, -2.2f, -0.648f)
+                modelBacking!!.transform.rotate(-0.982f, 0.08f, 0.368f, -5f)
+            }
             modelType = heldItem.type
             return modelBacking!!
         }
@@ -62,21 +69,20 @@ class PlayerHandRenderSystem(private val screen: GameScreen) : EntitySystem(), D
 
         environment.set(ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f))
         environment.add(DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, 0.8f, -0.2f))
+
+        pRender.hand.transform.setToTranslation(0.593f, -1.8f, -0.678f)
+        pRender.hand.transform.rotate(-0.982f, 0.08f, 0.368f, 222f)
     }
 
     /** Regenerates the hand image to account for player actions. */
-    override fun update(deltaTime: Float) {
+    override fun update(delta: Float) {
         fbo.begin()
         Gdx.gl.glClearColor(0f, 0f, 0f, 0f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT or GL20.GL_DEPTH_BUFFER_BIT)
 
-        val model = handModel
-        model.transform.setToTranslation(0.593f, -1.8f, -0.678f)
-        model.transform.rotate(-0.982f, 0.08f, 0.368f, 222f)
         batch.begin(camera)
-        batch.render(model, environment)
+        batch.render(handModel, environment)
         batch.end()
-
         fbo.end()
     }
 
