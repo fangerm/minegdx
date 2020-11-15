@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:01 PM.
+ * This file was last modified at 11/15/20, 9:20 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -29,9 +29,9 @@ class PanelStack : Actor(), Disposable {
         get() = panels.size
 
     /** Pops the top panel off the stack. Will automatically display the next panel. */
-    fun popPanel(direction: Int = 1): Panel {
-        val panel = panels.pop()!!
-        panel.addAction(
+    fun popPanel(direction: Int = 1) {
+        val panel = if (panels.isEmpty) null else panels.pop()
+        panel?.addAction(
             Actions.sequence(
                 Actions.moveTo(worldWidth * direction, 0f, TRANSITION_DURATION, TRANSITION),
                 Actions.visible(false),
@@ -41,7 +41,6 @@ class PanelStack : Actor(), Disposable {
         )
 
         if (!panels.isEmpty) transitionIn(panels.peek(), -1)
-        return panel
     }
 
     /** Pushes a panel on top of the stack. Hides the current top panel and displays the new one. */
