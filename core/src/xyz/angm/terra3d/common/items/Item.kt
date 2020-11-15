@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 5:44 PM.
+ * This file was last modified at 11/15/20, 7:15 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -96,16 +96,18 @@ data class Item(
         val stackSize = if (tool != null) 1 else 999
         val burnTime = 0
         val hunger = 0
+        var guide: String? = null
 
         val isBlock get() = (block != null)
 
         private fun init() {
-            updateName()
+            updateLang()
             if (texture == "") texture = "textures/${if (isBlock) "blocks" else "items"}/${ident.toLowerCase()}.png"
         }
 
-        private fun updateName() {
+        private fun updateLang() {
             name = getName(ident)
+            guide = I18N.tryGet("guide-$ident")
         }
 
         companion object {
@@ -152,7 +154,7 @@ data class Item(
 
             /** Reload all names; called on lang change by [I18N]. */
             fun reloadNames() {
-                items.values().forEach { it.updateName() }
+                items.values().forEach { it.updateLang() }
             }
         }
 
