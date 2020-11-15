@@ -1,14 +1,17 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/16/20, 7:01 PM.
+ * This file was last modified at 11/15/20, 9:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
 package xyz.angm.terra3d.client.graphics.windows
 
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.utils.Align
 import com.kotcrab.vis.ui.widget.VisWindow
+import ktx.scene2d.scene2d
+import ktx.scene2d.vis.visProgressBar
 import xyz.angm.terra3d.client.graphics.actors.ItemActor
 import xyz.angm.terra3d.client.graphics.actors.ItemGroup
 import xyz.angm.terra3d.client.graphics.panels.game.inventory.InventoryPanel
@@ -82,13 +85,19 @@ class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : Inventor
     private val fuelItem = ItemGroup(this, Inventory(1), row = 1, column = 1)
     private val burntItem = ItemGroup(this, Inventory(1), row = 1, column = 1)
     private val resultItem = ItemGroup(this, Inventory(1), row = 1, column = 1, mutable = false)
+    private val progressBar = scene2d.visProgressBar(max = 90f, step = 10f)
+    private val burnBar = scene2d.visProgressBar(step = 10f, vertical = true) {
+        color = Color.ORANGE
+    }
 
     init {
         refresh(metadata)
-        add(burntItem).padRight(50f)
+        add(burntItem)
+        add(progressBar).width(50f)
         add(resultItem).row()
-        add(fuelItem).padRight(50f)
-        add()
+        add(burnBar).height(35f).row()
+        add(fuelItem)
+        pad(50f)
         pack()
         setPosition(worldWidth / 2, (worldHeight / 3) * 2, Align.center)
     }
@@ -103,5 +112,8 @@ class FurnaceWindow(panel: InventoryPanel, metadata: FurnaceMetadata) : Inventor
         fuelItem.inventory = metadata.fuel
         burntItem.inventory = metadata.baking
         resultItem.inventory = metadata.result
+        progressBar.value = metadata.progress.toFloat()
+        if (fuelItem.inventory[0] != null) burnBar.setRange(0f, fuelItem.inventory[0]!!.properties.burnTime.toFloat())
+        burnBar.value = metadata.burnTime.toFloat()
     }
 }
