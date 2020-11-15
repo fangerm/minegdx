@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:09 PM.
+ * This file was last modified at 11/15/20, 10:19 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -52,7 +52,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
         ResourceManager.getTextureRegion(icons, 32, 54, 18, 18),
         ResourceManager.getTextureRegion(icons, 122, 54, 18, 18),
         ResourceManager.getTextureRegion(icons, 104, 54, 18, 18)
-    ) { screen.player[playerM].hunger }
+    ) { screen.player[playerM].hunger * 5 }
     private val hotbar = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 0, 364, 44))
     private val hotbarSelected = Image(ResourceManager.getTextureRegion("textures/gui/widgets.png", 0, 44, 48, 48))
     private val blockLabel = Label("", skin, "default-24pt")
@@ -200,6 +200,7 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
 
     // A bar displayed as an array of sprites. Every sprite can be empty/half/full.
     // The getter is required, since primitive types (kotlin.Int compiles to JVM primitive int) get passed by value, not reference
+    // The value should be in range 0-100.
     private class IconGroup(
         private val empty: TextureRegion, private val half: TextureRegion, private val full: TextureRegion,
         private val valueGetter: () -> Int
@@ -223,9 +224,9 @@ class GameplayOverlay(private val screen: GameScreen) : Panel(screen) {
             var valueLeft = valueGetter()
             for (i in 0 until 10) {
                 batch.draw(empty, x + (i * (iconSize + pad)), y + yOffsets[i], iconSize, iconSize)
-                if (valueLeft >= 2) batch.draw(full, x + (i * (iconSize + pad)), y + yOffsets[i], iconSize, iconSize)
-                else if (valueLeft == 1) batch.draw(half, x + (i * (iconSize + pad)), y + yOffsets[i], iconSize, iconSize)
-                valueLeft -= 2
+                if (valueLeft >= 10) batch.draw(full, x + (i * (iconSize + pad)), y + yOffsets[i], iconSize, iconSize)
+                else if (valueLeft >= 5) batch.draw(half, x + (i * (iconSize + pad)), y + yOffsets[i], iconSize, iconSize)
+                valueLeft -= 10
             }
         }
 

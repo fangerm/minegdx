@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/27/20, 5:17 PM.
+ * This file was last modified at 11/15/20, 10:15 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -25,6 +25,7 @@ import xyz.angm.terra3d.client.resources.configuration
 import xyz.angm.terra3d.common.CHUNK_SIZE
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.items.Item
+import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.world.*
 import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 import kotlin.math.abs
@@ -180,7 +181,7 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
                         val level = (getFromAIV3(startPos) and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT
                         tmpAIV.set(startPos)[direction] += backFaceM
                         if (face == 1) adjustTopFluidLevel(level, blockP.fluidReach)
-                        else if (face % 3 != 1) adjustSideFluidLevel(world, level, blockP.fluidReach, direction)
+                        else if (face % 3 != 1) adjustSideFluidLevel(world, block, level, blockP.fluidReach, direction)
                     } else if (blockP.collider != PhysicsSystem.BlockCollider.FULL) {
                         val isX = direction == 0
                         when (blockP.collider) {
@@ -401,16 +402,15 @@ internal class RenderableChunk(serverChunk: Chunk) : Chunk(fromChunk = serverChu
     }
 
     // Adjust the fluid quad down to fit level of fluid
-    private fun adjustSideFluidLevel(world: World, level: Int, fluidReach: Int, direction: Int) {
+    private fun adjustSideFluidLevel(world: World, type: ItemType, level: Int, fluidReach: Int, direction: Int) {
         val isX = direction == 0
-        val front = getAIV3OrWorld(world, direction)
-        val frontLevel = ((front and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT)
-
         val topHeightSub = 1f - (level.toFloat() / fluidReach)
         corners[if (isX) 1 else 3].y -= topHeightSub
         corners[2].y -= topHeightSub
 
-        if (frontLevel != 0) {
+        val front = getAIV3OrWorld(world, direction)
+        val frontLevel = ((front and FLUID_LEVEL) shr FLUID_LEVEL_SHIFT)
+        if (front and TYPE == type && frontLevel != 0) {
             val levelDiff = abs(frontLevel - level + 1)
             val botHeightAdd = (0.9f * (levelDiff.toFloat() / fluidReach))
             corners[if (isX) 3 else 1].y += botHeightAdd

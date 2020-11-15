@@ -328,7 +328,7 @@ water:
     blend: true
     collider: FLUID
     fluid: true
-    fluidReach: 7
+    fluidReach: 8
 
 ultratool:
   texture: textures/items/wood_hoe.png
@@ -367,3 +367,14 @@ bucket:
 water_bucket:
   texture: textures/items/bucket_water.png
   stackSize: 1
+
+lava_bucket:
+  texture: textures/items/bucket_lava.png
+  stackSize: 1
+
+lava:
+  block:
+    blend: true
+    collider: FLUID
+    fluid: true
+    fluidReach: 5

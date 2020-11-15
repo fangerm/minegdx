@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 9:49 PM.
+ * This file was last modified at 11/15/20, 10:01 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -122,17 +122,27 @@ object PlayerInteractions {
         add("bucket", Event.ITEM_CLICKED) { ctx ->
             val fluid = ctx.screen.world.getBlockRaycast(ctx.screen.player[position], ctx.screen.player[direction], prev = false, fluids = true)
             val fBlock = ctx.screen.world.getBlock(fluid ?: return@add)
+
             val properties = fBlock?.properties?.block ?: return@add
             if (!properties.fluid || properties.fluidReach != fBlock.fluidLevel) return@add
             ctx.screen.world.setBlock(Block(NOTHING, fBlock.position))
-            ctx.screen.playerInventory.heldItem!!.type = Item.Properties.fromIdentifier("water_bucket").type
+
+            val item = when (fBlock.properties!!.ident) {
+                "lava" -> "lava_bucket"
+                else -> "water_bucket"
+            }
+            ctx.screen.playerInventory.heldItem!!.type = Item.Properties.fromIdentifier(item).type
         }
 
-        add("water_bucket", Event.ITEM_CLICKED) { ctx ->
-            val fluid = ctx.screen.world.getBlockRaycast(ctx.screen.player[position], ctx.screen.player[direction], prev = true) ?: return@add
-            ctx.screen.world.setBlock(Block(Item.Properties.fromIdentifier("water").type, fluid))
-            ctx.screen.playerInventory.heldItem!!.type = Item.Properties.fromIdentifier("bucket").type
+        fun fluidBucket(name: String) {
+            add("${name}_bucket", Event.ITEM_CLICKED) { ctx ->
+                val fluid = ctx.screen.world.getBlockRaycast(ctx.screen.player[position], ctx.screen.player[direction], prev = true) ?: return@add
+                ctx.screen.world.setBlock(Block(Item.Properties.fromIdentifier(name).type, fluid))
+                ctx.screen.playerInventory.heldItem!!.type = Item.Properties.fromIdentifier("bucket").type
+            }
         }
+        fluidBucket("water")
+        fluidBucket("lava")
     }
 
     /** Returns the listener registered. */
