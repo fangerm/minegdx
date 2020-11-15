@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 11/15/20, 6:51 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -9,6 +9,7 @@ package xyz.angm.terra3d.common.ecs.components
 
 import com.badlogic.gdx.math.Vector3
 import xyz.angm.rox.Component
+import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem.Companion.GRAVITY
 
 /** A simple class for components containing a float vector.
  * @property x The first/X axis.
@@ -36,7 +37,7 @@ class DirectionComponent : VectoredComponent()
  * @property accelerationRate Velocity will be multiplied with this value every tick. (0-1 will result in deceleration) */
 class VelocityComponent : VectoredComponent() {
 
-    var gravity = true
+    var gravity = GRAVITY
     var accelerationRate = 1f
     var speedModifier = 4.5f
 }

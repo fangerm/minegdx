@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 10:25 PM.
+ * This file was last modified at 11/15/20, 6:02 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -101,7 +101,7 @@ class Server(
         log.debug { "[SERVER] Received object of class ${packet.javaClass.name}" }
 
         when (packet) {
-            is BlockUpdate -> world.setBlock(packet.position, packet)
+            is BlockUpdate -> world.setBlock(packet)
             is ChunkRequest -> send(connection, ChunksLine(packet.position, world.getChunkLine(packet.position)))
             is ChatMessagePacket -> sendToAll(packet)
             is JoinPacket -> registerPlayer(connection, packet)

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 6:05 PM.
+ * This file was last modified at 11/15/20, 7:07 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -25,6 +25,7 @@ import com.badlogic.gdx.utils.ScreenUtils
 import ktx.collections.*
 import xyz.angm.rox.Entity
 import xyz.angm.terra3d.client.resources.ResourceManager
+import xyz.angm.terra3d.common.ecs.fallingBlock
 import xyz.angm.terra3d.common.ecs.item
 import xyz.angm.terra3d.common.ecs.playerM
 import xyz.angm.terra3d.common.items.Item
@@ -53,6 +54,7 @@ class ModelCache {
 
     private var blockDamageModels = emptyArray<ModelInstance>()
     internal lateinit var activeDamageModel: ModelInstance
+    private val fallingBlockModels = IntMap<Model>()
     private val itemModels = IntMap<Model>()
     private val itemImages = IntMap<Texture>() // Images for blocks in inventories
     private val playerModel: Model
@@ -81,6 +83,7 @@ class ModelCache {
     fun getEntityModelInstance(entity: Entity): ModelInstance {
         return when {
             entity has item -> ModelInstance(getItemModel(entity[item].item.type))
+            entity has fallingBlock -> ModelInstance(getFallingBlockModel(entity[fallingBlock].block))
             entity has playerM -> ModelInstance(playerModel)
 
             else -> {
@@ -90,6 +93,8 @@ class ModelCache {
             }
         }
     }
+
+    private fun getFallingBlockModel(type: ItemType) = fallingBlockModels[type - 1] ?: addFallingBlockModelToCache(Item.Properties.fromType(type)!!)
 
     fun getItemModel(type: ItemType) = itemModels[type - 1] ?: addItemModelToCache(Item.Properties.fromType(type)!!)
 
@@ -168,6 +173,12 @@ class ModelCache {
 
     private fun rect(v0: Vector3, v1: Vector3, v2: Vector3, v3: Vector3, nor: Vector3, material: Material) {
         builder.part("rect", GL20.GL_TRIANGLES, attributes, material).rect(v0, v1, v2, v3, nor)
+    }
+
+    private fun addFallingBlockModelToCache(type: Item.Properties): Model {
+        val model = createBlockModel(type.texture, type.block?.texSide, type.block?.texBottom, type.block?.texFront, type.block?.isBlend ?: false)
+        fallingBlockModels[type.type - 1] = model
+        return model
     }
 
     private fun addItemModelToCache(type: Item.Properties): Model {

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 10:11 PM.
+ * This file was last modified at 11/15/20, 7:03 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -21,6 +21,7 @@ import xyz.angm.terra3d.common.world.*
 import xyz.angm.terra3d.common.world.generation.TerrainGenerator
 import xyz.angm.terra3d.server.Server
 import xyz.angm.terra3d.server.ecs.systems.BlockEntitySystem
+import xyz.angm.terra3d.server.ecs.systems.FallingBlockSystem
 import xyz.angm.terra3d.server.ecs.systems.PhysicsSystem
 
 /** The render distance to use when sending a newly connecting client init data. */
@@ -34,6 +35,7 @@ class World(private val server: Server) : IWorld(server.save.seed) {
     private val database = WorldDatabase(server)
     internal val generator = TerrainGenerator(this)
     private val blockEntitySystem = BlockEntitySystem(this)
+    private val fallingBlockSystem = FallingBlockSystem(this)
     private val lighting = BfsLight(this)
     private val fluids = BfsFluid(this)
     private val sync = SyncChannel(this, server.coScope)
@@ -42,6 +44,7 @@ class World(private val server: Server) : IWorld(server.save.seed) {
         schedule(60000, 60000, server.coScope, database::flushChunks)
         server.engine {
             add(blockEntitySystem)
+            add(fallingBlockSystem)
             add(PhysicsSystem { getCollider(tmpIV.set(it)) })
             add(DayTimeSystem())
             add(FluidSystem(fluids))
@@ -96,25 +99,33 @@ class World(private val server: Server) : IWorld(server.save.seed) {
     }
 
     /** Sets the block. Will automatically sync to clients and dispatch any other work required.
-     * @param position The position to place it at
      * @param block The block to place
-     * @return If the block was successfully placed / could be placed */
-    fun setBlock(position: IntVector3, block: Block): Boolean {
-        val oldBlock = database.setBlock(position, block)
+     * @param falling Used by falling blocks to signal that some triggers should not fire. */
+    fun setBlock(block: Block, falling: Boolean = false) {
+        val oldBlock = database.setBlock(block.position, block)
 
-        if (block.type == 0) {
-            if (oldBlock == null || oldBlock.type == 0) return false
+        if (block.type == 0) { // Destroy the block
+            if (oldBlock == null || oldBlock.type == 0) return
             blockEntitySystem.removeBlockEntity(server.engine, oldBlock.position)
             BlockEvents.getListener(oldBlock, Event.BLOCK_DESTROYED)?.invoke(this, oldBlock)
 
             val item = Item(oldBlock)
             item.type = Item.Properties.fromIdentifier(item.properties.block!!.drop ?: item.properties.ident).type
-            server.engine { ItemComponent.create(this, item, position.toV3().add(0.5f, 0f, 0.5f)) }
+            server.engine {
+                if (!falling) ItemComponent.create(this, item, block.position.toV3().add(0.5f, 0f, 0.5f))
+                fallingBlockSystem.maybeFall(block.position)
+            }
 
         } else if (oldBlock?.type != block.type) { // A new block got placed; the block was just updated if this is false
             BlockEvents.getListener(block, Event.BLOCK_PLACED)?.invoke(this, block)
             val blockEntity = BlockEvents.getBlockEntity(block)
             if (blockEntity != null) blockEntitySystem.createBlockEntity(server.engine, blockEntity)
+            if (!falling) server.engine {
+                block.position.y--
+                val exists = getBlock(block.position) != null
+                block.position.y++
+                fallingBlockSystem.blockPlaced(block, exists)
+            }
         }
 
         sync {
@@ -122,8 +133,6 @@ class World(private val server: Server) : IWorld(server.save.seed) {
             fluids.blockSet(block, oldBlock)
         }
         server.sendToAll(block)
-
-        return true
     }
 
     /** Call when a block's metadata changed. Will mark

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 4:54 PM.
+ * This file was last modified at 11/15/20, 7:04 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -17,6 +17,7 @@ import xyz.angm.terra3d.common.ecs.*
 import xyz.angm.terra3d.common.ecs.components.NoPhysicsFlag
 import xyz.angm.terra3d.common.ecs.components.PositionComponent
 import xyz.angm.terra3d.common.ecs.components.VelocityComponent
+import kotlin.math.max
 
 /** Used for movement, collision and gravity.
  *
@@ -81,7 +82,8 @@ class PhysicsSystem(
     }
 
     private fun applyGravity(velocity: VelocityComponent, delta: Float) {
-        if (velocity.gravity) velocity.y -= GRAVITY * delta
+        velocity.y -= velocity.gravity * delta
+        velocity.y = max(velocity.y, MAX_FALL)
     }
 
     private fun checkSideCollision(entity: Entity, x: Int, z: Int) {
@@ -185,14 +187,17 @@ class PhysicsSystem(
 
         /** The gravity multiplier for all entities. */
         const val GRAVITY = 8f
+        const val MAX_FALL = -8f
 
         private val itemSize = Vector3(0.2f, 0.2f, 0.2f)
+        private val blockSize = Vector3(1f, 1f, 1f)
         private val humanoidSize = Vector3(0.4f, 1.85f, 0.4f)
 
         private val Entity.size
             get() =
                 when {
                     this has item -> itemSize
+                    this has fallingBlock -> blockSize
                     else -> humanoidSize
                 }
     }

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 10:06 PM.
+ * This file was last modified at 11/15/20, 5:50 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -13,6 +13,7 @@ import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
 import xyz.angm.terra3d.client.ecs.components.render.PlayerRenderComponent
 import xyz.angm.terra3d.common.ecs.components.*
 import xyz.angm.terra3d.common.ecs.components.specific.DayTimeComponent
+import xyz.angm.terra3d.common.ecs.components.specific.FallingBlockComponent
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
@@ -29,6 +30,7 @@ val health = mapperFor<HealthComponent>()
 
 val item = mapperFor<ItemComponent>()
 val block = mapperFor<BlockComponent>()
+val fallingBlock = mapperFor<FallingBlockComponent>()
 val dayTime = mapperFor<DayTimeComponent>()
 
 val playerM = mapperFor<PlayerComponent>()

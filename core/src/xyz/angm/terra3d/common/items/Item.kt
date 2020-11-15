@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 9:17 PM.
+ * This file was last modified at 11/15/20, 5:44 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -169,6 +169,7 @@ data class Item(
          *
          * @property collider: The collider of this block used by the physics system.
          * @property orientation The possible orientations of this block. See [OrientationMode] for more.
+         * @property gravity If this block will fall if the block below is destroyed
          *
          * @property blend If this block has transparency: true enables blending and causes adjacent blocks to be visible.
          * @property emitsLight If this block produces light, ex. like a torch.
@@ -177,7 +178,7 @@ data class Item(
          * @property blueLight Blue light strength, 0-15; only matters if `emitsLight == true`
          *
          * @property fluid If this block is a fluid. Will cause render behavior to change and the block to spead/flow.
-         * @property fluidReach The
+         * @property fluidReach The distance of fluid flow.
          *
          * @property placedSound Sound played when the block is placed by a player.
          * @property hitSound Sound played when the block is hit by a player.
@@ -197,6 +198,7 @@ data class Item(
 
             val collider: PhysicsSystem.BlockCollider = PhysicsSystem.BlockCollider.FULL,
             val orientation: OrientationMode = OrientationMode.DISABLE,
+            val gravity: Boolean = false,
 
             private val blend: Boolean = false,
             val emitsLight: Boolean = false,

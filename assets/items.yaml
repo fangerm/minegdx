@@ -69,6 +69,7 @@ gravel:
 sand:
   block:
     prefTool: shovel
+    gravity: true
 
 sandstone:
   texture: textures/blocks/sandstone_top.png
