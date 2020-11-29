@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 10:25 PM.
+ * This file was last modified at 11/29/20, 10:29 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -89,6 +89,7 @@ class PlayerSystem(
 
         // Update camera position
         screen.cam.position.set(pPosition)
+        screen.cam.position.y += PLAYER_HEIGHT
         screen.cam.update()
 
         // Update camera FOV

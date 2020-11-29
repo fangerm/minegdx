@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 6:02 PM.
+ * This file was last modified at 11/29/20, 10:27 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -107,8 +107,8 @@ class Server(
             is JoinPacket -> registerPlayer(connection, packet)
             is Entity -> {
                 engine {
+                    packet[network].needsSync = true // Ensure it syncs to all players
                     netSystem.receive(packet)
-                    sendToAll(packet) // Ensure it syncs to all players
                 }
             }
         }

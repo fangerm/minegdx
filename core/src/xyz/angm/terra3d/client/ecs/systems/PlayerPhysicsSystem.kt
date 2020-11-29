@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 8:58 PM.
+ * This file was last modified at 11/29/20, 10:29 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -173,7 +173,7 @@ class PlayerPhysicsSystem(
         world.stepSimulation(delta, 2, 1f / 60f)
         playerGhostObj.getWorldTransform(playerTransform)
         player[position].set(playerTransform.getTranslation(tmpV))
-        player[position].y += playerHeight
+        player[position].y
     }
 
     /** Call when a block changed by a user.
