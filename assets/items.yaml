@@ -12,11 +12,13 @@ grass_block:
     prefTool: shovel
     texSide: textures/blocks/grass_side.png
     texBottom: textures/blocks/dirt.png
+    sound: grass
 
 dirt:
   block:
     breakTime: 2.0
     prefTool: shovel
+    sound: gravel
 
 cobblestone:
   block:
@@ -34,6 +36,7 @@ planks_oak:
   block:
     breakTime: 3.5
     prefTool: axe
+    sound: wood
 
 oak_wood:
   burnTime: 600
@@ -42,6 +45,7 @@ oak_wood:
     breakTime: 3
     prefTool: axe
     texSide: textures/blocks/log_oak.png
+    sound: wood
 
 leaves_oak:
   burnTime: 100
@@ -50,6 +54,7 @@ leaves_oak:
     prefTool: shears
     drop: apple
     blend: true
+    sound: grass
 
 stick:
   burnTime: 150
@@ -61,15 +66,18 @@ snow:
   block:
     prefTool: shovel
     minToolLevel: 1
+    sound: snow
 
 gravel:
   block:
     prefTool: shovel
+    sound: gravel
 
 sand:
   block:
     prefTool: shovel
     gravity: true
+    sound: sand
 
 sandstone:
   texture: textures/blocks/sandstone_top.png
@@ -84,6 +92,7 @@ glass:
   block:
     blend: true
     drop: glass_shard
+    sound: glass
 
 glass_shard:
   texture: textures/blocks/glass_pane_top.png
@@ -106,6 +115,7 @@ chest:
     breakTime: 7.5
     prefTool: axe
     orientation: XZ
+    sound: wood
 
 wood_pickaxe:
   tool:
@@ -295,18 +305,21 @@ red_lamp:
     emitsLight: true
     redLight: 15
     blend: true
+    sound: glass
 
 green_lamp:
   block:
     emitsLight: true
     greenLight: 15
     blend: true
+    sound: glass
 
 blue_lamp:
   block:
     emitsLight: true
     blueLight: 15
     blend: true
+    sound: glass
 
 orange_lamp:
   block:
@@ -314,6 +327,7 @@ orange_lamp:
     redLight: 15
     greenLight: 9
     blend: true
+    sound: glass
 
 lamp:
   block:
@@ -322,6 +336,7 @@ lamp:
     greenLight: 15
     blueLight: 15
     blend: true
+    sound: glass
 
 water:
   block:
@@ -345,6 +360,7 @@ slab_oak_lower:
     breakTime: 3
     prefTool: axe
     collider: HALF_LOWER
+    sound: wood
 
 slab_oak_upper:
   texture: textures/blocks/planks_oak.png
@@ -354,6 +370,7 @@ slab_oak_upper:
     breakTime: 3
     prefTool: axe
     collider: HALF_UPPER
+    sound: wood
 
 energy_cell:
   texture: textures/blocks/energy_cell.png

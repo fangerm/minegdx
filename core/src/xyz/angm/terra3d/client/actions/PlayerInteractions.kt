@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 10:01 PM.
+ * This file was last modified at 11/29/20, 3:48 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -131,18 +131,24 @@ object PlayerInteractions {
                 "lava" -> "lava_bucket"
                 else -> "water_bucket"
             }
+            val sound = when (fBlock.properties!!.ident) {
+                "lava" -> "item/bucket/fill_lava1"
+                else -> "item/bucket/fill1"
+            }
             ctx.screen.playerInventory.heldItem!!.type = Item.Properties.fromIdentifier(item).type
+            soundPlayer.playSound(sound)
         }
 
-        fun fluidBucket(name: String) {
+        fun fluidBucket(name: String, sound: String) {
             add("${name}_bucket", Event.ITEM_CLICKED) { ctx ->
                 val fluid = ctx.screen.world.getBlockRaycast(ctx.screen.player[position], ctx.screen.player[direction], prev = true) ?: return@add
                 ctx.screen.world.setBlock(Block(Item.Properties.fromIdentifier(name).type, fluid))
                 ctx.screen.playerInventory.heldItem!!.type = Item.Properties.fromIdentifier("bucket").type
+                soundPlayer.playSound("item/bucket/empty$sound")
             }
         }
-        fluidBucket("water")
-        fluidBucket("lava")
+        fluidBucket("water", "1")
+        fluidBucket("lava", "_lava1")
     }
 
     /** Returns the listener registered. */

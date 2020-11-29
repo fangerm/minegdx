@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 10:06 PM.
+ * This file was last modified at 11/29/20, 3:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -49,10 +49,11 @@ object Sound : ISound {
 
     override fun playSound(sound: String) = playSound3D(sound, listenerPosition)
 
-    override fun playLooping(sound: String, location: Vector3): Int {
+    override fun playLooping(sound: String, location: Vector3, volume: Float): Int {
         val source = genSource(sound)
         alSourcei(source, AL_LOOPING, 1)
         alSource3f(source, AL_POSITION, location.x, location.y, location.z)
+        alSourcef(source, AL_GAIN, volume)
         alSourcePlay(source)
         return source
     }

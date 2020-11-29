@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:29 PM.
+ * This file was last modified at 11/29/20, 3:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -23,7 +23,7 @@ interface ISound {
     fun playSound3D(sound: String, location: Vector3)
 
     /** Same as [playSound3D] but loops the source until [stopPlaying] is called. */
-    fun playLooping(sound: String, location: Vector3): Int
+    fun playLooping(sound: String, location: Vector3, volume: Float = 1f): Int
 
     /** Interrupts the given source. Source ID is obtained from [playLooping]. */
     fun stopPlaying(source: Int)
@@ -38,7 +38,7 @@ private object DummySound : ISound {
     override fun init() {}
     override fun playSound(sound: String) {}
     override fun playSound3D(sound: String, location: Vector3) {}
-    override fun playLooping(sound: String, location: Vector3) = 0
+    override fun playLooping(sound: String, location: Vector3, volume: Float) = 0
     override fun stopPlaying(source: Int) {}
     override fun updateListenerPosition(position: VectoredComponent, direction: VectoredComponent) {}
 }

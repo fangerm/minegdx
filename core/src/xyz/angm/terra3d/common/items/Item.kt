@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 7:15 PM.
+ * This file was last modified at 11/29/20, 3:29 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -211,11 +211,13 @@ data class Item(
             val fluid: Boolean = false,
             val fluidReach: Int = 15,
 
-            val placedSound: String = "step/stone1",
-            val hitSound: String = "dig/stone1",
-            val destroySound: String = "dig/stone1",
-            val walkSound: String = "step/stone1"
+            val sound: String = "stone",
         ) {
+            val placedSound get() = "step/${sound}1"
+            val hitSound get() = "dig/${sound}1"
+            val destroySound get() = "dig/${sound}1"
+            val walkSound get() = "step/${sound}1"
+
             val isBlend get() = blend && configuration.video.blend
 
             /** Returns the actual time required to break a block, given the tool's properties. */

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 9:50 PM.
+ * This file was last modified at 11/29/20, 3:32 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -79,7 +79,7 @@ class PlayerInputSystem(
             breakType = 0
         } else if (block != null && block.type != breakType) {
             soundPlayer.stopPlaying(breakSound)
-            breakSound = soundPlayer.playLooping(block.properties?.block?.hitSound ?: return, block.position.toV3())
+            breakSound = soundPlayer.playLooping(block.properties?.block?.hitSound ?: return, block.position.toV3(), 0.4f)
             breakType = block.type
         }
     }
