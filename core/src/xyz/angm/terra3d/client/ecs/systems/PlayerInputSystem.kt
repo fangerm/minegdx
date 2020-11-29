@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 3:32 PM.
+ * This file was last modified at 11/29/20, 9:01 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -69,6 +69,8 @@ class PlayerInputSystem(
             breakSound = 0
             breakType = 0
         }
+        localPlayerC.blockHitTime = 0f
+        localPlayerC.blockHitPercent = 0f
     }
 
     /** Called when the player is holding the left mouse button to make sure sound stays correct. */
