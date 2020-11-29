@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 7:07 PM.
+ * This file was last modified at 11/29/20, 10:40 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -24,6 +24,7 @@ import com.badlogic.gdx.utils.IntMap
 import com.badlogic.gdx.utils.ScreenUtils
 import ktx.collections.*
 import xyz.angm.rox.Entity
+import xyz.angm.terra3d.client.ecs.systems.PLAYER_HEIGHT
 import xyz.angm.terra3d.client.resources.ResourceManager
 import xyz.angm.terra3d.common.ecs.fallingBlock
 import xyz.angm.terra3d.common.ecs.item
@@ -61,7 +62,11 @@ class ModelCache {
     private val builder = ModelBuilder()
 
     init {
-        playerModel = builder.createBox(0.4f, 1.75f, 0.4f, Material(ColorAttribute(Diffuse, 1f, 0f, 0f, 1f)), attributes)
+        playerModel = builder.createBox(
+            0.4f, (PLAYER_HEIGHT * 2) + 0.1f, 0.4f,
+            Material(ColorAttribute(Diffuse, 0.6745f, 0.1019f, 0.4666f, 1f)),
+            attributes
+        )
     }
 
     fun init() {

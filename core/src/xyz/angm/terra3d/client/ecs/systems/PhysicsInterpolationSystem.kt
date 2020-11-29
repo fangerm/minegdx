@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 7:04 PM.
+ * This file was last modified at 11/29/20, 10:32 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -22,7 +22,7 @@ import kotlin.math.max
 
 /** A heavily simplified version of the server-side physics system.
  * Only used to smooth the frames between server physics updates, which
- * are choppy due to the server only updating 20x a second (but the client rendering at 60fps). */
+ * are choppy due to the server only updating 20x a second (but the client rendering at vsync). */
 class PhysicsInterpolationSystem : IteratingSystem(
     allOf(
         PositionComponent::class,
