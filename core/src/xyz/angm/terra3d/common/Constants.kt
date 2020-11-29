@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/19/20, 2:20 PM.
+ * This file was last modified at 11/29/20, 10:11 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -39,3 +39,6 @@ const val MAX_NETTY_FRAME_SIZE = 1_024_000 // 1 MB
 
 /** Size of the receive buffer. */
 const val NETTY_BUFFER_SIZE = 8192
+
+/** Size of the legnth field of sent packets. */
+const val LENGTH_SIZE = 4

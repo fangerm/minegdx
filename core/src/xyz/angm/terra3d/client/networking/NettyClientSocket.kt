@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:31 PM.
+ * This file was last modified at 11/29/20, 9:55 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -14,10 +14,7 @@ import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder
 import io.netty.handler.codec.LengthFieldPrepender
-import xyz.angm.terra3d.common.MAX_NETTY_FRAME_SIZE
-import xyz.angm.terra3d.common.NETTY_BUFFER_SIZE
-import xyz.angm.terra3d.common.PORT
-import xyz.angm.terra3d.common.log
+import xyz.angm.terra3d.common.*
 import xyz.angm.terra3d.common.networking.FSTDecoder
 import xyz.angm.terra3d.common.networking.FSTEncoder
 
@@ -37,8 +34,8 @@ class NettyClientSocket(client: Client) : ClientSocket(client) {
             .handler(object : ChannelInitializer<SocketChannel>() {
                 override fun initChannel(ch: SocketChannel) {
                     ch.pipeline().addLast(
-                        LengthFieldPrepender(4),
-                        LengthFieldBasedFrameDecoder(MAX_NETTY_FRAME_SIZE, 0, 4, 0, 4),
+                        LengthFieldPrepender(LENGTH_SIZE),
+                        LengthFieldBasedFrameDecoder(MAX_NETTY_FRAME_SIZE, 0, LENGTH_SIZE, 0, LENGTH_SIZE),
                         FSTEncoder(),
                         FSTDecoder(),
                         ClientHandler(client)
@@ -69,8 +66,7 @@ class NettyClientSocket(client: Client) : ClientSocket(client) {
 
         override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
             log.info(cause) { "Exception during server communication:" }
-            log.info { "Closing connection with server." }
-            ctx.close()
+            log.info { "Ignoring packet." }
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/19/20, 12:20 AM.
+ * This file was last modified at 11/29/20, 10:11 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -14,8 +14,9 @@ import org.nustaq.serialization.FSTConfiguration
 import xyz.angm.rox.Component
 import xyz.angm.rox.Entity
 import xyz.angm.rox.FSTEntitySerializer
-import xyz.angm.terra3d.client.ecs.components.LocalPlayerComponent
 import xyz.angm.terra3d.common.ecs.components.*
+import xyz.angm.terra3d.common.ecs.components.specific.DayTimeComponent
+import xyz.angm.terra3d.common.ecs.components.specific.FallingBlockComponent
 import xyz.angm.terra3d.common.ecs.components.specific.ItemComponent
 import xyz.angm.terra3d.common.ecs.components.specific.PlayerComponent
 import xyz.angm.terra3d.common.ecs.ignoreSync
@@ -25,6 +26,7 @@ import xyz.angm.terra3d.common.ecs.playerRender
 import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.networking.*
+import xyz.angm.terra3d.common.quest.Quest
 import xyz.angm.terra3d.common.world.Block
 import xyz.angm.terra3d.common.world.Chunk
 import kotlin.reflect.KClass
@@ -39,16 +41,16 @@ val fst = createFST(
     ChunksLine::class, ChatMessagePacket::class,
 
     // Components
-    Component::class,
-    LocalPlayerComponent::class, PlayerComponent::class,
-    HealthComponent::class, ItemComponent::class,
-    NetworkSyncComponent::class,
+    Component::class, VectoredComponent::class,
     PositionComponent::class, VelocityComponent::class, DirectionComponent::class,
+    HealthComponent::class, PlayerComponent::class, RemoveFlag::class,
+    ItemComponent::class, FallingBlockComponent::class,
+    NetworkSyncComponent::class, DayTimeComponent::class,
     NoPhysicsFlag::class,
 
     // Various
-    IntVector3::class, Vector3::class,
-    Chunk::class, Block::class, Item::class,
+    IntVector3::class, Vector3::class, Quest::class, Entity::class,
+    Chunk::class, Array<Chunk>::class, Block::class, Item::class,
     Inventory::class, PlayerComponent.PlayerInventory::class
 )
 

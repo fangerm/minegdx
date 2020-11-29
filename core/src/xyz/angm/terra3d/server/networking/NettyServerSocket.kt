@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/17/20, 7:39 PM.
+ * This file was last modified at 11/29/20, 9:56 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -16,10 +16,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder
 import io.netty.handler.codec.LengthFieldPrepender
 import io.netty.util.concurrent.GlobalEventExecutor
-import xyz.angm.terra3d.common.MAX_NETTY_FRAME_SIZE
-import xyz.angm.terra3d.common.NETTY_BUFFER_SIZE
-import xyz.angm.terra3d.common.PORT
-import xyz.angm.terra3d.common.log
+import xyz.angm.terra3d.common.*
 import xyz.angm.terra3d.common.networking.FSTDecoder
 import xyz.angm.terra3d.common.networking.FSTEncoder
 import xyz.angm.terra3d.server.Server
@@ -43,8 +40,8 @@ class NettyServerSocket(server: Server) : ServerSocketInterface(server) {
             .childHandler(object : ChannelInitializer<SocketChannel>() {
                 override fun initChannel(ch: SocketChannel) {
                     ch.pipeline().addLast(
-                        LengthFieldPrepender(4),
-                        LengthFieldBasedFrameDecoder(MAX_NETTY_FRAME_SIZE, 0, 4, 0, 4),
+                        LengthFieldPrepender(LENGTH_SIZE),
+                        LengthFieldBasedFrameDecoder(MAX_NETTY_FRAME_SIZE, 0, LENGTH_SIZE, 0, LENGTH_SIZE),
                         FSTEncoder(),
                         FSTDecoder(),
                         ServerHandler(this@NettyServerSocket)
@@ -104,8 +101,7 @@ class NettyServerSocket(server: Server) : ServerSocketInterface(server) {
 
         override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
             log.info(cause) { "Exception during client communication:" }
-            log.info { "Closing connection with client." }
-            ctx.close()
+            log.info { "Ignoring packet." }
         }
     }
 }

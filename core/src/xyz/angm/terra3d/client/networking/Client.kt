@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 8:50 PM.
+ * This file was last modified at 11/29/20, 9:34 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -83,7 +83,7 @@ class Client() {
     /** Send the specified packet to server. */
     fun send(packet: Any) {
         socket.send(packet)
-        log.debug { "[CLIENT] Sent packet of class ${packet.javaClass.name}" }
+        log.debug { "[CLIENT] Sent ${packet.javaClass.simpleName}" }
     }
 
     internal fun receive(packet: Any) {
@@ -94,6 +94,7 @@ class Client() {
     /** Should only be called from the processing coroutine. */
     private fun processPacket(packet: Any) {
         processing = true
+        log.debug { "[CLIENT] Processed received ${packet.javaClass.simpleName}" }
         listeners.forEach { it(packet) }
         processing = false
     }
