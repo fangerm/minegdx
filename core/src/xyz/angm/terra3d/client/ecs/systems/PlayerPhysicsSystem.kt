@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 9:36 PM.
+ * This file was last modified at 11/29/20, 8:58 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -197,12 +197,9 @@ class PlayerPhysicsSystem(
             arrayX.forEachIndexed { y, arrayY ->
                 arrayY.forEachIndexed { z, block ->
                     val collider = colliderAt(tmpIV2.set(tmpIV).add(x, y, z))
-                    if (collider == PhysicsSystem.BlockCollider.NONE) block.worldTransform.setToTranslation(0f, -10000f, 0f)
-                    else {
-                        val shape = blockShapes[collider]!!
-                        block.worldTransform = block.worldTransform.setToTranslation(tmpIV2.toV3(tmpV).add(shape.offset))
-                        block.collisionShape = shape.shape
-                    }
+                    val shape = blockShapes[collider]!!
+                    block.worldTransform = block.worldTransform.setToTranslation(tmpIV2.toV3(tmpV).add(shape.offset))
+                    block.collisionShape = shape.shape
                 }
             }
         }
@@ -313,8 +310,9 @@ class PlayerPhysicsSystem(
             blockShapes.put(PhysicsSystem.BlockCollider.FULL, BlockShape(Vector3(0.5f, 0.5f, 0.5f), btBoxShape(Vector3(0.5f, 0.5f, 0.5f))))
             blockShapes.put(PhysicsSystem.BlockCollider.HALF_LOWER, BlockShape(Vector3(0.5f, 0.25f, 0.5f), btBoxShape(Vector3(0.5f, 0.25f, 0.5f))))
             blockShapes.put(PhysicsSystem.BlockCollider.HALF_UPPER, BlockShape(Vector3(0.5f, 0.75f, 0.5f), btBoxShape(Vector3(0.5f, 0.25f, 0.5f))))
-            blockShapes.put(PhysicsSystem.BlockCollider.ONLY_RAY, BlockShape(Vector3(), btBoxShape(Vector3())))
-            blockShapes.put(PhysicsSystem.BlockCollider.FLUID, BlockShape(Vector3(), btBoxShape(Vector3())))
+            blockShapes.put(PhysicsSystem.BlockCollider.ONLY_RAY, BlockShape(Vector3(0f, -10000f, 0f), btBoxShape(Vector3())))
+            blockShapes.put(PhysicsSystem.BlockCollider.FLUID, BlockShape(Vector3(0f, -10000f, 0f), btBoxShape(Vector3())))
+            blockShapes.put(PhysicsSystem.BlockCollider.NONE, BlockShape(Vector3(0f, -10000f, 0f), btBoxShape(Vector3())))
         }
 
         fun createBlock(): btRigidBody {
