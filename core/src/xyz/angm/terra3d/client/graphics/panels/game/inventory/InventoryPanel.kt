@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:32 PM.
+ * This file was last modified at 11/29/20, 5:56 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -10,6 +10,7 @@ package xyz.angm.terra3d.client.graphics.panels.game.inventory
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.Align
+import com.kotcrab.vis.ui.widget.VisTextField
 import ktx.actors.KtxInputListener
 import ktx.actors.onKeyDown
 import xyz.angm.terra3d.client.graphics.actors.ItemActor
@@ -38,7 +39,11 @@ abstract class InventoryPanel(screen: GameScreen) : Panel(screen) {
         // This needs special handling since the usual input handler responsible
         // for this is unregistered while GUIs are open
         onKeyDown { keycode ->
-            if (keycode == configuration.keybinds["openInventory"]) screen.popPanel()
+            if (keycode == configuration.keybinds["openInventory"]
+                && stage.keyboardFocus !is VisTextField
+            ) {
+                screen.popPanel()
+            }
         }
 
         listener = object : KtxInputListener() {
