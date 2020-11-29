@@ -89,3 +89,128 @@
     planks_oak: 25
   result: chest
   amount: 1
+
+
+- items:
+    glass: 10
+    coal: 2
+  result: lamp
+  amount: 1
+
+- items:
+    glass: 10
+    coal: 2
+  result: orange_lamp
+  amount: 1
+
+- items:
+    glass: 10
+    coal: 2
+  result: red_lamp
+  amount: 1
+
+- items:
+    glass: 10
+    coal: 2
+  result: green_lamp
+  amount: 1
+
+- items:
+    glass: 10
+    coal: 2
+  result: blue_lamp
+  amount: 1
+
+- items:
+    iron_ingot: 5
+  result: bucket
+  amount: 1
+
+- items:
+    bucket: 1
+    cobblestone: 20
+    coal: 10
+  result: lava_bucket
+  amount: 1
+
+- items:
+    furnace: 1
+    cobblestone: 50
+    planks_oak: 20
+  result: stone_miner
+  amount: 1
+
+- items:
+    stone_miner: 1
+    iron_ingot: 100
+    generator: 1
+  result: iron_miner
+  amount: 1
+
+- items:
+    iron_miner: 1
+    gold_ingot: 100
+    generator: 2
+  result: gold_miner
+  amount: 1
+
+- items:
+    gold_miner: 1
+    gold_ingot: 100
+    generator: 2
+  result: diamond_miner
+  amount: 1
+
+- items:
+    furnace: 1
+    iron_ingot: 10
+  result: generator
+  amount: 1
+
+- items:
+    furnace: 1
+    iron_ingot: 50
+    gold_dust: 10
+  result: electric_furnace
+  amount: 1
+
+- items:
+    furnace: 1
+    iron_ingot: 200
+    gold_ingot: 20
+  result: mace
+  amount: 1
+
+- items:
+    iron_ingot: 20
+    cobblestone: 10
+    coal: 10
+  result: item_translocator
+  amount: 2
+
+- items:
+    iron_ingot: 20
+    cobblestone: 10
+    coal_dust: 2
+  result: item_translocator
+  amount: 2
+
+- items:
+    iron_ingot: 20
+    cobblestone: 10
+    gold_ingot: 10
+  result: energy_translocator
+  amount: 2
+
+- items:
+    iron_ingot: 20
+    cobblestone: 10
+    gold_dust: 2
+  result: energy_translocator
+  amount: 2
+
+- items:
+    iron_ingot: 5
+    stick: 5
+  result: configurator
+  amount: 1

@@ -30,10 +30,6 @@
   itemReq: iron_ingot
   amount: 100
 
-- ident: better-smelting
-  itemReq: electric_furnace
-  amount: 1
-
 - ident: faster-miner
   itemReq: iron_miner
   amount: 1
@@ -52,6 +48,10 @@
 
 - ident: ore-doubling
   itemReq: mace
+  amount: 1
+
+- ident: better-smelting
+  itemReq: electric_furnace
   amount: 1
 
 - ident: fasterer-miner

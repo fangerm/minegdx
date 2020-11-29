@@ -13,3 +13,19 @@
 - input: diamond_ore
   output: diamond_dust
   outAmount: 2
+
+- input: coal
+  output: coal_dust
+  outAmount: 1
+
+- input: iron_ingot
+  output: iron_dust
+  outAmount: 1
+
+- input: gold_ingot
+  output: gold_dust
+  outAmount: 1
+
+- input: diamond
+  output: diamond_dust
+  outAmount: 1
