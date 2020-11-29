@@ -9,6 +9,16 @@
   amount: 4
 
 - items:
+    planks_oak: 1
+  result: slab_oak_lower
+  amount: 2
+
+- items:
+    slab_oak_lower: 2
+  result: planks_oak
+  amount: 1
+
+- items:
     stick: 1
     planks_oak: 3
   result: wood_pickaxe

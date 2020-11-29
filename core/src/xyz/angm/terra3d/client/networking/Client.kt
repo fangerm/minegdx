@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 7:31 PM.
+ * This file was last modified at 11/29/20, 8:50 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -16,6 +16,9 @@ import ktx.collections.*
 import xyz.angm.terra3d.common.log
 
 /** A client used for sending and receiving packages from a server.
+ * This client implementation uses a coroutine to process
+ * incoming packets, and can be 'locked' to prevent it from processing
+ * anything; this is used to prevent data races with the main/render thread.
  * @property disconnectListener Called when the client is disconnected.
  * @constructor Will create a socket for a local server. */
 class Client() {

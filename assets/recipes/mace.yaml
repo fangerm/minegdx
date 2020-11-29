@@ -29,3 +29,7 @@
 - input: diamond
   output: diamond_dust
   outAmount: 1
+
+- input: stone
+  output: cobblestone
+  outAmount: 1

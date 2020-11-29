@@ -2,6 +2,10 @@
   output: glass
   outAmount: 3
 
+- input: cobblestone
+  output: stone
+  outAmount: 1
+
 - input: coal_ore
   output: coal
   outAmount: 2
