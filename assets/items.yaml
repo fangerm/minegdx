@@ -108,13 +108,13 @@ furnace:
     orientation: XZ
 
 electric_furnace:
-  texture: textures/blocks/furnace_top.png
+  texture: textures/blocks/electric_furnace_top.png
   block:
     breakTime: 15
     prefTool: pickaxe
     minToolLevel: 2
-    texSide: textures/blocks/furnace_side.png
-    texFront: textures/blocks/furnace_front_off.png
+    texSide: textures/blocks/electric_furnace_side.png
+    texFront: textures/blocks/electric_furnace_front_off.png
     orientation: XZ
 
 chest:
@@ -271,10 +271,11 @@ diamond_ore:
     minToolLevel: 1
     drop: cobblestone
 
+coal:
+  burnTime: 4000
+
 iron_ingot: {}
-
 gold_ingot: {}
-
 diamond: {}
 
 stone_miner:
@@ -405,3 +406,18 @@ lava:
     collider: FLUID
     fluid: true
     fluidReach: 5
+
+mace:
+  texture: textures/blocks/mace_top.png
+  block:
+    breakTime: 15
+    prefTool: pickaxe
+    minToolLevel: 2
+    texSide: textures/blocks/mace_side.png
+    texFront: textures/blocks/mace_front_off.png
+    orientation: XZ
+
+coal_dust: {}
+iron_dust: {}
+gold_dust: {}
+diamond_dust: {}

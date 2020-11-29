@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 4:28 PM.
+ * This file was last modified at 11/29/20, 4:42 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -11,6 +11,7 @@ import xyz.angm.terra3d.common.items.Inventory
 import xyz.angm.terra3d.common.items.metadata.EnergyStorageAdapter
 import xyz.angm.terra3d.common.items.metadata.InventoryMetadata
 import xyz.angm.terra3d.common.recipes.FurnaceRecipes
+import xyz.angm.terra3d.common.recipes.MaceRecipes
 import xyz.angm.terra3d.common.recipes.OneToOneRecipes
 
 /** Metadata for a machine with 1:1 processing that uses energy,
@@ -47,4 +48,8 @@ abstract class GenericProcessingMachineMetadata : EnergyStorageAdapter, Inventor
 
 class ElectricFurnaceMetadata : GenericProcessingMachineMetadata() {
     override val recipes get() = FurnaceRecipes
+}
+
+class MaceMetadata : GenericProcessingMachineMetadata() {
+    override val recipes get() = MaceRecipes
 }

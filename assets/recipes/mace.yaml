@@ -1,0 +1,15 @@
+- input: coal_ore
+  output: coal_dust
+  outAmount: 2
+
+- input: iron_ore
+  output: iron_dust
+  outAmount: 2
+
+- input: gold_ore
+  output: gold_dust
+  outAmount: 2
+
+- input: diamond_ore
+  output: diamond_dust
+  outAmount: 2

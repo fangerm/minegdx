@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 9:20 PM.
+ * This file was last modified at 11/29/20, 4:42 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -53,3 +53,6 @@ abstract class OneToOneRecipes(name: String) {
 
 /** Recipes for furnaces. */
 object FurnaceRecipes : OneToOneRecipes("furnace")
+
+/** Recipes for maces. */
+object MaceRecipes : OneToOneRecipes("mace")

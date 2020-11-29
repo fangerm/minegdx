@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 4:23 PM.
+ * This file was last modified at 11/29/20, 4:42 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -27,6 +27,7 @@ object DefaultMeta {
         // Add custom metadata here
         add("furnace", FurnaceMetadata::class)
         add("electric_furnace", ElectricFurnaceMetadata::class)
+        add("mace", MaceMetadata::class)
         add("chest", ChestMetadata::class)
         add("generator", GeneratorMetadata::class)
         add("energy_translocator", EnergyTranslocatorMetadata::class)

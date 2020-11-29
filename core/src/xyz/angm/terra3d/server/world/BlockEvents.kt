@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 4:35 PM.
+ * This file was last modified at 11/29/20, 4:49 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -71,6 +71,7 @@ object BlockEvents {
                     else -> return@BlockComponent
                 }
                 meta.baking[0]!!.amount -= recipeResult.inAmount
+                if (meta.baking[0]!!.amount == 0) meta.baking.clear()
                 meta.progress = 0
             }
 
@@ -78,7 +79,7 @@ object BlockEvents {
         })
 
         // ##### Generic 1:1 #####
-        for (type in listOf("electric_furnace")) {
+        for (type in listOf("electric_furnace", "mace")) {
             listener(type, Event.BLOCK_DESTROYED) { _, removed ->
                 val meta = removed.metadata as GenericProcessingMachineMetadata
                 meta.progress = 0
@@ -100,6 +101,7 @@ object BlockEvents {
                         else -> return@BlockComponent
                     }
                     meta.processing[0]!!.amount -= recipeResult.inAmount
+                    if (meta.processing[0]!!.amount == 0) meta.processing.clear()
                     meta.progress = 0
                 }
 

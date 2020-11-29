@@ -50,6 +50,10 @@
   itemReq: energy_cell
   amount: 1
 
+- ident: ore-doubling
+  itemReq: mace
+  amount: 1
+
 - ident: fasterer-miner
   itemReq: gold_miner
   amount: 1

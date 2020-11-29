@@ -1,3 +1,35 @@
 - input: sand
   output: glass
   outAmount: 3
+
+- input: coal_ore
+  output: coal
+  outAmount: 2
+
+- input: iron_ore
+  output: iron_ingot
+  outAmount: 2
+
+- input: gold_ore
+  output: gold_ingot
+  outAmount: 1
+
+- input: diamond_ore
+  output: diamond
+  outAmount: 1
+
+- input: coal_dust
+  output: coal
+  outAmount: 2
+
+- input: iron_dust
+  output: iron_ingot
+  outAmount: 2
+
+- input: gold_dust
+  output: gold_ingot
+  outAmount: 1
+
+- input: diamond_dust
+  output: diamond
+  outAmount: 1
