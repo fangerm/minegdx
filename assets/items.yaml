@@ -107,6 +107,16 @@ furnace:
     texFront: textures/blocks/furnace_front_off.png
     orientation: XZ
 
+electric_furnace:
+  texture: textures/blocks/furnace_top.png
+  block:
+    breakTime: 15
+    prefTool: pickaxe
+    minToolLevel: 2
+    texSide: textures/blocks/furnace_side.png
+    texFront: textures/blocks/furnace_front_off.png
+    orientation: XZ
+
 chest:
   texture: textures/blocks/chest.png
   block:

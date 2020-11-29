@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 5:32 PM.
+ * This file was last modified at 11/29/20, 4:35 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -12,7 +12,6 @@ import ktx.collections.*
 import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.items.ItemType
 import xyz.angm.terra3d.common.items.metadata.EnergyStorageMeta
-import xyz.angm.terra3d.common.items.metadata.IMetadata
 import xyz.angm.terra3d.common.items.metadata.InventoryMetadata
 import xyz.angm.terra3d.common.items.metadata.blocks.*
 import xyz.angm.terra3d.common.recipes.FurnaceRecipes
@@ -45,17 +44,7 @@ object BlockEvents {
             blockEntities[Item.Properties.fromIdentifier(type).type] = entity
         }
 
-        /** Simple listener that attaches metadata if none is attached; runs on block placement*/
-        fun attachMeta(type: String, inst: () -> IMetadata) {
-            listener(type, Event.BLOCK_PLACED) { world, blockPlaced ->
-                blockPlaced.metadata = blockPlaced.metadata ?: inst()
-                world.metadataChanged(blockPlaced)
-            }
-        }
-
         // ##### Furnace #####
-        attachMeta("furnace") { FurnaceMetadata() }
-
         listener("furnace", Event.BLOCK_DESTROYED) { _, removed ->
             val meta = removed.metadata as FurnaceMetadata
             meta.progress = 0
@@ -88,9 +77,37 @@ object BlockEvents {
             world.metadataChanged(block)
         })
 
-        // ##### Generator ####
-        attachMeta("generator") { GeneratorMetadata() }
+        // ##### Generic 1:1 #####
+        for (type in listOf("electric_furnace")) {
+            listener(type, Event.BLOCK_DESTROYED) { _, removed ->
+                val meta = removed.metadata as GenericProcessingMachineMetadata
+                meta.progress = 0
+            }
 
+            blockEntity(type, BlockComponent(tickInterval = 15) { world, block ->
+                val meta = block.metadata as GenericProcessingMachineMetadata
+                if (meta.energy > 10) meta.energy -= 10
+                else return@BlockComponent
+
+                val recipeResult = meta.recipes[meta.processing[0]?.type ?: return@BlockComponent] ?: return@BlockComponent
+                if (meta.processing[0]!!.amount < recipeResult.inAmount) return@BlockComponent
+
+                meta.progress += 10
+                if (meta.progress >= 100) {
+                    when {
+                        meta.result[0] == null -> meta.result[0] = Item(recipeResult.output, recipeResult.outAmount)
+                        meta.result[0]!!.type == recipeResult.output -> meta.result[0]!!.amount += recipeResult.outAmount
+                        else -> return@BlockComponent
+                    }
+                    meta.processing[0]!!.amount -= recipeResult.inAmount
+                    meta.progress = 0
+                }
+
+                world.metadataChanged(block)
+            })
+        }
+
+        // ##### Generator ####
         blockEntity("generator", BlockComponent(tickInterval = 20) { world, block ->
             val meta = block.metadata as GeneratorMetadata
 
@@ -112,8 +129,6 @@ object BlockEvents {
 
 
         /// ### Energy Cell ###
-        attachMeta("energy_cell") { EnergyCellMetadata() }
-
         blockEntity("energy_cell", BlockComponent(tickInterval = 20) { world, block ->
             val meta = block.metadata as EnergyCellMetadata
 
@@ -136,13 +151,7 @@ object BlockEvents {
             world.metadataChanged(block)
         })
 
-        // ##### Chest #####
-        attachMeta("chest") { ChestMetadata() }
-
         // #### Miners ####
-        for (miner in listOf("stone_miner", "iron_miner", "gold_miner", "diamond_miner")) {
-            attachMeta(miner) { MinerMetadata() }
-        }
         val component = BlockComponent(tickInterval = 100) { world, block ->
             val meta = block.metadata as MinerMetadata
             if (meta.energy < 50) return@BlockComponent

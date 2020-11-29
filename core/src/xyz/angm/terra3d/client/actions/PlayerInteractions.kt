@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 3:48 PM.
+ * This file was last modified at 11/29/20, 4:33 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -10,10 +10,7 @@ package xyz.angm.terra3d.client.actions
 import com.badlogic.gdx.utils.ObjectMap
 import ktx.collections.*
 import xyz.angm.terra3d.client.graphics.panels.Panel
-import xyz.angm.terra3d.client.graphics.panels.game.inventory.ChestPanel
-import xyz.angm.terra3d.client.graphics.panels.game.inventory.FurnacePanel
-import xyz.angm.terra3d.client.graphics.panels.game.inventory.GeneratorPanel
-import xyz.angm.terra3d.client.graphics.panels.game.inventory.MinerPanel
+import xyz.angm.terra3d.client.graphics.panels.game.inventory.*
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.resources.I18N
 import xyz.angm.terra3d.client.resources.soundPlayer
@@ -48,6 +45,7 @@ object PlayerInteractions {
             }
 
         panel("furnace") { ctx -> FurnacePanel(ctx.screen, ctx.block!!) }
+        panel("electric_furnace") { ctx -> GenericProcessingPanel(ctx.screen, ctx.block!!, "furnace") }
         panel("chest") { ctx -> ChestPanel(ctx.screen, ctx.block!!) }
         panel("generator") { ctx -> GeneratorPanel(ctx.screen, ctx.block!!) }
         panel("stone_miner") { ctx -> MinerPanel(ctx.screen, ctx.block!!) }
