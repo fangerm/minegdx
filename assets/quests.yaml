@@ -14,15 +14,50 @@
   itemReq: iron_ingot
   amount: 10
 
-# TODO: Change once energy system is stablized
 - ident: energized
-  itemReq: oak_wood
-  amount: 3
+  itemReq: generator
+  amount: 1
 
 - ident: infiminer
   itemReq: stone_miner
   amount: 1
 
 - ident: translocators
+  itemReq: item_translocator
+  amount: 2
+
+- ident: ferris
   itemReq: iron_ingot
-  amount: 200
+  amount: 100
+
+- ident: better-smelting
+  itemReq: electric_furnace
+  amount: 1
+
+- ident: faster-miner
+  itemReq: iron_miner
+  amount: 1
+
+- ident: gold
+  itemReq: gold_ingot
+  amount: 50
+
+- ident: better-power
+  itemReq: generator
+  amount: 3
+
+- ident: power-storage
+  itemReq: energy_cell
+  amount: 1
+
+- ident: fasterer-miner
+  itemReq: gold_miner
+  amount: 1
+
+- ident: diamonds
+  itemReq: diamond
+  amount: 100
+
+- ident: fastererer-miner
+  itemReq: diamond_miner
+  amount: 1
