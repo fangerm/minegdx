@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 6:42 PM.
+ * This file was last modified at 12/10/20, 9:10 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -51,6 +51,7 @@ class RoxArray<T : Any>(private val ordered: Boolean, initial: Int) : Iterable<T
     internal fun remove(elem: T) {
         if (ordered) throw UnsupportedOperationException()
         val idx = indexOfFirst { it == elem }
+        if (idx == -1) return
         data[idx] = data[size - 1]
         data[--size] = null
     }
