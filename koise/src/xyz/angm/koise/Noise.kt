@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 7:38 PM.
+ * This file was last modified at 11/29/20, 10:47 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -126,7 +126,7 @@ class Noise(
         return 70.0 * (n0 + n1 + n2)
     }
 
-    fun noise(xin: Double, yin: Double, zin: Double): Double {
+    internal fun noise(xin: Double, yin: Double, zin: Double): Double {
         val n0: Double
         val n1: Double
         val n2: Double

@@ -1,13 +1,13 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/10/20, 9:40 PM.
+ * This file was last modified at 12/10/20, 9:19 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
 
 package xyz.angm.terra3d.common.world.generation
 
-import xyz.angm.koise.Cave3DNoise
+import xyz.angm.koise.CaveGenerator
 import xyz.angm.koise.Noise
 import xyz.angm.terra3d.common.CHUNK_SIZE
 
@@ -22,7 +22,7 @@ class NoiseGenerator(seed: Long) {
     // These values heavily influence heightmap generation.
     private val height = Noise(seed, octaves = 3, roughness = 0.6f, scale = 0.01)
     private val biome = Noise(seed, octaves = 3, roughness = 0.3f, scale = 0.005)
-    private val cave = Cave3DNoise()
+    private val cave = CaveGenerator(CHUNK_SIZE, seed)
 
     /** Returns the noise data for a chunk.
      * @param posX Chunk X position
@@ -46,10 +46,7 @@ class NoiseGenerator(seed: Long) {
 
                 out.height[x][z] = (heightTotal / (((HEIGHT_SMOOTH_R * 2) + 1) * ((HEIGHT_SMOOTH_R * 2) + 1))).toInt()
                 out.biome[x][z] = Biome.getBiomeByNoise(biome.point(posX + x, posZ + z))
-
-                for (y in 0 until CHUNK_SIZE) {
-                    out.caves[x][z][y] = cave.point(posX + x, posY + y, posZ + z) > 0.2f
-                }
+                if (posY < 70) cave.carve(out.caves, posX, posY, posZ)
             }
         }
         return out

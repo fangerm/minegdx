@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/27/20, 5:31 PM.
+ * This file was last modified at 12/10/20, 9:13 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -13,6 +13,7 @@ import xyz.angm.terra3d.common.items.Item
 import xyz.angm.terra3d.common.world.Chunk
 import xyz.angm.terra3d.common.world.FLUID_LEVEL_SHIFT
 import xyz.angm.terra3d.common.world.IWorld
+import xyz.angm.terra3d.common.world.TYPE
 import kotlin.random.Random
 
 /** Generates terrain/chunks for a world.
@@ -137,11 +138,14 @@ class TerrainGenerator(val world: IWorld) {
             val y = random.nextInt(CHUNK_SIZE - 1)
             val z = random.nextInt(CHUNK_SIZE - 1)
 
-            if (chunk.position.y + y > ore.maxHeight || chunk.position.y + y < ore.minHeight) continue
+            val existing = chunk[x, y, z, TYPE]
+            if (chunk.position.y + y > ore.maxHeight || chunk.position.y + y < ore.minHeight || existing != stoneId) continue
             chunk.setBlock(tmpIV.set(x, y, z), ore.blockId)
             left--
         }
     }
 
     private fun isSurfaceChunk(chunkY: Int, surfaceHeight: Int) = (surfaceHeight - chunkY) < CHUNK_SIZE && (surfaceHeight - chunkY) >= 0
+
+    private val stoneId = Item.Properties.fromIdentifier("stone").type
 }
