@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 9:01 PM.
+ * This file was last modified at 12/10/20, 9:57 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -99,8 +99,10 @@ class PlayerInputSystem(
 
             // Try placing a block
             val block = playerC.inventory.heldItem ?: return
+            player[position].y += PLAYER_HEIGHT
             if (screen.world.updateBlockRaycast(player[position], player[direction], block))
                 playerC.inventory.subtractFromHeldItem(1)
+            player[position].y -= PLAYER_HEIGHT
         }
 
         // Only option left is ITEM_CLICKED, try that
