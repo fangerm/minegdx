@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 10:12 PM.
+ * This file was last modified at 11/30/20, 12:20 AM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -29,12 +29,11 @@ class PlayerFluidSystem(
 
     override fun update(delta: Float) {
         val position = screen.player[position]
-        position.y -= PLAYER_HEIGHT
         val fluidFeet = screen.world.getFluidLevel(tmpIV.set(position))
 
         position.y += PLAYER_HEIGHT * 2f
         val fluidHead = screen.world.getFluidLevel(tmpIV.set(position))
-        position.y -= PLAYER_HEIGHT
+        position.y -= PLAYER_HEIGHT * 2f
 
         physicsSystem.inFluid = fluidFeet > 0
         screen.gameplayPanel.inFluid = fluidHead > 0
@@ -44,15 +43,13 @@ class PlayerFluidSystem(
 
     private fun checkLava(delta: Float) {
         val position = screen.player[position]
-        position.y -= PLAYER_HEIGHT
         val blockFeet = screen.world.getBlockRaw(tmpIV.set(position)) and TYPE
-        position.y += PLAYER_HEIGHT
 
         if (blockFeet == lavaId) {
             lavaInterval += delta
             if (lavaInterval > 0.5f) {
                 screen.player[health].health -= 10
-                soundPlayer.playSound("random/fizz")
+                soundPlayer.playSound("entity/player/hurt/fire_hurt1")
                 screen.inputHandler.playerHurt()
                 lavaInterval = 0f
             }

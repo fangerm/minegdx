@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 10:29 PM.
+ * This file was last modified at 11/29/20, 11:08 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -71,6 +71,7 @@ class PlayerSystem(
         // Update player position
         pDirection.set(screen.cam.direction)
 
+        pPosition.y += PLAYER_HEIGHT
         // Update position of the block looked at
         val lookingAt = screen.world.getBlockRaycast(pPosition, pDirection, false) ?: defaultSelectorPosition
         if (localPlayerC.blockLookingAt != lookingAt) {
@@ -89,7 +90,6 @@ class PlayerSystem(
 
         // Update camera position
         screen.cam.position.set(pPosition)
-        screen.cam.position.y += PLAYER_HEIGHT
         screen.cam.update()
 
         // Update camera FOV
@@ -97,6 +97,8 @@ class PlayerSystem(
 
         // Update rendering-related positions
         soundPlayer.updateListenerPosition(pPosition, pDirection)
+
+        pPosition.y -= PLAYER_HEIGHT
     }
 
     private fun updateHunger(delta: Float) {
