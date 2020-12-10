@@ -1,6 +1,6 @@
 stone:
   block:
-    breakTime: 5.0
+    breakTime: 3.5
     prefTool: pickaxe
     minToolLevel: 1
     drop: cobblestone
@@ -25,7 +25,6 @@ cobblestone:
     breakTime: 5.0
     prefTool: pickaxe
     minToolLevel: 1
-    drop: stone
 
 bedrock:
   block:
@@ -244,31 +243,27 @@ configurator: {}
 
 iron_ore:
   block:
-    breakTime: 20
+    breakTime: 6.0
     prefTool: pickaxe
     minToolLevel: 1
-    drop: cobblestone
 
 coal_ore:
   block:
-    breakTime: 20
+    breakTime: 5.0
     prefTool: pickaxe
     minToolLevel: 1
-    drop: cobblestone
 
 gold_ore:
   block:
-    breakTime: 20
+    breakTime: 7.5
     prefTool: pickaxe
     minToolLevel: 1
-    drop: cobblestone
 
 diamond_ore:
   block:
-    breakTime: 20
+    breakTime: 10.0
     prefTool: pickaxe
     minToolLevel: 1
-    drop: cobblestone
 
 coal:
   burnTime: 4000
