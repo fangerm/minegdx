@@ -94,8 +94,7 @@ glass:
     drop: glass_shard
     sound: glass
 
-glass_shard:
-  texture: textures/blocks/glass_pane_top.png
+glass_shard: {}
 
 furnace:
   texture: textures/blocks/furnace_top.png
@@ -357,7 +356,6 @@ water:
     fluidReach: 8
 
 ultratool:
-  texture: textures/items/wood_hoe.png
   tool:
     type: ALL
     multiplier: 0.0001
