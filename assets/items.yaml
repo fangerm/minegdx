@@ -310,21 +310,18 @@ red_lamp:
     emitsLight: true
     redLight: 15
     blend: true
-    sound: glass
 
 green_lamp:
   block:
     emitsLight: true
     greenLight: 15
     blend: true
-    sound: glass
 
 blue_lamp:
   block:
     emitsLight: true
     blueLight: 15
     blend: true
-    sound: glass
 
 orange_lamp:
   block:
@@ -332,7 +329,6 @@ orange_lamp:
     redLight: 15
     greenLight: 9
     blend: true
-    sound: glass
 
 lamp:
   block:
@@ -341,7 +337,6 @@ lamp:
     greenLight: 15
     blueLight: 15
     blend: true
-    sound: glass
 
 water:
   block:
