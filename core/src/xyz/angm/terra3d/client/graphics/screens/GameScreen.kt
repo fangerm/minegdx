@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:22 PM.
+ * This file was last modified at 12/10/20, 8:51 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -241,12 +241,13 @@ class GameScreen(
         registerBlockChangeListener(client, world)
     }
 
-    /** Sets the current viewport to the one to be used for the back buffer.
-     * Used by the renderer to set the proper GL viewport after shadow rendering. */
-    fun applyViewport() = stage.viewport.apply()
-
     override fun resize(width: Int, height: Int) {
+        val stageCam = stage.viewport.camera
+        stage.viewport.camera = cam
         stage.viewport.update(width, height, true)
+        stage.viewport.camera = stageCam
+        stage.viewport.update(width, height, true)
+
         gameplayPanel.resize()
         engine[PlayerHandRenderSystem::class]?.resize()
     }

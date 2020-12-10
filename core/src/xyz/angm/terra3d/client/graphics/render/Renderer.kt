@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:18 PM.
+ * This file was last modified at 12/10/20, 8:51 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -40,7 +40,6 @@ class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity
 
     fun render() {
         env.preRender(this, dayTimeEntity[dayTime].time)
-        screen.applyViewport()
         modelBatch.begin(cam)
         env.render(modelBatch)
         renderWorld(modelBatch, cam, env.gdxEnv)
