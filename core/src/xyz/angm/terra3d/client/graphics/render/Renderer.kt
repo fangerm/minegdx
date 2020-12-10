@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 12/10/20, 8:51 PM.
+ * This file was last modified at 12/10/20, 8:59 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -17,12 +17,14 @@ import xyz.angm.rox.Entity
 import xyz.angm.rox.Family.Companion.allOf
 import xyz.angm.terra3d.client.ecs.components.FOV
 import xyz.angm.terra3d.client.ecs.components.render.ModelRenderComponent
+import xyz.angm.terra3d.client.ecs.systems.PlayerPhysicsSystem
 import xyz.angm.terra3d.client.graphics.screens.GameScreen
 import xyz.angm.terra3d.client.graphics.screens.worldHeight
 import xyz.angm.terra3d.client.graphics.screens.worldWidth
 import xyz.angm.terra3d.common.ecs.dayTime
 import xyz.angm.terra3d.common.ecs.modelRender
 import xyz.angm.terra3d.common.ecs.playerRender
+import xyz.angm.terra3d.common.log
 
 /** Responsible for 3D rendering the game. */
 class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity) : Disposable {
@@ -43,6 +45,7 @@ class Renderer(private val screen: GameScreen, private val dayTimeEntity: Entity
         modelBatch.begin(cam)
         env.render(modelBatch)
         renderWorld(modelBatch, cam, env.gdxEnv)
+        if (log.isDebugEnabled) screen.engine[PlayerPhysicsSystem::class]!!.render(modelBatch)
         modelBatch.end()
     }
 
