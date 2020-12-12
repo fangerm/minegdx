@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 9:50 PM.
+ * This file was last modified at 12/12/20, 9:46 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -16,7 +16,9 @@ import xyz.angm.rox.systems.IteratingSystem
 import xyz.angm.terra3d.common.IntVector3
 import xyz.angm.terra3d.common.SyncChannel
 import xyz.angm.terra3d.common.ecs.block
+import xyz.angm.terra3d.common.log
 import xyz.angm.terra3d.server.ecs.components.BlockComponent
+import xyz.angm.terra3d.server.world.BlockEvents
 import xyz.angm.terra3d.server.world.World
 
 /** A system that handles and ticks any block entities.
@@ -35,16 +37,27 @@ class BlockEntitySystem(private val world: World) : IteratingSystem(allOf(BlockC
     /** Tick any entity that need to be. */
     override fun process(entity: Entity, delta: Float) {
         val blockC = entity[block]
-        if (shouldTick(blockC)) blockC(world, world.getBlock(blockC.blockPosition) ?: return)
+        val block = world.getBlock(blockC.blockPosition) ?: return
+        if (shouldTick(blockC)) {
+            try {
+                blockC(world, block)
+            } catch (e: Exception) {
+                engine.remove(entity)
+                log.warn { "Removed invalid BlockEntity at ${blockC.blockPosition}." }
+                val blockEntity = BlockEvents.getBlockEntity(block)
+                if (blockEntity != null) {
+                    log.warn { "Replaced invalid BlockEntity at ${blockC.blockPosition} with new one." }
+                    createBlockEntity(engine, blockEntity)
+                }
+            }
+        }
     }
 
     private fun shouldTick(block: BlockComponent) = tickCount % block.tickInterval == 0
 
     /** Creates a new block entity. All entities should be created with this helper. */
-    fun createBlockEntity(engine: SyncChannel<Engine>, component: BlockComponent) {
-        engine {
-            blockEntities[component.blockPosition] = entity { add(component) }
-        }
+    fun createBlockEntity(engine: Engine, component: BlockComponent) {
+        blockEntities[component.blockPosition] = engine.entity { add(component) }
     }
 
     /** Removes a block entity at the given position. All block entities should be removed with this helper. */

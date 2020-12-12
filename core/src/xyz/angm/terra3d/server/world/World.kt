@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/15/20, 9:53 PM.
+ * This file was last modified at 12/12/20, 9:46 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -128,7 +128,7 @@ class World(private val server: Server) : IWorld(server.save.seed) {
         } else if (oldBlock?.type != block.type) { // A new block got placed; the block was just updated if this is false
             BlockEvents.getListener(block, Event.BLOCK_PLACED)?.invoke(this, block)
             val blockEntity = BlockEvents.getBlockEntity(block)
-            if (blockEntity != null) blockEntitySystem.createBlockEntity(server.engine, blockEntity)
+            if (blockEntity != null) server.engine { blockEntitySystem.createBlockEntity(this, blockEntity) }
             if (!falling) server.engine {
                 block.position.y--
                 val exists = getBlock(block.position) != null
