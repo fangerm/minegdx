@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 12/10/20, 8:51 PM.
+ * This file was last modified at 12/12/20, 9:56 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -44,6 +44,7 @@ import xyz.angm.terra3d.common.ecs.systems.DayTimeSystem
 import xyz.angm.terra3d.common.ecs.systems.FluidSystem
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
+import xyz.angm.terra3d.common.log
 import xyz.angm.terra3d.common.networking.BlockUpdate
 import xyz.angm.terra3d.common.networking.ChatMessagePacket
 import xyz.angm.terra3d.common.networking.InitPacket
@@ -111,6 +112,14 @@ class GameScreen(
     }
 
     override fun render(delta: Float) {
+        try {
+            renderInternal(delta)
+        } catch (e: Exception) {
+            log.error(e) { "Client encountered exception while rendering: " }
+        }
+    }
+
+    private fun renderInternal(delta: Float) {
         // Uncomment this and the stop call at the end to enable performance profiling.
         // startBench(delta)
 

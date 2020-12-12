@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 10:27 PM.
+ * This file was last modified at 12/12/20, 9:56 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -98,6 +98,14 @@ class Server(
     }
 
     internal fun received(connection: Connection, packet: Any) {
+        try {
+            receivedInternal(connection, packet)
+        } catch (e: Exception) {
+            log.error(e) { "Server encountered exception while answering request: " }
+        }
+    }
+
+    private fun receivedInternal(connection: Connection, packet: Any) {
         log.debug { "[SERVER] Received object of class ${packet.javaClass.name}" }
 
         when (packet) {

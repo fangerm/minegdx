@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 9:34 PM.
+ * This file was last modified at 12/12/20, 9:56 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -95,7 +95,11 @@ class Client() {
     private fun processPacket(packet: Any) {
         processing = true
         log.debug { "[CLIENT] Processed received ${packet.javaClass.simpleName}" }
-        listeners.forEach { it(packet) }
+        try {
+            listeners.forEach { it(packet) }
+        } catch (e: Exception) {
+            log.error(e) { "Client encountered exception while processing packet: " }
+        }
         processing = false
     }
 
