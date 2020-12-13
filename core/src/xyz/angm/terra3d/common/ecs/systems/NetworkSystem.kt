@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 10:25 PM.
+ * This file was last modified at 12/13/20, 9:31 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -15,6 +15,7 @@ import xyz.angm.rox.systems.EntitySystem
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.ignoreSync
 import xyz.angm.terra3d.common.ecs.network
+import xyz.angm.terra3d.common.ecs.remove
 
 /** A system that keeps track of all entities registered and gives each a unique ID.
  *
@@ -41,12 +42,14 @@ class NetworkSystem(private val send: (Entity) -> Unit) : EntitySystem(Int.MAX_V
      * Called when entity was received over network. */
     fun receive(netE: Entity) {
         val network = netE.c(network) ?: return
-        if (!entities.containsKey(network.id)) {
+        val removed = netE has remove
+        if (!entities.containsKey(network.id) && !removed) {
             engine.add(netE)
         } else {
             val localEntity = entities[network.id]
             if (localEntity has ignoreSync) return // Things with this flag shouldn't be synced
-            localEntity.addAll(engine, netE)
+            if (removed) engine.remove(localEntity)
+            else localEntity.addAll(engine, netE)
             Entity.free(netE)
         }
     }
