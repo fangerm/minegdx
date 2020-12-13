@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 12/12/20, 9:56 PM.
+ * This file was last modified at 12/13/20, 9:16 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -17,8 +17,7 @@ import xyz.angm.rox.Entity
 import xyz.angm.rox.EntityListener
 import xyz.angm.rox.Family.Companion.allOf
 import xyz.angm.rox.systems.EntitySystem
-import xyz.angm.terra3d.common.SyncChannel
-import xyz.angm.terra3d.common.TICK_RATE
+import xyz.angm.terra3d.common.*
 import xyz.angm.terra3d.common.ecs.components.NetworkSyncComponent
 import xyz.angm.terra3d.common.ecs.components.RemoveFlag
 import xyz.angm.terra3d.common.ecs.components.specific.DayTimeComponent
@@ -27,9 +26,7 @@ import xyz.angm.terra3d.common.ecs.network
 import xyz.angm.terra3d.common.ecs.position
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
-import xyz.angm.terra3d.common.log
 import xyz.angm.terra3d.common.networking.*
-import xyz.angm.terra3d.common.schedule
 import xyz.angm.terra3d.common.world.WorldSaveManager
 import xyz.angm.terra3d.server.ecs.systems.ItemSystem
 import xyz.angm.terra3d.server.networking.Connection
@@ -98,10 +95,8 @@ class Server(
     }
 
     internal fun received(connection: Connection, packet: Any) {
-        try {
+        runLogE("Server", "answering request") {
             receivedInternal(connection, packet)
-        } catch (e: Exception) {
-            log.error(e) { "Server encountered exception while answering request: " }
         }
     }
 
@@ -115,7 +110,7 @@ class Server(
             is JoinPacket -> registerPlayer(connection, packet)
             is Entity -> {
                 engine {
-                    packet[network].needsSync = true // Ensure it syncs to all players
+                    packet.c(network)?.needsSync = true // Ensure it syncs to all players
                     netSystem.receive(packet)
                 }
             }

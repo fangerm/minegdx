@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 12/12/20, 9:56 PM.
+ * This file was last modified at 12/13/20, 9:17 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -44,10 +44,10 @@ import xyz.angm.terra3d.common.ecs.systems.DayTimeSystem
 import xyz.angm.terra3d.common.ecs.systems.FluidSystem
 import xyz.angm.terra3d.common.ecs.systems.NetworkSystem
 import xyz.angm.terra3d.common.ecs.systems.RemoveSystem
-import xyz.angm.terra3d.common.log
 import xyz.angm.terra3d.common.networking.BlockUpdate
 import xyz.angm.terra3d.common.networking.ChatMessagePacket
 import xyz.angm.terra3d.common.networking.InitPacket
+import xyz.angm.terra3d.common.runLogE
 import xyz.angm.terra3d.common.schedule
 
 /** The game screen. Active during gameplay. Uses 2 panels; 1 for hotbar and a stack for the other panels required by the Screen interface.
@@ -112,11 +112,7 @@ class GameScreen(
     }
 
     override fun render(delta: Float) {
-        try {
-            renderInternal(delta)
-        } catch (e: Exception) {
-            log.error(e) { "Client encountered exception while rendering: " }
-        }
+        runLogE("Client", "rendering") { renderInternal(delta) }
     }
 
     private fun renderInternal(delta: Float) {

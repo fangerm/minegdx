@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/29/20, 9:58 PM.
+ * This file was last modified at 12/13/20, 9:16 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -22,7 +22,11 @@ class SyncChannel<T>(receiver: T, private val scope: CoroutineScope) {
 
     init {
         scope.launch {
-            while (true) channel.receive()(receiver)
+            while (true) {
+                runLogE("Game", "processing sync call") {
+                    channel.receive()(receiver)
+                }
+            }
         }
     }
 

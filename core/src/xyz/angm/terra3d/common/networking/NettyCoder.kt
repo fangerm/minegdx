@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 11/29/20, 10:06 PM.
+ * This file was last modified at 12/13/20, 9:17 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -13,7 +13,7 @@ import io.netty.handler.codec.ByteToMessageDecoder
 import io.netty.handler.codec.MessageToByteEncoder
 import xyz.angm.terra3d.common.MAX_NETTY_FRAME_SIZE
 import xyz.angm.terra3d.common.fst
-import xyz.angm.terra3d.common.log
+import xyz.angm.terra3d.common.runLogE
 
 /** An encoder for the Netty pipeline that turns any object sent into a byte array using FST. */
 class FSTEncoder : MessageToByteEncoder<Any>() {
@@ -35,11 +35,9 @@ class FSTDecoder : ByteToMessageDecoder() {
 
     /** Decodes using FST. */
     override fun decode(ctx: ChannelHandlerContext?, input: ByteBuf, out: MutableList<Any>) {
-        try {
+        runLogE("FST", "decoding packet") {
             input.readBytes(buf, 0, input.readableBytes())
             out.add(fst.asObject(buf))
-        } catch (e: Exception) {
-            log.debug(e) { "Failed to decode packet, skipping. Exception:" }
         }
     }
 }

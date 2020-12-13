@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 12/12/20, 9:56 PM.
+ * This file was last modified at 12/13/20, 9:14 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -14,6 +14,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import ktx.collections.*
 import xyz.angm.terra3d.common.log
+import xyz.angm.terra3d.common.runLogE
 
 /** A client used for sending and receiving packages from a server.
  * This client implementation uses a coroutine to process
@@ -95,11 +96,7 @@ class Client() {
     private fun processPacket(packet: Any) {
         processing = true
         log.debug { "[CLIENT] Processed received ${packet.javaClass.simpleName}" }
-        try {
-            listeners.forEach { it(packet) }
-        } catch (e: Exception) {
-            log.error(e) { "Client encountered exception while processing packet: " }
-        }
+        runLogE("Client", "processing packet") { listeners.forEach { it(packet) } }
         processing = false
     }
 

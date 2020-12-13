@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/27/20, 9:07 PM.
+ * This file was last modified at 12/13/20, 9:17 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -59,3 +59,14 @@ operator fun Vector3.set(index: Int, v: Float) =
         1 -> y = v
         else -> z = v
     }
+
+/** Run the given closure, catching and logging any exceptions that occur instead of
+ * having them go up the call chain. The string parameters are used to generate
+ * the accompanying error message, see the catch block. */
+inline fun runLogE(user: String, activity: String, run: () -> Unit) {
+    try {
+        run()
+    } catch (e: Exception) {
+        log.warn(e) { "$user encountered an exception while $activity:" }
+    }
+}
