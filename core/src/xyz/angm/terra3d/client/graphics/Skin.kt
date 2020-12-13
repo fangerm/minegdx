@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/30/20, 4:52 PM.
+ * This file was last modified at 12/13/20, 9:09 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.kotcrab.vis.ui.VisUI
 import com.kotcrab.vis.ui.widget.VisTextButton
+import ktx.assets.disposeSafely
 import ktx.assets.file
 import ktx.scene2d.Scene2DSkin
 import ktx.style.*
@@ -54,6 +55,9 @@ object Skin {
         val parameter = FreeTypeFontGenerator.FreeTypeFontParameter()
         parameter.shadowColor = Color(0.4f, 0.4f, 0.4f, 0.8f)
 
+        VisUI.getSkin().disposeSafely()
+        VisUI.dispose(false)
+        VisUI.load()
         val it = VisUI.getSkin()
         Scene2DSkin.defaultSkin = VisUI.getSkin().apply {
             fontSizes.forEach { size ->
@@ -69,7 +73,7 @@ object Skin {
                 add("default-${size}pt", regular)
                 add("italic-${size}pt", italic)
             }
-            add("default", it.get<BitmapFont>("default-32pt"))
+            add("default", get<BitmapFont>("default-32pt"))
             add("monospace", monospaceGen.generateFont(parameter))
 
             colors5.forEach { color ->
@@ -92,7 +96,7 @@ object Skin {
             add("logo", ResourceManager.get("textures/gui/title/terra3d.png"))
 
 
-            add("vis-default", it.get<VisTextButton.VisTextButtonStyle>())
+            add("vis-default", get<VisTextButton.VisTextButtonStyle>())
             visTextButton {
                 font = it["default-32pt"]
                 up = it["button-default"]
@@ -105,7 +109,7 @@ object Skin {
                 checked = it["black"]
             }
 
-            add("vis-default", it.get<Label.LabelStyle>())
+            add("vis-default", get<Label.LabelStyle>())
 
             getAll(BitmapFont::class.java).forEach { skinFont ->
                 label(skinFont.key) { font = skinFont.value }

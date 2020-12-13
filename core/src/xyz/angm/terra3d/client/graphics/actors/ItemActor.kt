@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 9/30/20, 4:30 PM.
+ * This file was last modified at 12/13/20, 9:10 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable
 import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.kotcrab.vis.ui.VisUI
 import com.kotcrab.vis.ui.widget.VisTextButton
 import ktx.scene2d.Scene2DSkin
@@ -77,7 +78,11 @@ open class ItemActor(open var item: Item? = null, window: InventoryWindow? = nul
 
         init {
             val text = VisUI.getSkin().get("vis-default", VisTextButton.VisTextButtonStyle::class.java).over
-            selectorTexture = (text as NinePatchDrawable).tint(Color(1f, 1f, 1f, 0.5f))
+            selectorTexture = when (text) {
+                is NinePatchDrawable -> text.tint(Color(1f, 1f, 1f, 0.5f))
+                is TextureRegionDrawable -> text.tint(Color(1f, 1f, 1f, 0.5f))
+                else -> throw UnsupportedOperationException("Unsupported texture format")
+            }
         }
     }
 }

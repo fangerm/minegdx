@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:01 PM.
+ * This file was last modified at 12/13/20, 8:57 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -50,8 +50,8 @@ class ResourcePackPanel(private val screen: MenuScreen) : Panel(screen) {
 
         this += scene2d.visTable {
             focusedActor = scrollPane {
-                scene2d.visTable {
-                    ResourceManager.availablePacks.forEach { pack ->
+                visTable {
+                    for (pack in ResourceManager.availablePacks) {
                         buttons.add(button {
                             background = skin.getDrawable("black-transparent")
 

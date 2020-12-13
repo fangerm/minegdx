@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 10/1/20, 11:22 PM.
+ * This file was last modified at 12/13/20, 9:00 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -114,6 +114,7 @@ class MenuScreen(private val game: Terra3D) : ScreenAdapter(), Screen {
 
     /** Recreates this screen. Used when resource pack changed, which requires all assets to be recreated. */
     fun reload() {
+        dispose()
         game.screen = MenuScreen(game)
     }
 }
