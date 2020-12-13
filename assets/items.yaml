@@ -394,6 +394,9 @@ lava:
     collider: FLUID
     fluid: true
     fluidReach: 5
+    emitsLight: true
+    redLight: 15
+    greenLight: 9
 
 mace:
   texture: textures/blocks/mace_top.png
