@@ -1,6 +1,6 @@
 /*
  * Developed as part of the Terra3D project.
- * This file was last modified at 12/13/20, 9:17 PM.
+ * This file was last modified at 12/13/20, 9:19 PM.
  * Copyright 2020, see git repository at git.angm.xyz for authors and other info.
  * This file is under the GPL3 license. See LICENSE in the root directory of this repository for details.
  */
@@ -23,7 +23,6 @@ class FSTEncoder : MessageToByteEncoder<Any>() {
     /** Encodes using FST. */
     override fun encode(ctx: ChannelHandlerContext, toWrite: Any, out: ByteBuf) {
         val arr = fst.asSharedByteArray(toWrite, len)
-        if (toWrite is InitPacket) println(len[0])
         out.writeBytes(arr, 0, len[0])
     }
 }
