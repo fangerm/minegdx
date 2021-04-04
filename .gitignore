@@ -1,10 +1,13 @@
-/assets/resourcepacks
+/assets/resourcepacks/*
+!/assets/resourcepacks/default
+/assets/resourcepacks/default/*
+!/assets/resourcepacks/default/pack.yaml
+
 /assets/worlds
 /gradle
 
-/core/out/
-/desktop/out/
-/server/out/
+*/out/
+
 
 ## Java
 
@@ -56,24 +59,16 @@ com_crashlytics_export_strings.xml
 /server/nbproject/private/
 
 /build/
-/core/build/
-/desktop/build/
-/server/build/
+*/build/
 
 /nbbuild/
-/core/nbbuild/
-/desktop/nbbuild/
-/server/nbbuild/
+*/nbbuild/
 
 /dist/
-/core/dist/
-/desktop/dist/
-/server/dist/
+*/dist/
 
 /nbdist/
-/core/nbdist/
-/desktop/nbdist/
-/server/nbdist/
+*/nbdist/
 
 nbactions.xml
 nb-configuration.xml
@@ -83,7 +78,6 @@ nb-configuration.xml
 /local.properties
 .gradle/
 gradle-app.setting
-/editor/build
 
 ## OS Specific
 .DS_Store
